@@ -4,7 +4,7 @@ LDFLAGS := -ldflags "-s -w -X main.version=$(VERSION)"
 GOENV ?= CGO_ENABLED=0
 
 SERVICE_DIR := service
-WEB_DIR := .
+WEB_DIR := web
 WEB_DIST := $(WEB_DIR)/dist
 BIN := $(APP)
 

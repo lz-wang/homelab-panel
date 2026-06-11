@@ -10,9 +10,14 @@ const packDate = moment().utc().format('YYYYMMDD')
 
 // 要追加的内容
 const contentToAppend = `\nVITE_APP_VERSION=${packDate}`
-// 读取文件原始内容
 const envFilePath = '.env'
-let envContent = fs.readFileSync(envFilePath, 'utf-8')
+const envExampleFilePath = '.env.example'
+let envContent = ''
+
+if (fs.existsSync(envFilePath))
+  envContent = fs.readFileSync(envFilePath, 'utf-8')
+else if (fs.existsSync(envExampleFilePath))
+  envContent = fs.readFileSync(envExampleFilePath, 'utf-8')
 
 const versionRegex = /^VITE_APP_VERSION=.*$/m
 if (versionRegex.test(envContent)) {

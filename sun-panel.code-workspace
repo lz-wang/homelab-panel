@@ -2,7 +2,7 @@
 	"folders": [
 		{
 			"name": "frontend",
-			"path": "src"
+			"path": "web"
 		},
 		{
 			"name": "backend",
