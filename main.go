@@ -2,11 +2,16 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"log"
+	"os"
 	embeddedAssets "sun-panel/assets"
 	"sun-panel/global"
 	"sun-panel/initialize"
+	appConfig "sun-panel/initialize/config"
 	"sun-panel/router"
+
+	"github.com/urfave/cli/v2"
 )
 
 var version = "dev"
@@ -14,7 +19,7 @@ var version = "dev"
 //go:embed web/dist
 var webFS embed.FS
 
-//go:embed assets/conf.example.ini assets/lang/en-us.ini assets/lang/zh-cn.ini assets/version
+//go:embed config.example.yaml assets/lang/en-us.ini assets/lang/zh-cn.ini assets/version
 var assetsFS embed.FS
 
 func main() {
@@ -22,14 +27,80 @@ func main() {
 	global.WebFS = webFS
 	embeddedAssets.FS = assetsFS
 
+	app := &cli.App{
+		Name:    "homelab-panel",
+		Usage:   "Homelab panel service",
+		Version: version,
+		Commands: []*cli.Command{
+			{
+				Name:   "serve",
+				Usage:  "Start the HTTP service",
+				Action: runServe,
+			},
+			{
+				Name:   "config",
+				Usage:  "Generate config.example.yaml and config.yaml",
+				Action: runConfig,
+			},
+			{
+				Name:   "password-reset",
+				Usage:  "Reset the first admin user's password",
+				Action: runPasswordReset,
+			},
+			{
+				Name:   "version",
+				Usage:  "Print build version",
+				Action: runVersion,
+			},
+		},
+	}
+
+	if err := app.Run(normalizeArgs(os.Args)); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runServe(_ *cli.Context) error {
 	err := initialize.InitApp()
 	if err != nil {
-		log.Println("初始化错误:", err.Error())
-		panic(err)
+		return fmt.Errorf("初始化错误: %w", err)
 	}
 	httpPort := global.Config.GetValueStringOrDefault("base", "http_port")
 
 	if err := router.InitRouters(":" + httpPort); err != nil {
-		panic(err)
+		return err
 	}
+	return nil
+}
+
+func runConfig(c *cli.Context) error {
+	if err := appConfig.GenerateConfigFiles(); err != nil {
+		return err
+	}
+	fmt.Fprintln(c.App.Writer, "Generated config.example.yaml and config.yaml. Existing config.yaml is preserved.")
+	return nil
+}
+
+func runPasswordReset(_ *cli.Context) error {
+	return initialize.ResetAdminPassword()
+}
+
+func runVersion(c *cli.Context) error {
+	fmt.Fprintln(c.App.Writer, version)
+	return nil
+}
+
+func normalizeArgs(args []string) []string {
+	if len(args) == 1 {
+		return append(args, "serve")
+	}
+
+	normalized := append([]string(nil), args...)
+	switch normalized[1] {
+	case "--config":
+		normalized[1] = "config"
+	case "--password-reset":
+		normalized[1] = "password-reset"
+	}
+	return normalized
 }

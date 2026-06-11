@@ -2,9 +2,9 @@ package global
 
 import (
 	"io/fs"
+	appConfig "sun-panel/initialize/config"
 	"sun-panel/lib/cache"
 	"sun-panel/lib/cmn/systemSetting"
-	"sun-panel/lib/iniConfig"
 	"sun-panel/lib/language"
 	"sun-panel/models"
 
@@ -28,7 +28,7 @@ var (
 	Logger              *zap.SugaredLogger
 	LoggerLevel         = zap.NewAtomicLevel() // 支持通过http以及配置文件动态修改日志级别
 	VerifyCodeCachePool cache.Cacher[string]
-	Config              *iniConfig.IniConfig
+	Config              *appConfig.Config
 	Db                  *gorm.DB
 	RedisDb             *redis.Client
 	SystemSetting       *systemSetting.SystemSettingCache

@@ -1,12 +1,10 @@
 package initialize
 
 import (
-	"flag"
 	"fmt"
-	"os"
 	"sun-panel/global"
 	"sun-panel/initialize/cUserToken"
-	"sun-panel/initialize/config"
+	appConfig "sun-panel/initialize/config"
 	"sun-panel/initialize/database"
 	"sun-panel/initialize/lang"
 	"sun-panel/initialize/other"
@@ -37,12 +35,9 @@ func InitApp() error {
 		global.Logger = logger
 	}
 
-	// 命令行运行
-	CommandRun()
-
 	// 配置初始化
 	{
-		if config, err := config.ConfigInit(); err != nil {
+		if config, err := appConfig.ConfigInit(); err != nil {
 			global.Logger.Errorln("Configuration initialization error", err)
 			return err
 		} else {
@@ -109,59 +104,34 @@ func DatabaseConnect() {
 	database.NotFoundAndCreateUser(global.Db)
 }
 
-// 命令行运行
-func CommandRun() {
-	var (
-		cfg bool
-		pwd bool
-	)
-
-	flag.BoolVar(&cfg, "config", false, "Generate configuration file")
-	flag.BoolVar(&pwd, "password-reset", false, "Reset the password of the first user")
-
-	flag.Parse()
-
-	if cfg {
-		// 生成配置文件
-		fmt.Println("Generating configuration file")
-		cmn.AssetsTakeFileToPath("conf.example.ini", "conf/conf.example.ini")
-		cmn.AssetsTakeFileToPath("conf.example.ini", "conf/conf.ini")
-		fmt.Println("The configuration file has been created  conf/conf.ini ", "Please modify according to your own needs")
-		os.Exit(0) // 务必退出
-	} else if pwd {
-		// 重置密码
-
-		// 配置初始化
-		config, _ := config.ConfigInit()
-		global.Config = config
-
-		DatabaseConnect()
-		userInfo := models.User{}
-		if err := global.Db.Where("role=?", 1).Order("id").First(&userInfo).Error; err != nil {
-			fmt.Println("ERROR", err.Error())
-			os.Exit(0) // 务必退出
-		}
-
-		newPassword := "12345678"
-
-		updateInfo := models.User{
-			Password: cmn.PasswordEncryption(newPassword),
-			Token:    "",
-		}
-		// 重置第一个管理员的密码
-		if err := global.Db.Select("Password", "Token").Where("id=?", userInfo.ID).Updates(&updateInfo).Error; err != nil {
-			fmt.Println("ERROR", err.Error())
-			os.Exit(0) // 务必退出
-		}
-
-		fmt.Println("The password has been successfully reset. Here is the account information")
-		fmt.Println("Username ", userInfo.Username)
-		fmt.Println("Password ", newPassword)
-		os.Exit(0) // 务必退出
-	} else {
-		return
+func ResetAdminPassword() error {
+	config, err := appConfig.ConfigInit()
+	if err != nil {
+		return err
 	}
-	os.Exit(0) // 务必退出
+	global.Config = config
+
+	DatabaseConnect()
+	userInfo := models.User{}
+	if err := global.Db.Where("role=?", 1).Order("id").First(&userInfo).Error; err != nil {
+		return err
+	}
+
+	newPassword := "12345678"
+
+	updateInfo := models.User{
+		Password: cmn.PasswordEncryption(newPassword),
+		Token:    "",
+	}
+	// 重置第一个管理员的密码
+	if err := global.Db.Select("Password", "Token").Where("id=?", userInfo.ID).Updates(&updateInfo).Error; err != nil {
+		return err
+	}
+
+	fmt.Println("The password has been successfully reset. Here is the account information")
+	fmt.Println("Username ", userInfo.Username)
+	fmt.Println("Password ", newPassword)
+	return nil
 }
 
 func Logo() {

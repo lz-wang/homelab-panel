@@ -1,83 +1,242 @@
 package config
 
 import (
+	"errors"
+	"fmt"
 	"os"
-	"sun-panel/global"
-	"sun-panel/lib/cmn"
-	"sun-panel/lib/iniConfig"
+	"path/filepath"
+	"strings"
+	"sun-panel/assets"
+
+	"github.com/spf13/viper"
 )
 
-func getDefaultConfig() map[string]map[string]string {
-	return map[string]map[string]string{
-		"base": {
-			"http_port":        "9090",
-			"source_path":      "./files",      // 存放文件的路径
-			"source_temp_path": "./files/temp", // 存放文件的缓存路径
-		},
-		"sqlite": {
-			"file_path": "./database.db",
-		},
-	}
+const (
+	ConfigFileName        = "config.yaml"
+	ConfigExampleFileName = "config.example.yaml"
+	DotEnvFileName        = ".env"
+)
 
+const defaultConfigYAML = `base:
+  http_port: "3002"
+  cache_drive: memory
+  queue_drive: memory
+  source_path: ./uploads
+  source_temp_path: ./runtime/temp
+
+sqlite:
+  file_path: ./data.db
+
+redis:
+  address: 127.0.0.1:6379
+  password: ""
+  prefix: "sun_panel:"
+  db: 0
+`
+
+var configKeys = []string{
+	"base.http_port",
+	"base.cache_drive",
+	"base.queue_drive",
+	"base.source_path",
+	"base.source_temp_path",
+	"sqlite.file_path",
+	"redis.address",
+	"redis.password",
+	"redis.prefix",
+	"redis.db",
 }
 
-func ConfigInit() (*iniConfig.IniConfig, error) {
+type Config struct {
+	v        *viper.Viper
+	fileName string
+}
 
-	// 配置文件初始化
-	if config, err, errCode := Conf(getDefaultConfig()); err != nil && errCode == 0 {
-		// 抛出错误
-		cmn.Pln(cmn.LOG_ERROR, "配置文件创建错误:"+err.Error())
-		os.Exit(1)
-		return nil, err
-	} else if errCode == 1 {
-		// 配置文件不存在，进行创建
-		if err := CreateConfExample("conf.example.ini", "conf.ini"); err != nil {
-			cmn.Pln(cmn.LOG_ERROR, "配置文件创建错误:"+err.Error())
-			os.Exit(1)
+func ConfigInit() (*Config, error) {
+	return Load(".")
+}
+
+func Load(configPath string) (*Config, error) {
+	if configPath == "" {
+		configPath = "."
+	}
+
+	v := viper.New()
+	setDefaults(v)
+
+	v.SetConfigName(strings.TrimSuffix(ConfigFileName, filepath.Ext(ConfigFileName)))
+	v.SetConfigType("yaml")
+	v.AddConfigPath(configPath)
+
+	if err := v.ReadInConfig(); err != nil {
+		var notFound viper.ConfigFileNotFoundError
+		if !errors.As(err, &notFound) {
 			return nil, err
 		}
+	}
 
-		global.Logger.Infoln("配置文件已经自动生成'conf/conf.ini',将再次读取配置")
-		// 创建成功再次读取文件
-		if configAgain, errAgain, _ := Conf(getDefaultConfig()); errAgain != nil {
-			return nil, errAgain
-		} else {
-			global.Logger.Infoln("尝试读取配置文件'conf/conf.ini',二次读取配置文件成功")
-			return configAgain, nil
+	if err := mergeDotEnv(v, filepath.Join(configPath, DotEnvFileName)); err != nil {
+		return nil, err
+	}
+
+	bindEnv(v)
+
+	return &Config{
+		v:        v,
+		fileName: v.ConfigFileUsed(),
+	}, nil
+}
+
+func GenerateConfigFiles() error {
+	if err := writeDefaultConfigFile(ConfigExampleFileName, true); err != nil {
+		return err
+	}
+	return writeDefaultConfigFile(ConfigFileName, false)
+}
+
+func (c *Config) GetValueString(section string, name string) string {
+	if c == nil || c.v == nil {
+		return ""
+	}
+	return c.v.GetString(configKey(section, name))
+}
+
+func (c *Config) GetValueStringOrDefault(section string, name string) string {
+	return c.GetValueString(section, name)
+}
+
+func (c *Config) GetValueInt(section string, name string) int {
+	if c == nil || c.v == nil {
+		return 0
+	}
+	return c.v.GetInt(configKey(section, name))
+}
+
+func (c *Config) GetSection(section string, result interface{}) error {
+	if c == nil || c.v == nil {
+		return errors.New("config is not initialized")
+	}
+	return c.v.UnmarshalKey(section, result)
+}
+
+func (c *Config) SetValue(section string, name string, value string) error {
+	if c == nil || c.v == nil {
+		return errors.New("config is not initialized")
+	}
+
+	c.v.Set(configKey(section, name), value)
+	if c.fileName == "" {
+		c.fileName = ConfigFileName
+		return c.v.WriteConfigAs(c.fileName)
+	}
+	return c.v.WriteConfig()
+}
+
+func setDefaults(v *viper.Viper) {
+	v.SetDefault("base.http_port", "3002")
+	v.SetDefault("base.cache_drive", "memory")
+	v.SetDefault("base.queue_drive", "memory")
+	v.SetDefault("base.source_path", "./uploads")
+	v.SetDefault("base.source_temp_path", "./runtime/temp")
+	v.SetDefault("sqlite.file_path", "./data.db")
+	v.SetDefault("redis.address", "127.0.0.1:6379")
+	v.SetDefault("redis.password", "")
+	v.SetDefault("redis.prefix", "sun_panel:")
+	v.SetDefault("redis.db", 0)
+}
+
+func bindEnv(v *viper.Viper) {
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+
+	for _, key := range configKeys {
+		envKey := strings.ToUpper(strings.ReplaceAll(key, ".", "_"))
+		_ = v.BindEnv(key, envKey, "HOMELAB_PANEL_"+envKey)
+	}
+}
+
+func mergeDotEnv(v *viper.Viper, envFile string) error {
+	if _, err := os.Stat(envFile); err != nil {
+		if os.IsNotExist(err) {
+			return nil
 		}
-	} else {
-		return config, nil
+		return err
+	}
+
+	env := viper.New()
+	env.SetConfigFile(envFile)
+	env.SetConfigType("env")
+	if err := env.ReadInConfig(); err != nil {
+		return err
+	}
+
+	for _, key := range env.AllKeys() {
+		if mappedKey, ok := mapEnvKey(key); ok {
+			v.Set(mappedKey, env.Get(key))
+		}
+	}
+	return nil
+}
+
+func mapEnvKey(key string) (string, bool) {
+	normalized := strings.ToLower(strings.TrimSpace(key))
+	normalized = strings.TrimPrefix(normalized, "homelab_panel_")
+	normalized = strings.ReplaceAll(normalized, "__", ".")
+
+	if strings.Contains(normalized, ".") {
+		for _, key := range configKeys {
+			if normalized == key {
+				return key, true
+			}
+		}
+	}
+
+	switch normalized {
+	case "http_port", "base_http_port":
+		return "base.http_port", true
+	case "cache_drive", "base_cache_drive":
+		return "base.cache_drive", true
+	case "queue_drive", "base_queue_drive":
+		return "base.queue_drive", true
+	case "source_path", "base_source_path":
+		return "base.source_path", true
+	case "source_temp_path", "base_source_temp_path":
+		return "base.source_temp_path", true
+	case "sqlite_file_path", "database_path", "sqlite_path":
+		return "sqlite.file_path", true
+	case "redis_address":
+		return "redis.address", true
+	case "redis_password":
+		return "redis.password", true
+	case "redis_prefix":
+		return "redis.prefix", true
+	case "redis_db":
+		return "redis.db", true
+	default:
+		return "", false
 	}
 }
 
-// 配置初始化
-// errCode=1 说明初始化流程
-func Conf(defaultConfig map[string]map[string]string) (config *iniConfig.IniConfig, err error, errCode int) {
-	CreateConfExample("conf.example.ini", "conf.example.ini")
-	exists, err := cmn.PathExists("conf/conf.ini")
-	if exists {
-		config = iniConfig.NewIniConfig("conf/conf.ini") // 读取配置
-		config.Default = defaultConfig
-	} else if err != nil {
-
-	} else {
-		errCode = 1
-	}
-	return
+func configKey(section string, name string) string {
+	return section + "." + name
 }
 
-// 生成示例配置文件
-func CreateConfExample(confName string, targetName string) (err error) {
-	// 查看配置示例文件是否存在，不存在创建（分别为示例配置和配置文件）
-	exists, err := cmn.PathExists("conf/" + targetName)
+func writeDefaultConfigFile(targetPath string, overwrite bool) error {
+	if !overwrite {
+		if _, err := os.Stat(targetPath); err == nil {
+			return nil
+		} else if !os.IsNotExist(err) {
+			return err
+		}
+	}
+
+	content, err := assets.Asset(ConfigExampleFileName)
 	if err != nil {
-		return
-	}
-	if !exists {
-		if err = cmn.AssetsTakeFileToPath(confName, "conf/"+targetName); err != nil {
-			return
-		}
+		content = []byte(defaultConfigYAML)
 	}
 
+	if err := os.WriteFile(targetPath, content, 0644); err != nil {
+		return fmt.Errorf("write %s: %w", targetPath, err)
+	}
 	return nil
 }
