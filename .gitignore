@@ -39,6 +39,8 @@ coverage/
 *.local
 
 # Runtime data
+homelab-panel
+release/
 config.yaml
 data.db
 service/conf/
