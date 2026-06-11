@@ -1,6 +1,7 @@
 package global
 
 import (
+	"io/fs"
 	"sun-panel/initialize/database"
 	"sun-panel/lib/cache"
 	"sun-panel/lib/cmn/systemSetting"
@@ -15,6 +16,7 @@ import (
 
 var (
 	RUNCODE = "debug" // 运行模式：debug | release
+	Version = "dev"
 	// DB_MYSQL  = "mysql"
 	// DB_SQLITE = "sqlite"
 	DB_DRIVER = database.SQLITE
@@ -36,4 +38,5 @@ var (
 	SystemSetting       *systemSetting.SystemSettingCache
 	SystemMonitor       cache.Cacher[interface{}]
 	RateLimit           *RateLimiter
+	WebFS               fs.FS
 )

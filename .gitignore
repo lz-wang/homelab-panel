@@ -50,8 +50,5 @@ uploads/
 plugins/
 runtime/
 
-# Generated
-bindata.go
-assets/bindata.go
 service_node
 .history/

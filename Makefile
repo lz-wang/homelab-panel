@@ -7,7 +7,7 @@ WEB_DIR := web
 WEB_DIST := $(WEB_DIR)/dist
 BIN := $(APP)
 
-.PHONY: help web build swag all fmt check test clean serve backend-assets
+.PHONY: help web build swag all fmt check test clean serve
 
 help:
 	@echo "Usage: make <target>"
@@ -29,16 +29,11 @@ web:
 	cd $(WEB_DIR) && npm ci
 	cd $(WEB_DIR) && npm run build
 
-backend-assets:
-	go install -a -v github.com/go-bindata/go-bindata/...@latest
-	go install -a -v github.com/elazarl/go-bindata-assetfs/...@latest
-	go-bindata-assetfs -o=assets/bindata.go -pkg=assets assets/...
-
-build: backend-assets
+build: web
 	$(GOENV) go build -o $(BIN) $(LDFLAGS) main.go
 
 swag:
-	swag init -g main.go -o docs
+	@if command -v swag >/dev/null 2>&1; then swag init -g main.go -o docs; else echo "swag not installed; skipping"; fi
 
 all: web swag build
 
@@ -46,17 +41,17 @@ fmt:
 	gofmt -w main.go api assets global initialize lib models router structs
 	cd $(WEB_DIR) && npm run lint:fix
 
-check:
+check: web
 	go vet ./...
 	cd $(WEB_DIR) && npm run type-check
 	cd $(WEB_DIR) && npm run lint
 
-test:
+test: web
 	go test ./...
 
 clean:
 	rm -rf $(BIN) docs $(WEB_DIST) release logs runtime coverage
 	rm -rf assets/bindata.go bindata.go
 
-serve: backend-assets
-	go run main.go
+serve: web
+	$(GOENV) go run main.go
