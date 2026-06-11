@@ -3,7 +3,6 @@ package cmn
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type LogStruct struct {
@@ -216,7 +216,6 @@ func (t *LogStruct) Error(content ...string) {
 // 	return str
 // }
 
-// TODO(GgoCoder) 日志轮转
 func InitLogger(fileName string, level zapcore.LevelEnabler) *zap.SugaredLogger {
 	fileWriteSyncer := getLogWriter(fileName)
 	encoder := getEncoder()
@@ -233,9 +232,11 @@ func getEncoder() zapcore.Encoder {
 }
 
 func getLogWriter(fileName string) zapcore.WriteSyncer {
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0644)
-	if err != nil {
-		log.Panic("failed to create log file", fileName)
-	}
-	return zapcore.AddSync(file)
+	return zapcore.AddSync(&lumberjack.Logger{
+		Filename:   fileName,
+		MaxSize:    20,
+		MaxBackups: 5,
+		MaxAge:     30,
+		Compress:   true,
+	})
 }

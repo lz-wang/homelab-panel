@@ -28,7 +28,7 @@ func InitApp() error {
 	gin.SetMode(global.RUNCODE) // GIN 运行模式
 
 	// 日志
-	if logger, err := runlog.InitRunlog(global.RUNCODE, "running.log"); err != nil {
+	if logger, err := runlog.InitRunlog(global.RUNCODE); err != nil {
 		log.Panicln("Log initialization error", err)
 		panic(err)
 	} else {
