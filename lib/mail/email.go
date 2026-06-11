@@ -106,12 +106,8 @@ func (m *Emailer) SendMailOfVCode(mailTo, title, content, vCode string) error {
 
 // 发送邮件
 //
-//	@param emailer
-//	@param mailTo
-//	@param send_name
-//	@param title
-//	@param body
-//	@return error
+// 参数: emailer, mailTo, send_name, title, body.
+// 返回: error.
 func SendMail(emailer *Emailer, mailTo []string, send_name, title, body string) error {
 	//定义邮箱服务器连接信息，如果是网易邮箱 pass填密码，qq邮箱填授权码
 	if emailer.EmailInfo.Port == 0 {

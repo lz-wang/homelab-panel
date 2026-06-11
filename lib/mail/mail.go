@@ -6,10 +6,8 @@ import (
 
 // 发送注册验证码
 //
-//	@param emailer
-//	@param mailTo 收件人
-//	@param vcode 验证码
-//	@return error
+// 参数: emailer, mailTo 收件人, vcode 验证码.
+// 返回: error.
 func SendRegisterEmail(emailer *Emailer, mailTo, vcode string) error {
 	appName := global.Lang.Get("common.app_name")
 	title := global.Lang.GetWithFields("mail.register_vcode_title", map[string]string{
@@ -28,10 +26,8 @@ func SendRegisterEmail(emailer *Emailer, mailTo, vcode string) error {
 
 // 发送重置密码验证码
 //
-//	@param emailer
-//	@param mailTo
-//	@param vcode
-//	@return error
+// 参数: emailer, mailTo, vcode.
+// 返回: error.
 func SendResetPasswordVCode(emailer *Emailer, mailTo, vcode string) error {
 	title := global.Lang.Get("mail.reset_password_password_title")
 	content := global.Lang.Get("mail.reset_password_password_content")

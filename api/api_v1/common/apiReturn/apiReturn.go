@@ -8,6 +8,12 @@ import (
 
 const ERROR_CODE_SUCCESS = 0 // 错误码 无任何错误
 
+type Response struct {
+	Code int         `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data,omitempty"`
+}
+
 const (
 	// 验证器类
 

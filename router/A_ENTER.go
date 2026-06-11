@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"net/http"
 	"strings"
+	_ "sun-panel/docs"
 	"sun-panel/global"
 	// "sun-panel/router/admin"
 	"sun-panel/router/openness"
@@ -11,10 +12,19 @@ import (
 	"sun-panel/router/system"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // 初始化总路由
 func InitRouters(addr string) error {
+	router := NewRouter()
+
+	global.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
+	return router.Run(addr)
+}
+
+func NewRouter() *gin.Engine {
 	router := gin.Default()
 	rootRouter := router.Group("/")
 	routerGroup := rootRouter.Group("api")
@@ -24,14 +34,14 @@ func InitRouters(addr string) error {
 	panel.Init(routerGroup)
 	openness.Init(routerGroup)
 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	registerWebRoutes(router)
 
 	// 上传的文件
 	sourcePath := global.Config.GetValueString("base", "source_path")
 	router.Static(sourcePath[1:], sourcePath)
 
-	global.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
-	return router.Run(addr)
+	return router
 }
 
 func registerWebRoutes(router *gin.Engine) {

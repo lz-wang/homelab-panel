@@ -1,0 +1,97 @@
+basePath: /api
+definitions:
+  apiReturn.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      msg:
+        type: string
+    type: object
+  system.AboutData:
+    properties:
+      versionCode:
+        type: integer
+      versionName:
+        type: string
+    type: object
+  system.AboutResponse:
+    properties:
+      code:
+        type: integer
+      data:
+        $ref: '#/definitions/system.AboutData'
+      msg:
+        type: string
+    type: object
+  system.LoginLoginVerify:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 50
+        type: string
+      username:
+        type: string
+      vcode:
+        maxLength: 6
+        type: string
+    required:
+    - password
+    - username
+    type: object
+info:
+  contact: {}
+  description: Homelab Panel HTTP API.
+  title: Homelab Panel API
+  version: "1.0"
+paths:
+  /about:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.AboutResponse'
+      summary: Get system version
+      tags:
+      - system
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 登陆验证信息
+        in: body
+        name: LoginLoginVerify
+        required: true
+        schema:
+          $ref: '#/definitions/system.LoginLoginVerify'
+      produces:
+      - application/json
+      responses: {}
+      summary: 登录账号
+      tags:
+      - user
+  /logout:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apiReturn.Response'
+      security:
+      - ApiTokenAuth: []
+      summary: Logout
+      tags:
+      - user
+securityDefinitions:
+  ApiTokenAuth:
+    in: header
+    name: token
+    type: apiKey
+swagger: "2.0"

@@ -16,6 +16,14 @@ import (
 
 var version = "dev"
 
+// @title Homelab Panel API
+// @version 1.0
+// @description Homelab Panel HTTP API.
+// @BasePath /api
+// @securityDefinitions.apikey ApiTokenAuth
+// @in header
+// @name token
+
 //go:embed web/dist
 var webFS embed.FS
 

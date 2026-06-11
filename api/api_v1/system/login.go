@@ -105,6 +105,12 @@ func (l LoginApi) Login(c *gin.Context) {
 }
 
 // 安全退出
+// @Summary Logout
+// @Tags user
+// @Produce json
+// @Security ApiTokenAuth
+// @Success 200 {object} apiReturn.Response
+// @Router /logout [post]
 func (l *LoginApi) Logout(c *gin.Context) {
 	// userInfo, _ := base.GetCurrentUserInfo(c)
 	cToken := c.GetHeader("token")
