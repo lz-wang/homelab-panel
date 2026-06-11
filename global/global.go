@@ -2,7 +2,6 @@ package global
 
 import (
 	"io/fs"
-	"sun-panel/initialize/database"
 	"sun-panel/lib/cache"
 	"sun-panel/lib/cmn/systemSetting"
 	"sun-panel/lib/iniConfig"
@@ -17,9 +16,6 @@ import (
 var (
 	RUNCODE = "debug" // 运行模式：debug | release
 	Version = "dev"
-	// DB_MYSQL  = "mysql"
-	// DB_SQLITE = "sqlite"
-	DB_DRIVER = database.SQLITE
 )
 
 // var Log *cmn.LogStruct

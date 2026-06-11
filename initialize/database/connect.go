@@ -8,31 +8,18 @@ import (
 	"sun-panel/models"
 	"time"
 
-	"gorm.io/driver/mysql"
-	_ "gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
-	_ "gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
 const (
-	MYSQL  = "mysql"
 	SQLITE = "sqlite"
 )
 
 type DbClient interface {
 	Connect() (db *gorm.DB, err error)
-}
-
-type MySQLConfig struct {
-	Username    string
-	Password    string
-	Host        string
-	Port        string
-	Database    string
-	WaitTimeout int
 }
 
 type SQLiteConfig struct {
@@ -47,26 +34,7 @@ func DbInit(dbClient DbClient) (db *gorm.DB, dbErr error) {
 	return
 }
 
-// Connect mysql连接
-func (d *MySQLConfig) Connect() (db *gorm.DB, err error) {
-	dsn := d.Username + ":" + d.Password + "@tcp(" + d.Host + ":" + d.Port + ")/" + d.Database + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: GetLogger(),
-		NamingStrategy: schema.NamingStrategy{
-			// TablePrefix:   "blog_",
-			SingularTable: true,
-		},
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
-	sqlDb, _ := db.DB()
-	sqlDb.SetMaxIdleConns(10)  // SetMaxIdleConns 设置空闲连接池中连接的最大数量
-	sqlDb.SetMaxOpenConns(100) // SetMaxOpenConns 设置打开数据库连接的最大数量。
-	wait_timeout := d.WaitTimeout
-	sqlDb.SetConnMaxLifetime(time.Duration(wait_timeout * int(time.Second))) // SetConnMaxLifetime 设置了连接可复用的最大时间。
-	return
-}
-
-// Connect sqllite3连接
+// Connect sqlite连接
 func (d *SQLiteConfig) Connect() (db *gorm.DB, err error) {
 	filePath := d.Filename
 	exists := false
@@ -107,13 +75,7 @@ func GetLogger() logger.Interface {
 }
 
 // 创建数据库
-func CreateDatabase(driver string, db *gorm.DB) error {
-
-	// mysql特殊处理
-	if driver == MYSQL {
-		db = db.Set("gorm:table_options", "ENGINE=InnoDB")
-	}
-
+func CreateDatabase(db *gorm.DB) error {
 	// 创建数据表
 	err := db.AutoMigrate(
 		&models.User{},

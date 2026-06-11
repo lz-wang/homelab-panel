@@ -24,8 +24,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var DB_DRIVER = database.SQLITE
-
 // var RUNCODE = "debug"
 func InitApp() error {
 	Logo()
@@ -94,21 +92,8 @@ func InitApp() error {
 
 func DatabaseConnect() {
 	// 数据库连接 - 开始
-	var dbClientInfo database.DbClient
-	databaseDrive := global.Config.GetValueStringOrDefault("base", "database_drive")
-	if databaseDrive == database.MYSQL {
-		dbClientInfo = &database.MySQLConfig{
-			Username:    global.Config.GetValueStringOrDefault("mysql", "username"),
-			Password:    global.Config.GetValueStringOrDefault("mysql", "password"),
-			Host:        global.Config.GetValueStringOrDefault("mysql", "host"),
-			Port:        global.Config.GetValueStringOrDefault("mysql", "port"),
-			Database:    global.Config.GetValueStringOrDefault("mysql", "db_name"),
-			WaitTimeout: global.Config.GetValueInt("mysql", "wait_timeout"),
-		}
-	} else {
-		dbClientInfo = &database.SQLiteConfig{
-			Filename: global.Config.GetValueStringOrDefault("sqlite", "file_path"),
-		}
+	dbClientInfo := &database.SQLiteConfig{
+		Filename: global.Config.GetValueStringOrDefault("sqlite", "file_path"),
 	}
 
 	if db, err := database.DbInit(dbClientInfo); err != nil {
@@ -119,7 +104,7 @@ func DatabaseConnect() {
 		models.Db = global.Db
 	}
 
-	database.CreateDatabase(databaseDrive, global.Db)
+	database.CreateDatabase(global.Db)
 
 	database.NotFoundAndCreateUser(global.Db)
 }
