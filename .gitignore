@@ -1,0 +1,56 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+.trae/
+*.swp
+*.swo
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Frontend
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.pnpm-store/
+/cypress/videos/
+/cypress/screenshots/
+
+# Environment
+.env
+.env.*
+!.env.example
+*.local
+
+# Runtime data
+config.yaml
+data.db
+service/conf/
+service/lang/
+service/database/
+service/web/
+service/uploads/
+service/plugins/
+service/runtime/
+
+# Generated
+bindata.go
+service/assets/bindata.go
+service_node
+.history/
