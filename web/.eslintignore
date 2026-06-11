@@ -1,3 +1,5 @@
 docker-compose
 kubernetes
-/service
+dist
+node_modules
+src/views/exception/test/**

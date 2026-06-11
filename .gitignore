@@ -43,16 +43,15 @@ homelab-panel
 release/
 config.yaml
 data.db
-service/conf/
-service/lang/
-service/database/
-service/web/
-service/uploads/
-service/plugins/
-service/runtime/
+conf/
+lang/
+database/
+uploads/
+plugins/
+runtime/
 
 # Generated
 bindata.go
-service/assets/bindata.go
+assets/bindata.go
 service_node
 .history/

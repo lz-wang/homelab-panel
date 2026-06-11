@@ -6,11 +6,7 @@
 		},
 		{
 			"name": "backend",
-			"path": "service"
-		},
-		{
-			"name": "root",
-			"path": ".",
+			"path": "."
 		}
 	],
 	"settings": {

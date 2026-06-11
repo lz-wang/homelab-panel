@@ -3,7 +3,6 @@ VERSION := v$(shell date +%Y%m%d)-$(shell git rev-parse --short HEAD 2>/dev/null
 LDFLAGS := -ldflags "-s -w -X main.version=$(VERSION)"
 GOENV ?= CGO_ENABLED=0
 
-SERVICE_DIR := service
 WEB_DIR := web
 WEB_DIST := $(WEB_DIR)/dist
 BIN := $(APP)
@@ -31,33 +30,33 @@ web:
 	cd $(WEB_DIR) && npm run build
 
 backend-assets:
-	cd $(SERVICE_DIR) && go install -a -v github.com/go-bindata/go-bindata/...@latest
-	cd $(SERVICE_DIR) && go install -a -v github.com/elazarl/go-bindata-assetfs/...@latest
-	cd $(SERVICE_DIR) && go-bindata-assetfs -o=assets/bindata.go -pkg=assets assets/...
+	go install -a -v github.com/go-bindata/go-bindata/...@latest
+	go install -a -v github.com/elazarl/go-bindata-assetfs/...@latest
+	go-bindata-assetfs -o=assets/bindata.go -pkg=assets assets/...
 
 build: backend-assets
-	cd $(SERVICE_DIR) && $(GOENV) go build -o ../$(BIN) $(LDFLAGS) main.go
+	$(GOENV) go build -o $(BIN) $(LDFLAGS) main.go
 
 swag:
-	cd $(SERVICE_DIR) && swag init -g main.go -o ../docs
+	swag init -g main.go -o docs
 
 all: web swag build
 
 fmt:
-	cd $(SERVICE_DIR) && gofmt -w .
+	gofmt -w main.go api assets global initialize lib models router structs
 	cd $(WEB_DIR) && npm run lint:fix
 
 check:
-	cd $(SERVICE_DIR) && go vet ./...
+	go vet ./...
 	cd $(WEB_DIR) && npm run type-check
 	cd $(WEB_DIR) && npm run lint
 
 test:
-	cd $(SERVICE_DIR) && go test ./...
+	go test ./...
 
 clean:
 	rm -rf $(BIN) docs $(WEB_DIST) release logs runtime coverage
-	rm -rf $(SERVICE_DIR)/assets/bindata.go $(SERVICE_DIR)/runtime $(SERVICE_DIR)/web
+	rm -rf assets/bindata.go bindata.go
 
 serve: backend-assets
-	cd $(SERVICE_DIR) && go run main.go
+	go run main.go
