@@ -24,7 +24,7 @@ var version = "dev"
 // @in header
 // @name token
 
-//go:embed web/dist
+//go:embed all:web/dist
 var webFS embed.FS
 
 //go:embed config.example.yaml internal/webui/assets/lang/en-us.ini internal/webui/assets/lang/zh-cn.ini internal/webui/assets/version

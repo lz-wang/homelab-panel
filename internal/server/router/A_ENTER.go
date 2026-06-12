@@ -2,7 +2,9 @@ package router
 
 import (
 	"io/fs"
+	"mime"
 	"net/http"
+	"path"
 	"strings"
 	_ "sun-panel/docs"
 	"sun-panel/internal/app/global"
@@ -52,22 +54,39 @@ func registerWebRoutes(router *gin.Engine) {
 	}
 
 	if assetsFS, err := fs.Sub(distFS, "assets"); err == nil {
-		router.StaticFS("/assets", http.FS(assetsFS))
+		router.GET("/assets/*filepath", serveEmbeddedStatic(assetsFS))
+		router.HEAD("/assets/*filepath", serveEmbeddedStatic(assetsFS))
 	}
 	if customFS, err := fs.Sub(distFS, "custom"); err == nil {
-		router.StaticFS("/custom", http.FS(customFS))
+		router.GET("/custom/*filepath", serveEmbeddedStatic(customFS))
+		router.HEAD("/custom/*filepath", serveEmbeddedStatic(customFS))
 	}
 
 	router.GET("/", serveEmbeddedIndex(distFS))
 	router.GET("/favicon.ico", serveEmbeddedFile(distFS, "favicon.ico"))
 	router.GET("/favicon.svg", serveEmbeddedFile(distFS, "favicon.svg"))
 	router.NoRoute(func(c *gin.Context) {
-		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+		if shouldReturnNotFound(c.Request.URL.Path) {
 			c.Status(http.StatusNotFound)
 			return
 		}
 		serveEmbeddedIndex(distFS)(c)
 	})
+}
+
+func shouldReturnNotFound(requestPath string) bool {
+	for _, prefix := range []string{"/api", "/assets/", "/custom/", "/static/"} {
+		if strings.HasPrefix(requestPath, prefix) {
+			return true
+		}
+	}
+
+	switch requestPath {
+	case "/favicon.ico", "/favicon.svg", "/favicon-black.svg", "/logo.png":
+		return true
+	default:
+		return false
+	}
 }
 
 func serveEmbeddedIndex(distFS fs.FS) gin.HandlerFunc {
@@ -79,6 +98,36 @@ func serveEmbeddedIndex(distFS fs.FS) gin.HandlerFunc {
 		}
 		c.Data(http.StatusOK, "text/html; charset=utf-8", data)
 	}
+}
+
+func serveEmbeddedStatic(root fs.FS) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		name := strings.TrimPrefix(c.Param("filepath"), "/")
+		if name == "" || !fs.ValidPath(name) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		fileInfo, err := fs.Stat(root, name)
+		if err != nil || fileInfo.IsDir() {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		data, err := fs.ReadFile(root, name)
+		if err != nil {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Data(http.StatusOK, embeddedContentType(name, data), data)
+	}
+}
+
+func embeddedContentType(name string, data []byte) string {
+	if contentType := mime.TypeByExtension(path.Ext(name)); contentType != "" {
+		return contentType
+	}
+	return http.DetectContentType(data)
 }
 
 func serveEmbeddedFile(distFS fs.FS, name string) gin.HandlerFunc {
