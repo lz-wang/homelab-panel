@@ -1,10 +1,10 @@
 package language
 
 import (
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/app/lib/iniConfig"
 	"os"
 	"strings"
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/app/lib/iniConfig"
 )
 
 type LangStructObj struct {

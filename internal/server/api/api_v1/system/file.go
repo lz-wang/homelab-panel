@@ -2,15 +2,15 @@ package system
 
 import (
 	"fmt"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/server/api/api_v1/common/apiData/commonApiStructs"
+	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
+	"homelab-panel/internal/server/api/api_v1/common/base"
+	"homelab-panel/internal/store/models"
 	"os"
 	"path"
 	"strings"
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/server/api/api_v1/common/apiData/commonApiStructs"
-	"sun-panel/internal/server/api/api_v1/common/apiReturn"
-	"sun-panel/internal/server/api/api_v1/common/base"
-	"sun-panel/internal/store/models"
 	"time"
 
 	"github.com/gin-gonic/gin"

@@ -2,19 +2,19 @@ package app
 
 import (
 	"fmt"
-	"sun-panel/internal/app/cUserToken"
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lang"
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/app/other"
-	"sun-panel/internal/app/redis"
-	"sun-panel/internal/app/systemSettingCache"
-	"sun-panel/internal/app/userToken"
-	appConfig "sun-panel/internal/config"
-	"sun-panel/internal/config/structs"
-	appLogger "sun-panel/internal/logger"
-	"sun-panel/internal/store"
-	"sun-panel/internal/store/models"
+	"homelab-panel/internal/app/cUserToken"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lang"
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/app/other"
+	"homelab-panel/internal/app/redis"
+	"homelab-panel/internal/app/systemSettingCache"
+	"homelab-panel/internal/app/userToken"
+	appConfig "homelab-panel/internal/config"
+	"homelab-panel/internal/config/structs"
+	appLogger "homelab-panel/internal/logger"
+	"homelab-panel/internal/store"
+	"homelab-panel/internal/store/models"
 	"time"
 
 	"log"
@@ -143,7 +143,7 @@ func Logo() {
 
 	versionInfo := cmn.GetSysVersionInfo()
 	fmt.Println("Version:", versionInfo.Version)
-	fmt.Println("Welcome to the Sun-Panel.")
-	fmt.Println("Project address:", "https://github.com/hslr-s/sun-panel")
+	fmt.Println("Welcome to the Homelab Panel.")
+	fmt.Println("Project address:", "https://github.com/hslr-s/homelab-panel")
 
 }

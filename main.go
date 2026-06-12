@@ -3,13 +3,13 @@ package main
 import (
 	"embed"
 	"fmt"
+	"homelab-panel/internal/app"
+	"homelab-panel/internal/app/global"
+	appConfig "homelab-panel/internal/config"
+	"homelab-panel/internal/server/router"
+	embeddedAssets "homelab-panel/internal/webui/assets"
 	"log"
 	"os"
-	"sun-panel/internal/app"
-	"sun-panel/internal/app/global"
-	appConfig "sun-panel/internal/config"
-	"sun-panel/internal/server/router"
-	embeddedAssets "sun-panel/internal/webui/assets"
 
 	"github.com/urfave/cli/v2"
 )

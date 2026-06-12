@@ -1,12 +1,12 @@
 package system
 
 import (
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/server/api/api_v1/common/apiData/systemApiStructs"
-	"sun-panel/internal/server/api/api_v1/common/apiReturn"
-	"sun-panel/internal/server/api/api_v1/common/base"
-	"sun-panel/internal/store/models"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/server/api/api_v1/common/apiData/systemApiStructs"
+	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
+	"homelab-panel/internal/server/api/api_v1/common/base"
+	"homelab-panel/internal/store/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"

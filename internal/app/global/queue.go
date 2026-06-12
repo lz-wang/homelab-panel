@@ -1,10 +1,10 @@
 package global
 
 import (
-	"sun-panel/internal/app/lib/queue"
-	"sun-panel/internal/app/lib/queue/queueMemory"
-	"sun-panel/internal/app/lib/queue/queueRedis"
-	"sun-panel/internal/config/structs"
+	"homelab-panel/internal/app/lib/queue"
+	"homelab-panel/internal/app/lib/queue/queueMemory"
+	"homelab-panel/internal/app/lib/queue/queueRedis"
+	"homelab-panel/internal/config/structs"
 )
 
 // 缓存驱动

@@ -1,9 +1,9 @@
 package systemMonitor
 
 import (
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cache"
-	"sun-panel/internal/app/lib/monitor"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cache"
+	"homelab-panel/internal/app/lib/monitor"
 	"time"
 )
 

@@ -11,5 +11,5 @@ sqlite:
 redis:
   address: 127.0.0.1:6379
   password: ""
-  prefix: "sun_panel:"
+  prefix: "homelab_panel:"
   db: 0

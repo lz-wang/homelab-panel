@@ -1,11 +1,11 @@
 package store
 
 import (
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/store/models"
 	"log"
 	"os"
 	"path"
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/store/models"
 	"time"
 
 	"github.com/glebarez/sqlite"

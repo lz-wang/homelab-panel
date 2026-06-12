@@ -1,7 +1,7 @@
 package captcha
 
 import (
-	"sun-panel/internal/app/global"
+	"homelab-panel/internal/app/global"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mojocn/base64Captcha"

@@ -1,7 +1,7 @@
 package mail
 
 import (
-	"sun-panel/internal/app/global"
+	"homelab-panel/internal/app/global"
 )
 
 // 发送注册验证码

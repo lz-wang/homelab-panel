@@ -1,9 +1,9 @@
 package openness
 
 import (
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cmn/systemSetting"
-	"sun-panel/internal/server/api/api_v1/common/apiReturn"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cmn/systemSetting"
+	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 
 	"github.com/gin-gonic/gin"
 )

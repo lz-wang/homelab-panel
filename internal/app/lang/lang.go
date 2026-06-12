@@ -1,10 +1,10 @@
 package lang
 
 import (
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/app/lib/language"
 	"os"
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/app/lib/language"
 )
 
 func LangInit(lang string) {

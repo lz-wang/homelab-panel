@@ -1,17 +1,17 @@
 package router
 
 import (
+	_ "homelab-panel/docs"
+	"homelab-panel/internal/app/global"
 	"io/fs"
 	"mime"
 	"net/http"
 	"path"
 	"strings"
-	_ "sun-panel/docs"
-	"sun-panel/internal/app/global"
-	// "sun-panel/internal/server/router/admin"
-	"sun-panel/internal/server/router/openness"
-	"sun-panel/internal/server/router/panel"
-	"sun-panel/internal/server/router/system"
+	// "homelab-panel/internal/server/router/admin"
+	"homelab-panel/internal/server/router/openness"
+	"homelab-panel/internal/server/router/panel"
+	"homelab-panel/internal/server/router/system"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -22,7 +22,7 @@ import (
 func InitRouters(addr string) error {
 	router := NewRouter()
 
-	global.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
+	global.Logger.Info("Homelab Panel is Started.  Listening and serving HTTP on ", addr)
 	return router.Run(addr)
 }
 

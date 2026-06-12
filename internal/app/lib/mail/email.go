@@ -1,8 +1,8 @@
 package mail
 
 import (
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/store/models"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/store/models"
 
 	"gopkg.in/gomail.v2"
 )

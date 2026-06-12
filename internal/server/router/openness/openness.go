@@ -1,7 +1,7 @@
 package openness
 
 import (
-	"sun-panel/internal/server/api/api_v1"
+	"homelab-panel/internal/server/api/api_v1"
 
 	"github.com/gin-gonic/gin"
 )

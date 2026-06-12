@@ -1,13 +1,13 @@
 package router
 
 import (
+	"homelab-panel/internal/app/global"
+	appConfig "homelab-panel/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
-	"sun-panel/internal/app/global"
-	appConfig "sun-panel/internal/config"
 	"testing"
 
 	"github.com/gin-gonic/gin"

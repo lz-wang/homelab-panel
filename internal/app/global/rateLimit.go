@@ -1,8 +1,8 @@
 package global
 
 import (
+	"homelab-panel/internal/app/lib/cache"
 	"strconv"
-	"sun-panel/internal/app/lib/cache"
 )
 
 type RateLimiter struct {

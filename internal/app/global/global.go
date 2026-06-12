@@ -1,12 +1,12 @@
 package global
 
 import (
+	"homelab-panel/internal/app/lib/cache"
+	"homelab-panel/internal/app/lib/cmn/systemSetting"
+	"homelab-panel/internal/app/lib/language"
+	appConfig "homelab-panel/internal/config"
+	"homelab-panel/internal/store/models"
 	"io/fs"
-	"sun-panel/internal/app/lib/cache"
-	"sun-panel/internal/app/lib/cmn/systemSetting"
-	"sun-panel/internal/app/lib/language"
-	appConfig "sun-panel/internal/config"
-	"sun-panel/internal/store/models"
 
 	redis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"

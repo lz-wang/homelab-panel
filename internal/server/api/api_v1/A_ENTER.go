@@ -1,9 +1,9 @@
 package api_v1
 
 import (
-	"sun-panel/internal/server/api/api_v1/openness"
-	"sun-panel/internal/server/api/api_v1/panel"
-	"sun-panel/internal/server/api/api_v1/system"
+	"homelab-panel/internal/server/api/api_v1/openness"
+	"homelab-panel/internal/server/api/api_v1/panel"
+	"homelab-panel/internal/server/api/api_v1/system"
 )
 
 type ApiGroup struct {

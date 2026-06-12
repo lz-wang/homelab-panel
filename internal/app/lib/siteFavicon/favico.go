@@ -3,6 +3,7 @@ package siteFavicon
 import (
 	"errors"
 	"fmt"
+	"homelab-panel/internal/app/lib/cmn"
 	"io"
 	"net/http"
 	"net/url"
@@ -11,7 +12,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sun-panel/internal/app/lib/cmn"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"

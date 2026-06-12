@@ -1,8 +1,8 @@
 package panel
 
 import (
-	"sun-panel/internal/auth"
-	"sun-panel/internal/server/api/api_v1"
+	"homelab-panel/internal/auth"
+	"homelab-panel/internal/server/api/api_v1"
 
 	"github.com/gin-gonic/gin"
 )

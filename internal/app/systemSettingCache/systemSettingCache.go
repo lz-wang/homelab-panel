@@ -1,8 +1,8 @@
 package systemSettingCache
 
 import (
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cmn/systemSetting"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cmn/systemSetting"
 	"time"
 )
 

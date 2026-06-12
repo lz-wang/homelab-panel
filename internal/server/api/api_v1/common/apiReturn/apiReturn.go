@@ -1,7 +1,7 @@
 package apiReturn
 
 import (
-	"sun-panel/internal/app/global"
+	"homelab-panel/internal/app/global"
 
 	"github.com/gin-gonic/gin"
 )

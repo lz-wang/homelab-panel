@@ -1,8 +1,8 @@
 package panelApiStructs
 
 import (
-	"sun-panel/internal/server/api/api_v1/common/apiData/commonApiStructs"
-	"sun-panel/internal/store/models"
+	"homelab-panel/internal/server/api/api_v1/common/apiData/commonApiStructs"
+	"homelab-panel/internal/store/models"
 )
 
 type ItemIconEditRequest struct {

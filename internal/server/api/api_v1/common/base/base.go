@@ -2,12 +2,12 @@ package base
 
 import (
 	"fmt"
+	"homelab-panel/internal/app/lib/captcha"
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
+	"homelab-panel/internal/store/models"
 	"reflect"
 	"strings"
-	"sun-panel/internal/app/lib/captcha"
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/server/api/api_v1/common/apiReturn"
-	"sun-panel/internal/store/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/locales/zh"

@@ -2,7 +2,7 @@ package rateLimit
 
 import (
 	"errors"
-	"sun-panel/internal/app/global"
+	"homelab-panel/internal/app/global"
 )
 
 const (

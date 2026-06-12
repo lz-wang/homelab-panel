@@ -1,4 +1,4 @@
-module sun-panel
+module homelab-panel
 
 go 1.26
 

@@ -1,8 +1,8 @@
 package global
 
 import (
-	"sun-panel/internal/app/lib/cache"
-	"sun-panel/internal/config/structs"
+	"homelab-panel/internal/app/lib/cache"
+	"homelab-panel/internal/config/structs"
 	"time"
 )
 

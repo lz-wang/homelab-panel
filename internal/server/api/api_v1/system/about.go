@@ -1,8 +1,8 @@
 package system
 
 import (
-	"sun-panel/internal/app/lib/cmn"
-	"sun-panel/internal/server/api/api_v1/common/apiReturn"
+	"homelab-panel/internal/app/lib/cmn"
+	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 
 	"github.com/gin-gonic/gin"
 )

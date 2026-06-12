@@ -1,10 +1,10 @@
 package logger
 
 import (
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cmn"
 	"os"
 	"path/filepath"
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cmn"
 
 	"go.uber.org/zap"
 )

@@ -5,13 +5,13 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"homelab-panel/internal/webui/assets"
 	"math/rand"
 	"os"
 	"path"
 	"sort"
 	"strconv"
 	"strings"
-	"sun-panel/internal/webui/assets"
 	"time"
 )
 

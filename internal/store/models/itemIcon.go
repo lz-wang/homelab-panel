@@ -1,7 +1,7 @@
 package models
 
 import (
-	"sun-panel/internal/store/models/datatype"
+	"homelab-panel/internal/store/models/datatype"
 
 	"gorm.io/gorm"
 )

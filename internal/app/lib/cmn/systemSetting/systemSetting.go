@@ -3,8 +3,8 @@ package systemSetting
 import (
 	"encoding/json"
 	"errors"
-	"sun-panel/internal/app/lib/cache"
-	"sun-panel/internal/store/models"
+	"homelab-panel/internal/app/lib/cache"
+	"homelab-panel/internal/store/models"
 
 	"gorm.io/gorm"
 )

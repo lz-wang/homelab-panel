@@ -3,10 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
+	"homelab-panel/internal/webui/assets"
 	"os"
 	"path/filepath"
 	"strings"
-	"sun-panel/internal/webui/assets"
 
 	"github.com/spf13/viper"
 )
@@ -30,7 +30,7 @@ sqlite:
 redis:
   address: 127.0.0.1:6379
   password: ""
-  prefix: "sun_panel:"
+  prefix: "homelab_panel:"
   db: 0
 `
 
@@ -141,7 +141,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("sqlite.file_path", "./data.db")
 	v.SetDefault("redis.address", "127.0.0.1:6379")
 	v.SetDefault("redis.password", "")
-	v.SetDefault("redis.prefix", "sun_panel:")
+	v.SetDefault("redis.prefix", "homelab_panel:")
 	v.SetDefault("redis.db", 0)
 }
 

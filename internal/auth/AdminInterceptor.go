@@ -4,8 +4,8 @@ import (
 	// "calendar-note-gin/api/v1/common/apiReturn"
 	// . "calendar-note-gin/api/v1/common/base"
 
-	"sun-panel/internal/server/api/api_v1/common/apiReturn"
-	"sun-panel/internal/server/api/api_v1/common/base"
+	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
+	"homelab-panel/internal/server/api/api_v1/common/base"
 
 	"github.com/gin-gonic/gin"
 )

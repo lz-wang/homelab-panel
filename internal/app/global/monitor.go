@@ -1,7 +1,7 @@
 package global
 
 import (
-	"sun-panel/internal/app/lib/monitor"
+	"homelab-panel/internal/app/lib/monitor"
 )
 
 const (

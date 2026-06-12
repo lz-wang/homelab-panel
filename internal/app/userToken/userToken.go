@@ -1,9 +1,9 @@
 package userToken
 
 import (
-	"sun-panel/internal/app/global"
-	"sun-panel/internal/app/lib/cache"
-	"sun-panel/internal/store/models"
+	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/app/lib/cache"
+	"homelab-panel/internal/store/models"
 
 	"time"
 )
