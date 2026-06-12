@@ -3,14 +3,14 @@ package router
 import (
 	_ "homelab-panel/docs"
 	"homelab-panel/internal/app/global"
+	"homelab-panel/internal/server/router/openness"
+	"homelab-panel/internal/server/router/panel"
+	"homelab-panel/internal/server/router/system"
 	"io/fs"
 	"mime"
 	"net/http"
 	"path"
 	"strings"
-	"homelab-panel/internal/server/router/openness"
-	"homelab-panel/internal/server/router/panel"
-	"homelab-panel/internal/server/router/system"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -21,7 +21,7 @@ import (
 func InitRouters(addr string) error {
 	router := NewRouter()
 
-	global.Logger.Info("Homelab Panel is Started.  Listening and serving HTTP on ", addr)
+	global.Logger.Infof("Homelab Panel (version=%s) is Started. Listening and serving HTTP on %s", global.Version, addr)
 	return router.Run(addr)
 }
 
