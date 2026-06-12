@@ -3,8 +3,7 @@ import type { FormInst, FormRules } from 'naive-ui'
 import { NButton, NCard, NDivider, NForm, NFormItem, NInput, NSelect, useDialog, useMessage } from 'naive-ui'
 import { ref } from 'vue'
 import { useAppStore, useAuthStore, usePanelState, useUserStore } from '@/store'
-import { languageOptions } from '@/utils/defaultData'
-import type { Language, Theme } from '@/store/modules/app/helper'
+import type { Theme } from '@/store/modules/app/helper'
 import { logout } from '@/api'
 import { RoundCardModal, SvgIcon } from '@/components/common/'
 import { updateInfo, updatePassword } from '@/api/system/user'
@@ -18,7 +17,6 @@ const panelState = usePanelState()
 const ms = useMessage()
 const dialog = useDialog()
 
-const languageValue = ref(appStore.language)
 const themeValue = ref(appStore.theme)
 const nickName = ref(authStore.userInfo?.name || '')
 const isEditNickNameStatus = ref(false)
@@ -124,12 +122,6 @@ function handleLogout() {
   })
 }
 
-function handleChangeLanuage(value: Language) {
-  languageValue.value = value
-  appStore.setLanguage(value)
-  location.reload()
-}
-
 function handleChangeTheme(value: Theme) {
   themeValue.value = value
   appStore.setTheme(value)
@@ -167,15 +159,6 @@ function handleChangeTheme(value: Theme) {
           <NButton size="small" quaternary type="info" @click="handleSaveInfo">
             {{ $t('common.save') }}
           </NButton>
-        </div>
-      </div>
-
-      <div class="mt-[10px]">
-        <div class="text-slate-500 font-bold">
-          {{ $t('common.language') }}
-        </div>
-        <div class="max-w-[200px]">
-          <NSelect v-model:value="languageValue" :options="languageOptions" @update-value="handleChangeLanuage" />
         </div>
       </div>
 

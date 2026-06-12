@@ -1,35 +1,30 @@
 import type { App } from 'vue'
-import { createI18n } from 'vue-i18n'
-import enUS from './en-US.json'
-// import koKR from './ko-KR'
 import zhCN from './zh-CN.json'
-// import ruRU from './ru-RU'
 
-const defaultLocale = 'zh-CN'
+type MessageMap = Record<string, any>
+type MessageParams = Record<string, any>
 
-const i18n = createI18n({
-  locale: defaultLocale,
-  fallbackLocale: defaultLocale,
-  allowComposition: true,
-  messages: {
-    'en-US': enUS,
-    // 'ko-KR': koKR,
-    'zh-CN': zhCN,
-    // 'zh-TW': zhTW,
-    // 'ru-RU': ruRU,
-  },
-})
+function getMessage(key: string): string {
+  const value = key.split('.').reduce<any>((messages, name) => messages?.[name], zhCN as MessageMap)
+  return typeof value === 'string' ? value : key
+}
 
-export const t = i18n.global.t
-
-// 避免循环依赖appstore(authstore)language此处暂时先使用any
-// 后面有时间调整
-export function setLocale(locale: any) {
-  i18n.global.locale = locale
+export function t(key: string, params?: MessageParams): string {
+  let message = getMessage(key)
+  if (params) {
+    Object.entries(params).forEach(([name, value]) => {
+      message = message.replaceAll(`{${name}}`, String(value))
+    })
+  }
+  return message
 }
 
 export function setupI18n(app: App) {
-  app.use(i18n)
+  app.config.globalProperties.$t = t
 }
 
-export default i18n
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $t: typeof t
+  }
+}

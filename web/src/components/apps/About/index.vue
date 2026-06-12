@@ -2,12 +2,10 @@
 import { NDivider, NGradientText, NTag } from 'naive-ui'
 import { onMounted, ref } from 'vue'
 import { get } from '@/api/system/about'
-import { useAppStore } from '@/store'
 import srcSvglogo from '@/assets/logo.svg'
 import srcGitee from '@/assets/about_image/gitee.png'
 import srcGithub from '@/assets/about_image/github.png'
 import srcBilibili from '@/assets/about_image/bilibili.png'
-import srcYoutube from '@/assets/about_image/youtube.png'
 import srcQQGroupQR from '@/assets/about_image/qq_group_qr2.png'
 import { RoundCardModal } from '@/components/common'
 
@@ -16,7 +14,6 @@ interface Version {
   versionCode: number
 }
 
-const appStore = useAppStore()
 const versionName = ref('')
 const qqGroupQRShow = ref(false)
 const frontVersion = import.meta.env.VITE_APP_VERSION || 'unknown'
@@ -80,10 +77,6 @@ onMounted(() => {
           <img class="w-[20px] h-[20px] mr-[5px]" :src="srcBilibili" alt="">
           <!-- <a href="https://space.bilibili.com/27407696/channel/collectiondetail?sid=2023810" target="_blank" class="link">Bilibili</a> -->
           <a href="https://space.bilibili.com/27407696/channel/collectiondetail?sid=2023810" target="_blank" class="link">Bilibili</a>
-        </div>
-        <div v-if="appStore.language !== 'zh-CN'" class="flex items-center mx-[10px]">
-          <img class="w-[20px] h-[20px] mr-[5px]" :src="srcYoutube" alt="">
-          <a href="https://www.youtube.com/channel/UCKwbFmKU25R602z6P2fgPYg" target="_blank" class="link">YouTube</a>
         </div>
       </div>
 
