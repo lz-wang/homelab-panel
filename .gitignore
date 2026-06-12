@@ -32,12 +32,6 @@ coverage/
 /cypress/videos/
 /cypress/screenshots/
 
-# Environment
-.env
-.env.*
-!.env.example
-*.local
-
 # Runtime data
 homelab-panel
 release/
