@@ -45,8 +45,8 @@ func InitApp() error {
 		}
 	}
 
-	// 多语言初始化
-	lang.LangInit("zh-cn") // en-us
+	// 中文文案初始化
+	lang.LangInit()
 
 	DatabaseConnect()
 

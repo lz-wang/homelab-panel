@@ -18,7 +18,7 @@ func NewLang(langPath string) *LangStructObj {
 	if exists {
 		langObj.LangContet = iniConfig.NewIniConfig(langPath) // 读取配置
 	} else {
-		cmn.Pln(cmn.LOG_ERROR, "language file does not exist:"+langPath)
+		cmn.Pln(cmn.LOG_ERROR, "语言文件不存在:"+langPath)
 		os.Exit(1)
 	}
 	return &langObj
