@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NDivider, NGradientText, NTag } from 'naive-ui'
+import { NDivider, NGradientText } from 'naive-ui'
 import { onMounted, ref } from 'vue'
 import { get } from '@/api/system/about'
 import srcSvglogo from '@/assets/logo.svg'
@@ -16,8 +16,6 @@ interface Version {
 
 const versionName = ref('')
 const qqGroupQRShow = ref(false)
-const frontVersion = import.meta.env.VITE_APP_VERSION || 'unknown'
-
 onMounted(() => {
   get<Version>().then((res) => {
     if (res.code === 0)
@@ -78,12 +76,6 @@ onMounted(() => {
           <!-- <a href="https://space.bilibili.com/27407696/channel/collectiondetail?sid=2023810" target="_blank" class="link">Bilibili</a> -->
           <a href="https://space.bilibili.com/27407696/channel/collectiondetail?sid=2023810" target="_blank" class="link">Bilibili</a>
         </div>
-      </div>
-
-      <div class="mt-5">
-        <NTag :bordered="false" size="small">
-          {{ $t("apps.about.frontVersionText") }}: FV-{{ frontVersion }}
-        </NTag>
       </div>
 
       <RoundCardModal v-model:show="qqGroupQRShow" title="交流群二维码" style="width: 300px;">
