@@ -3,7 +3,6 @@ package cmn
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"homelab-panel/internal/webui/assets"
 	"math/rand"
 	"os"
@@ -205,7 +204,6 @@ func AssetsTakeFileToPath(assetsPath, targetPath string) error {
 	}
 	if !exists {
 		if err := os.MkdirAll(targetPathPath, 0777); err != nil {
-			fmt.Println(456)
 			return err
 		}
 	}

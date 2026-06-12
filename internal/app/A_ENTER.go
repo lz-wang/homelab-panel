@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"homelab-panel/internal/app/cUserToken"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
@@ -14,14 +15,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"log"
-
 	"github.com/gin-gonic/gin"
 )
 
 func InitApp() error {
 	Logo()
-	gin.SetMode(global.RUNCODE) // GIN 运行模式
+	gin.SetMode(gin.ReleaseMode) // GIN 使用 release 模式，避免内置调试输出，日志统一由 zap 管理
 
 	// 日志
 	if logger, err := appLogger.InitRunlog(global.RUNCODE); err != nil {
@@ -52,8 +51,7 @@ func DatabaseConnect() {
 	}
 
 	if db, err := store.DbInit(dbClientInfo); err != nil {
-		log.Panicln("Database initialization error", err)
-		panic(err)
+		global.Logger.Panicf("数据库初始化错误: %v", err)
 	} else {
 		global.Db = db
 		models.Db = global.Db

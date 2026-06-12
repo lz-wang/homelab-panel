@@ -3,14 +3,11 @@ package store
 import (
 	"homelab-panel/internal/app/lib/cmn"
 	"homelab-panel/internal/store/models"
-	"log"
 	"os"
 	"path"
-	"time"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -50,7 +47,7 @@ func (d *SQLiteConfig) Connect() (db *gorm.DB, err error) {
 		}
 
 		db, err = gorm.Open(sqlite.Open(filePath), &gorm.Config{
-			Logger: GetLogger(),
+			Logger: NewZapGormLogger(),
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
@@ -58,20 +55,6 @@ func (d *SQLiteConfig) Connect() (db *gorm.DB, err error) {
 	}
 
 	return
-}
-
-// 日志
-func GetLogger() logger.Interface {
-	return logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
-		logger.Config{
-			SlowThreshold:             time.Second, // 慢 SQL 阈值
-			LogLevel:                  logger.Warn, // 日志级别
-			IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  true,        // 彩色打印
-		},
-	)
-
 }
 
 // 创建数据库

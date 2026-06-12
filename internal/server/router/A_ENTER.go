@@ -26,7 +26,8 @@ func InitRouters(addr string) error {
 }
 
 func NewRouter() *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
+	router.Use(ZapLoggerMiddleware(), ZapRecoveryMiddleware())
 	rootRouter := router.Group("/")
 	routerGroup := rootRouter.Group("api")
 

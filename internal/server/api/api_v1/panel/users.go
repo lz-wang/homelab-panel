@@ -2,7 +2,6 @@ package panel
 
 import (
 	"errors"
-	"fmt"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
 	"homelab-panel/internal/app/lib/cmn/systemSetting"
@@ -231,7 +230,7 @@ func (a UsersApi) SetPublicVisitUser(c *gin.Context) {
 	if req.UserId != nil {
 		userInfo := models.User{}
 		if err := global.Db.First(&userInfo, "id=?", req.UserId).Error; err != nil {
-			fmt.Println(err, userInfo)
+			global.Logger.Warnf("查询用户失败: %v", err)
 			apiReturn.ErrorDataNotFound(c)
 			return
 		}

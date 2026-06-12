@@ -1,7 +1,7 @@
 package base
 
 import (
-	"fmt"
+	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/captcha"
 	"homelab-panel/internal/app/lib/cmn"
 	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
@@ -74,7 +74,7 @@ func validateTransInit(validate *validator.Validate) ut.Translator {
 	//验证器注册翻译器
 	err := zhTranslations.RegisterDefaultTranslations(validate, trans)
 	if err != nil {
-		fmt.Println(err)
+		global.Logger.Errorf("注册翻译器失败: %v", err)
 	}
 	return trans
 }
