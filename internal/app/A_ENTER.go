@@ -19,7 +19,6 @@ import (
 )
 
 func InitApp() error {
-	Logo()
 	gin.SetMode(gin.ReleaseMode) // GIN 使用 release 模式，避免内置调试输出，日志统一由 zap 管理
 
 	// 日志
@@ -84,18 +83,4 @@ func ResetAdminPassword() error {
 	fmt.Println("Username ", userInfo.Username)
 	fmt.Println("Password ", newPassword)
 	return nil
-}
-
-func Logo() {
-	fmt.Println("     ____            ___                __")
-	fmt.Println("    / __/_ _____    / _ \\___ ____  ___ / /")
-	fmt.Println("   _\\ \\/ // / _ \\  / ___/ _ `/ _ \\/ -_) / ")
-	fmt.Println("  /___/\\_,_/_//_/ /_/   \\_,_/_//_/\\__/_/  ")
-	fmt.Println("")
-
-	versionInfo := cmn.GetSysVersionInfo()
-	fmt.Println("Version:", versionInfo.Version)
-	fmt.Println("Welcome to the Homelab Panel.")
-	fmt.Println("Project address:", "https://github.com/hslr-s/homelab-panel")
-
 }
