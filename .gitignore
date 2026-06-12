@@ -42,13 +42,11 @@ coverage/
 homelab-panel
 release/
 config.yaml
-data.db
+data/
 conf/
 lang/
 database/
-uploads/
 plugins/
-runtime/
 
 service_node
 .history/

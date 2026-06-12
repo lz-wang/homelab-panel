@@ -1,6 +1,6 @@
 base:
   http_port: "3002"
-  source_path: ./uploads
+  source_path: ./data/uploads
 
 sqlite:
-  file_path: ./data.db
+  file_path: ./data/data.db
