@@ -2,7 +2,6 @@ package router
 
 import (
 	"homelab-panel/internal/app/global"
-	appConfig "homelab-panel/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -128,12 +127,7 @@ func newTestRouter(t *testing.T) *gin.Engine {
 		t.Fatalf("write custom JS fixture: %v", err)
 	}
 
-	cfg, err := appConfig.Load(t.TempDir())
-	if err != nil {
-		t.Fatalf("load config: %v", err)
-	}
-
-	global.Config = cfg
+	global.DataDir = filepath.Join(workspace, "data")
 	global.Logger = zap.NewNop().Sugar()
 	global.WebFS = os.DirFS(workspace)
 

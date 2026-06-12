@@ -40,7 +40,7 @@ func NewRouter() *gin.Engine {
 	registerWebRoutes(router)
 
 	// 上传的文件
-	sourcePath := global.Config.GetValueString("base", "source_path")
+	sourcePath := global.DataDir + "/uploads"
 	router.Static(sourcePath[1:], sourcePath)
 
 	return router

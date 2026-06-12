@@ -9,10 +9,10 @@ import (
 	"homelab-panel/internal/app/other"
 	"homelab-panel/internal/app/systemSettingCache"
 	"homelab-panel/internal/app/userToken"
-	appConfig "homelab-panel/internal/config"
 	appLogger "homelab-panel/internal/logger"
 	"homelab-panel/internal/store"
 	"homelab-panel/internal/store/models"
+	"path/filepath"
 	"time"
 
 	"log"
@@ -31,16 +31,6 @@ func InitApp() error {
 		panic(err)
 	} else {
 		global.Logger = logger
-	}
-
-	// 配置初始化
-	{
-		if config, err := appConfig.ConfigInit(); err != nil {
-			global.Logger.Errorln("Configuration initialization error", err)
-			return err
-		} else {
-			global.Config = config
-		}
 	}
 
 	// 中文文案初始化
@@ -63,7 +53,7 @@ func InitApp() error {
 func DatabaseConnect() {
 	// 数据库连接 - 开始
 	dbClientInfo := &store.SQLiteConfig{
-		Filename: global.Config.GetValueStringOrDefault("sqlite", "file_path"),
+		Filename: filepath.Join(global.DataDir, "data.db"),
 	}
 
 	if db, err := store.DbInit(dbClientInfo); err != nil {
@@ -80,12 +70,6 @@ func DatabaseConnect() {
 }
 
 func ResetAdminPassword() error {
-	config, err := appConfig.ConfigInit()
-	if err != nil {
-		return err
-	}
-	global.Config = config
-
 	DatabaseConnect()
 	userInfo := models.User{}
 	if err := global.Db.Where("role=?", 1).Order("id").First(&userInfo).Error; err != nil {

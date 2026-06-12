@@ -243,7 +243,7 @@ func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 	global.Logger.Debug("fullUrl:", fullUrl)
 
 	// 生成保存目录
-	configUpload := global.Config.GetValueString("base", "source_path")
+	configUpload := global.DataDir + "/uploads"
 	savePath := fmt.Sprintf("%s/%d/%d/%d/", configUpload, time.Now().Year(), time.Now().Month(), time.Now().Day())
 	isExist, _ := cmn.PathExists(savePath)
 	if !isExist {

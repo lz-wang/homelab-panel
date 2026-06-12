@@ -4,7 +4,6 @@ import (
 	"homelab-panel/internal/app/lib/cache"
 	"homelab-panel/internal/app/lib/cmn/systemSetting"
 	"homelab-panel/internal/app/lib/language"
-	appConfig "homelab-panel/internal/config"
 	"homelab-panel/internal/store/models"
 	"io/fs"
 
@@ -17,8 +16,6 @@ var (
 	Version = "dev"
 )
 
-// var Log *cmn.LogStruct
-
 var (
 	Lang *language.LangStructObj
 
@@ -27,8 +24,8 @@ var (
 	Logger              *zap.SugaredLogger
 	LoggerLevel         = zap.NewAtomicLevel() // 支持通过http以及配置文件动态修改日志级别
 	VerifyCodeCachePool cache.Cacher[string]
-	Config              *appConfig.Config
 	Db                  *gorm.DB
+	DataDir             string
 	SystemSetting       *systemSetting.SystemSettingCache
 	SystemMonitor       cache.Cacher[interface{}]
 	RateLimit           *RateLimiter

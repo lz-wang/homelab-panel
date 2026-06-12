@@ -22,7 +22,7 @@ type FileApi struct{}
 
 func (a *FileApi) UploadImg(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	configUpload := global.Config.GetValueString("base", "source_path")
+	configUpload := global.DataDir + "/uploads"
 	f, err := c.FormFile("imgfile")
 	if err != nil {
 		apiReturn.ErrorByCode(c, 1300)
@@ -63,7 +63,7 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 
 func (a *FileApi) UploadFiles(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	configUpload := global.Config.GetValueString("base", "source_path")
+	configUpload := global.DataDir + "/uploads"
 
 	form, err := c.MultipartForm()
 	if err != nil {

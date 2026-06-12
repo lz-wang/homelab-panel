@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"homelab-panel/internal/app"
 	"homelab-panel/internal/app/global"
-	appConfig "homelab-panel/internal/config"
 	"homelab-panel/internal/server/router"
 	embeddedAssets "homelab-panel/internal/webui/assets"
 	"log"
@@ -27,7 +26,7 @@ var version = "dev"
 //go:embed all:web/dist
 var webFS embed.FS
 
-//go:embed config.example.yaml internal/webui/assets/lang/zh-cn.ini internal/webui/assets/version
+//go:embed internal/webui/assets/lang/zh-cn.ini internal/webui/assets/version
 var assetsFS embed.FS
 
 func main() {
@@ -41,14 +40,23 @@ func main() {
 		Version: version,
 		Commands: []*cli.Command{
 			{
-				Name:   "serve",
-				Usage:  "Start the HTTP service",
+				Name:  "serve",
+				Usage: "Start the HTTP service",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "port",
+						Aliases: []string{"p"},
+						Usage:   "HTTP listen port",
+						Value:   "3002",
+					},
+					&cli.StringFlag{
+						Name:    "dir",
+						Aliases: []string{"d"},
+						Usage:   "Data directory (contains data.db and uploads/)",
+						Value:   "./data",
+					},
+				},
 				Action: runServe,
-			},
-			{
-				Name:   "config",
-				Usage:  "Generate config.example.yaml and config.yaml",
-				Action: runConfig,
 			},
 			{
 				Name:   "password-reset",
@@ -68,24 +76,17 @@ func main() {
 	}
 }
 
-func runServe(_ *cli.Context) error {
-	err := app.InitApp()
-	if err != nil {
+func runServe(c *cli.Context) error {
+	global.DataDir = c.String("dir")
+
+	if err := app.InitApp(); err != nil {
 		return fmt.Errorf("初始化错误: %w", err)
 	}
-	httpPort := global.Config.GetValueStringOrDefault("base", "http_port")
 
+	httpPort := c.String("port")
 	if err := router.InitRouters(":" + httpPort); err != nil {
 		return err
 	}
-	return nil
-}
-
-func runConfig(c *cli.Context) error {
-	if err := appConfig.GenerateConfigFiles(); err != nil {
-		return err
-	}
-	fmt.Fprintln(c.App.Writer, "Generated config.example.yaml and config.yaml. Existing config.yaml is preserved.")
 	return nil
 }
 
@@ -105,8 +106,6 @@ func normalizeArgs(args []string) []string {
 
 	normalized := append([]string(nil), args...)
 	switch normalized[1] {
-	case "--config":
-		normalized[1] = "config"
 	case "--password-reset":
 		normalized[1] = "password-reset"
 	}
