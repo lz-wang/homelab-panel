@@ -147,13 +147,3 @@ func (m *User) CheckUsernameExist(username string) (User, error) {
 	}
 	return hasUser, nil
 }
-
-// // 根据用户名和密码查询用户
-// func (m *User) CreateUser(uid uint) *User {
-// 	mUser := User{}
-// 	if Db.Where("id=?", uid).First(&mUser).Error != nil {
-// 		return nil
-// 	} else {
-// 		return &mUser
-// 	}
-// }

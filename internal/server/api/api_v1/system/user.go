@@ -22,8 +22,6 @@ func (a *UserApi) GetInfo(c *gin.Context) {
 		"headImage": userInfo.HeadImage,
 		"name":      userInfo.Name,
 		"role":      userInfo.Role,
-		// "token":     userInfo.Token,
-
 	})
 }
 

@@ -1,7 +1,6 @@
 package cmn
 
 import (
-	// "calendar-note-gin/assets"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"

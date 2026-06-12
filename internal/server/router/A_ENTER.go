@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"path"
 	"strings"
-	// "homelab-panel/internal/server/router/admin"
 	"homelab-panel/internal/server/router/openness"
 	"homelab-panel/internal/server/router/panel"
 	"homelab-panel/internal/server/router/system"

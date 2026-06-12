@@ -10,9 +10,6 @@ import (
 
 func LoginInterceptor(c *gin.Context) {
 
-	// 继续执行后续的操作，再回来
-	// c.Next()
-
 	// 获得token
 	cToken := c.GetHeader("token")
 

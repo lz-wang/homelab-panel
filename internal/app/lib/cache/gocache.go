@@ -87,10 +87,3 @@ func (c *GoCacheStruct[T]) Flush() {
 	c.gocahce.Flush()
 }
 
-// func (c *GoCacheStruct[T]) encode(value T) ([]byte, error) {
-// 	return json.Marshal(value)
-// }
-
-// func (c *GoCacheStruct[T]) decode(valueByte []byte, value T) error {
-// 	return json.Unmarshal(valueByte, value)
-// }

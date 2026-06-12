@@ -19,7 +19,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// var RUNCODE = "debug"
 func InitApp() error {
 	Logo()
 	gin.SetMode(global.RUNCODE) // GIN 运行模式

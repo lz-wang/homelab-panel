@@ -63,39 +63,3 @@ func ConfigModelCheck(data *ConfigModel, ability, abilityVersion string) bool {
 	return true
 }
 
-// func InportConfigFile(f multipart.FileHeader, eventStyle EventStyleModel) (EventStyleModel, error) {
-
-// src, err := f.Open()
-// defer src.Close()
-// if err != nil {
-// 	return err
-// }
-
-// contentByte, err := ioutil.ReadAll(src)
-// if err != nil {
-// 	return err
-// }
-// configFile := ConfigModel{}
-// if err := json.Unmarshal(contentByte, &configFile); err != nil {
-// 	return err
-// }
-// v, ok := configFile.Data.(EventStyleModel)
-// return errors.New("格式")
-// if !ok {
-// 	return errors.New("格式错误")
-// }
-
-// if err := json.Unmarshal(contentByte, &configFile); err != nil {
-// 	return err
-// }
-
-// fileExt := strings.ToLower(path.Ext(f.Filename))
-// fileName := cmn.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String()))
-// fildDir := fmt.Sprintf("%s/%d/%d/%d/", configUpload, time.Now().Year(), time.Now().Month(), time.Now().Day())
-// isExist, _ := cmn.PathExists(fildDir)
-// if !isExist {
-// 	os.MkdirAll(fildDir, os.ModePerm)
-// }
-// filepath := fmt.Sprintf("%s%s%s", fildDir, fileName, fileExt)
-
-// }

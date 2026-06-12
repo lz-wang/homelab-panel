@@ -92,7 +92,6 @@ func (l LoginApi) Login(c *gin.Context) {
 	info.Password = ""
 	info.ReferralCode = ""
 
-	// global.UserToken.SetDefault(bToken, info)
 	cToken := uuid.NewString() + "-" + cmn.Md5(cmn.Md5("userId"+strconv.Itoa(int(info.ID))))
 	global.CUserToken.SetDefault(cToken, bToken)
 	global.Logger.Debug("token:", cToken, "|", bToken)
@@ -112,7 +111,6 @@ func (l LoginApi) Login(c *gin.Context) {
 // @Success 200 {object} apiReturn.Response
 // @Router /logout [post]
 func (l *LoginApi) Logout(c *gin.Context) {
-	// userInfo, _ := base.GetCurrentUserInfo(c)
 	cToken := c.GetHeader("token")
 	global.CUserToken.Delete(cToken)
 	apiReturn.Success(c)

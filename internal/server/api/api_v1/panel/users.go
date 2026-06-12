@@ -49,7 +49,6 @@ func (a UsersApi) Create(c *gin.Context) {
 		HeadImage: param.HeadImage,
 		Status:    1,
 		Role:      param.Role,
-		// Mail:      param.Username, 不再保存邮箱账号字段
 	}
 
 	// 验证账号是否存在
@@ -99,10 +98,6 @@ func (a UsersApi) Deletes(c *gin.Context) {
 			if err := tx.Delete(&models.ModuleConfig{}, "user_id=?", v).Error; err != nil {
 				return err
 			}
-			// // 删除文件记录（不删除资源文件）
-			// if err := tx.Delete(&models.File{}, "user_id=?", v).Error; err != nil {
-			// 	return err
-			// }
 		}
 
 		if err := tx.Delete(&models.User{}, &param.UserIds).Error; err != nil {
@@ -143,7 +138,6 @@ func (a UsersApi) Update(c *gin.Context) {
 		param.Password = "-" // 修改不允许修改密码，为了验证通过
 	}
 
-	// param.Mail = param.Username // 密码邮箱同时修改
 	if errMsg, err := base.ValidateInputStruct(param); err != nil {
 		apiReturn.ErrorParamFomat(c, errMsg)
 		return
@@ -158,7 +152,7 @@ func (a UsersApi) Update(c *gin.Context) {
 
 	allowField := []string{"Username", "Name", "Mail", "Token", "Role"}
 
-	// 密码不为默认“-”空，修改密码
+	// 密码不为默认"-"空，修改密码
 	if param.Password != "-" {
 		param.Password = cmn.PasswordEncryption(param.Password)
 		allowField = append(allowField, "Password")
@@ -183,7 +177,6 @@ func (a UsersApi) Update(c *gin.Context) {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return
 	}
-	// global.Logger.Debug("修改资料清空token", userInfo.Token)
 	global.UserToken.Delete(userInfo.Token) // 更新用户信息
 	// 返回token等基本信息
 	apiReturn.SuccessData(c, param)
@@ -220,18 +213,6 @@ func (a UsersApi) GetList(c *gin.Context) {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return
 	}
-
-	// resMap := []map[string]interface{}{}
-	// for _, v := range list {
-	// 	resMap = append(resMap, map[string]interface{}{
-	// 		"userId":    v.ID,
-	// 		"name":      v.Name,
-	// 		"headImage": v.HeadImage,
-	// 		"status":    v.Status,
-	// 		"role":      v.Role,
-	// 		"username":  v.Username,
-	// 	})
-	// }
 
 	apiReturn.SuccessListData(c, list, count)
 }

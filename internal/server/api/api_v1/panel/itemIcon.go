@@ -68,7 +68,6 @@ func (a *ItemIcon) Edit(c *gin.Context) {
 // 添加多个图标
 func (a *ItemIcon) AddMultiple(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	// type Request
 	req := []models.ItemIcon{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
@@ -92,36 +91,6 @@ func (a *ItemIcon) AddMultiple(c *gin.Context) {
 
 	apiReturn.SuccessData(c, req)
 }
-
-// // 获取详情
-// func (a *ItemIcon) GetInfo(c *gin.Context) {
-// 	req := systemApiStructs.AiDrawGetInfoReq{}
-
-// 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
-// 		apiReturn.ErrorParamFomat(c, err.Error())
-// 		return
-// 	}
-
-// 	userInfo, _ := base.GetCurrentUserInfo(c)
-
-// 	aiDraw := models.AiDraw{}
-// 	aiDraw.ID = req.ID
-// 	if err := aiDraw.GetInfo(global.Db); err != nil {
-// 		if err == gorm.ErrRecordNotFound {
-// 			apiReturn.Error(c, "不存在记录")
-// 			return
-// 		}
-// 		apiReturn.ErrorDatabase(c, err.Error())
-// 		return
-// 	}
-
-// 	if userInfo.ID != aiDraw.UserID {
-// 		apiReturn.ErrorNoAccess(c)
-// 		return
-// 	}
-
-// 	apiReturn.SuccessData(c, aiDraw)
-// }
 
 func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
 	req := models.ItemIcon{}

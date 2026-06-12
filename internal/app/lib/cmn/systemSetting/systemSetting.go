@@ -51,7 +51,6 @@ var (
 func (s *SystemSettingCache) GetValueString(configName string) (result string, err error) {
 	if v, ok := s.Cache.Get(configName); ok {
 		if v1, ok1 := v.(string); ok1 {
-			// fmt.Println("读取缓存")
 			return v1, nil
 		}
 	}
@@ -69,7 +68,6 @@ func (s *SystemSettingCache) GetValueString(configName string) (result string, e
 // value 需为指针
 func (s *SystemSettingCache) GetValueByInterface(configName string, value interface{}) error {
 	if v, ok := s.Cache.Get(configName); ok {
-		// fmt.Println("缓存")
 		if s, sok := v.(string); sok {
 			if err := json.Unmarshal([]byte(s), value); err != nil {
 				return err
