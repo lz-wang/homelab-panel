@@ -26,7 +26,7 @@ var version = "dev"
 //go:embed all:web/dist
 var webFS embed.FS
 
-//go:embed internal/webui/assets/lang/zh-cn.ini internal/webui/assets/version
+//go:embed internal/webui/assets/version
 var assetsFS embed.FS
 
 func main() {

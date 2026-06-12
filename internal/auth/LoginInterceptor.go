@@ -46,7 +46,7 @@ func LoginInterceptor(c *gin.Context) {
 	mUser := models.User{}
 	// 去库中查询是否存在该用户；否则返回错误
 	if info, err := mUser.GetUserInfoByToken(token); err != nil || info.Token == "" || info.ID == 0 {
-		apiReturn.ErrorCode(c, 1001, global.Lang.Get("login.err_token_expire"), nil)
+		apiReturn.ErrorCode(c, 1001, "登录已过期，请重新登录", nil)
 		c.Abort()
 		return
 	} else {
@@ -67,7 +67,7 @@ func LoginInterceptorDev(c *gin.Context) {
 
 	// 去库中查询是否存在该用户；否则返回错误
 	if info, err := mUser.GetUserInfoByToken(token); err != nil || info.ID == 0 {
-		apiReturn.ErrorCode(c, 1001, global.Lang.Get("login.err_token_expire"), nil)
+		apiReturn.ErrorCode(c, 1001, "登录已过期，请重新登录", nil)
 		c.Abort()
 		return
 	} else {

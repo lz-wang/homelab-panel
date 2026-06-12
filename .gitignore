@@ -37,7 +37,6 @@ homelab-panel
 release/
 data/
 conf/
-lang/
 database/
 plugins/
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"homelab-panel/internal/app/cUserToken"
 	"homelab-panel/internal/app/global"
-	"homelab-panel/internal/app/lang"
 	"homelab-panel/internal/app/lib/cmn"
 	"homelab-panel/internal/app/other"
 	"homelab-panel/internal/app/systemSettingCache"
@@ -32,9 +31,6 @@ func InitApp() error {
 	} else {
 		global.Logger = logger
 	}
-
-	// 中文文案初始化
-	lang.LangInit()
 
 	DatabaseConnect()
 

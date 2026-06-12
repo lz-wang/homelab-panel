@@ -55,7 +55,6 @@ func (a UsersApi) Create(c *gin.Context) {
 	// 验证账号是否存在
 	if _, err := mUser.CheckUsernameExist(param.Username); err != nil {
 		apiReturn.ErrorByCode(c, 1006)
-		// apiReturn.Error(c, global.Lang.Get("register.mail_exist"))
 		return
 	}
 
@@ -173,7 +172,6 @@ func (a UsersApi) Update(c *gin.Context) {
 		userInfo = user
 		if user.ID != param.ID {
 			apiReturn.ErrorByCode(c, 1006)
-			// apiReturn.Error(c, global.Lang.Get("register.mail_exist"))
 			return
 		}
 	} else {

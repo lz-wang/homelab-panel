@@ -55,7 +55,7 @@ func PublicModeInterceptor(c *gin.Context) {
 	if err := global.SystemSetting.GetValueByInterface(systemSetting.PANEL_PUBLIC_USER_ID, &userId); err == nil && userId != nil {
 		userInfo := models.User{}
 		if err := global.Db.First(&userInfo, "id=?", userId).Error; err != nil {
-			apiReturn.ErrorCode(c, 1001, global.Lang.Get("login.err_token_expire"), nil)
+			apiReturn.ErrorCode(c, 1001, "登录已过期，请重新登录", nil)
 			c.Abort()
 			return
 		}
@@ -66,7 +66,7 @@ func PublicModeInterceptor(c *gin.Context) {
 		return
 	} else {
 		global.Logger.Debug("访客用户不存在:", userId, " ", token)
-		apiReturn.ErrorCode(c, 1001, global.Lang.Get("login.err_token_expire"), nil)
+		apiReturn.ErrorCode(c, 1001, "登录已过期，请重新登录", nil)
 		c.Abort()
 		return
 	}

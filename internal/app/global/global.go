@@ -3,7 +3,6 @@ package global
 import (
 	"homelab-panel/internal/app/lib/cache"
 	"homelab-panel/internal/app/lib/cmn/systemSetting"
-	"homelab-panel/internal/app/lib/language"
 	"homelab-panel/internal/store/models"
 	"io/fs"
 
@@ -17,8 +16,6 @@ var (
 )
 
 var (
-	Lang *language.LangStructObj
-
 	UserToken           cache.Cacher[models.User]
 	CUserToken          cache.Cacher[string] // 用户token
 	Logger              *zap.SugaredLogger
