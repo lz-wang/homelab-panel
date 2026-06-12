@@ -117,7 +117,7 @@ func ResetAdminPassword() error {
 		return err
 	}
 
-	newPassword := "12345678"
+	newPassword := "admin"
 
 	updateInfo := models.User{
 		Password: cmn.PasswordEncryption(newPassword),
