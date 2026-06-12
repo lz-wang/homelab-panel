@@ -19,32 +19,18 @@ const (
 
 const defaultConfigYAML = `base:
   http_port: "3002"
-  cache_drive: memory
-  queue_drive: memory
   source_path: ./uploads
   source_temp_path: ./runtime/temp
 
 sqlite:
   file_path: ./data.db
-
-redis:
-  address: 127.0.0.1:6379
-  password: ""
-  prefix: "homelab_panel:"
-  db: 0
 `
 
 var configKeys = []string{
 	"base.http_port",
-	"base.cache_drive",
-	"base.queue_drive",
 	"base.source_path",
 	"base.source_temp_path",
 	"sqlite.file_path",
-	"redis.address",
-	"redis.password",
-	"redis.prefix",
-	"redis.db",
 }
 
 type Config struct {
@@ -134,15 +120,9 @@ func (c *Config) SetValue(section string, name string, value string) error {
 
 func setDefaults(v *viper.Viper) {
 	v.SetDefault("base.http_port", "3002")
-	v.SetDefault("base.cache_drive", "memory")
-	v.SetDefault("base.queue_drive", "memory")
 	v.SetDefault("base.source_path", "./uploads")
 	v.SetDefault("base.source_temp_path", "./runtime/temp")
 	v.SetDefault("sqlite.file_path", "./data.db")
-	v.SetDefault("redis.address", "127.0.0.1:6379")
-	v.SetDefault("redis.password", "")
-	v.SetDefault("redis.prefix", "homelab_panel:")
-	v.SetDefault("redis.db", 0)
 }
 
 func bindEnv(v *viper.Viper) {
@@ -194,24 +174,12 @@ func mapEnvKey(key string) (string, bool) {
 	switch normalized {
 	case "http_port", "base_http_port":
 		return "base.http_port", true
-	case "cache_drive", "base_cache_drive":
-		return "base.cache_drive", true
-	case "queue_drive", "base_queue_drive":
-		return "base.queue_drive", true
 	case "source_path", "base_source_path":
 		return "base.source_path", true
 	case "source_temp_path", "base_source_temp_path":
 		return "base.source_temp_path", true
 	case "sqlite_file_path", "database_path", "sqlite_path":
 		return "sqlite.file_path", true
-	case "redis_address":
-		return "redis.address", true
-	case "redis_password":
-		return "redis.password", true
-	case "redis_prefix":
-		return "redis.prefix", true
-	case "redis_db":
-		return "redis.db", true
 	default:
 		return "", false
 	}

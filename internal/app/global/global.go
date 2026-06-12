@@ -8,7 +8,6 @@ import (
 	"homelab-panel/internal/store/models"
 	"io/fs"
 
-	redis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -30,7 +29,6 @@ var (
 	VerifyCodeCachePool cache.Cacher[string]
 	Config              *appConfig.Config
 	Db                  *gorm.DB
-	RedisDb             *redis.Client
 	SystemSetting       *systemSetting.SystemSettingCache
 	SystemMonitor       cache.Cacher[interface{}]
 	RateLimit           *RateLimiter

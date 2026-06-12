@@ -7,11 +7,9 @@ import (
 	"homelab-panel/internal/app/lang"
 	"homelab-panel/internal/app/lib/cmn"
 	"homelab-panel/internal/app/other"
-	"homelab-panel/internal/app/redis"
 	"homelab-panel/internal/app/systemSettingCache"
 	"homelab-panel/internal/app/userToken"
 	appConfig "homelab-panel/internal/config"
-	"homelab-panel/internal/config/structs"
 	appLogger "homelab-panel/internal/logger"
 	"homelab-panel/internal/store"
 	"homelab-panel/internal/store/models"
@@ -49,29 +47,6 @@ func InitApp() error {
 	lang.LangInit()
 
 	DatabaseConnect()
-
-	// Redis 连接
-	{
-		// 判断是否有使用redis的驱动，没有将不连接
-		cacheDrive := global.Config.GetValueString("base", "cache_drive")
-		queueDrive := global.Config.GetValueString("base", "queue_drive")
-		if cacheDrive == "redis" || queueDrive == "redis" {
-			redisConfig := structs.IniConfigRedis{}
-			global.Config.GetSection("redis", &redisConfig)
-			rdb, err := redis.InitRedis(redis.Options{
-				Addr:     redisConfig.Address,
-				Password: redisConfig.Password,
-				DB:       redisConfig.Db,
-			})
-
-			if err != nil {
-				log.Panicln("Redis initialization error", err)
-				panic(err)
-				// return err
-			}
-			global.RedisDb = rdb
-		}
-	}
 
 	// 初始化用户token
 	global.UserToken = userToken.InitUserToken()

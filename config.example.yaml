@@ -1,15 +1,7 @@
 base:
   http_port: "3002"
-  cache_drive: memory
-  queue_drive: memory
   source_path: ./uploads
   source_temp_path: ./runtime/temp
 
 sqlite:
   file_path: ./data.db
-
-redis:
-  address: 127.0.0.1:6379
-  password: ""
-  prefix: "homelab_panel:"
-  db: 0
