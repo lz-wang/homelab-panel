@@ -1,5 +1,0 @@
-docker-compose
-kubernetes
-dist
-node_modules
-src/views/exception/test/**
