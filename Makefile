@@ -53,5 +53,5 @@ clean:
 	rm -rf $(BIN) $(WEB_DIST) release logs runtime coverage
 	rm -rf assets/bindata.go bindata.go
 
-serve: web
-	$(GOENV) go run main.go
+serve: build
+	./$(BIN) serve
