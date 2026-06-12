@@ -38,7 +38,7 @@ swag:
 all: web swag build
 
 fmt:
-	gofmt -w main.go api assets global initialize lib models router structs
+	gofmt -w main.go docs internal
 	cd $(WEB_DIR) && npm run lint:fix
 
 check: web

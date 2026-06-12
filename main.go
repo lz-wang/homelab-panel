@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	embeddedAssets "sun-panel/assets"
-	"sun-panel/global"
-	"sun-panel/initialize"
-	appConfig "sun-panel/initialize/config"
-	"sun-panel/router"
+	"sun-panel/internal/app"
+	"sun-panel/internal/app/global"
+	appConfig "sun-panel/internal/config"
+	"sun-panel/internal/server/router"
+	embeddedAssets "sun-panel/internal/webui/assets"
 
 	"github.com/urfave/cli/v2"
 )
@@ -27,7 +27,7 @@ var version = "dev"
 //go:embed web/dist
 var webFS embed.FS
 
-//go:embed config.example.yaml assets/lang/en-us.ini assets/lang/zh-cn.ini assets/version
+//go:embed config.example.yaml internal/webui/assets/lang/en-us.ini internal/webui/assets/lang/zh-cn.ini internal/webui/assets/version
 var assetsFS embed.FS
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 	global.WebFS = webFS
 	embeddedAssets.FS = assetsFS
 
-	app := &cli.App{
+	cliApp := &cli.App{
 		Name:    "homelab-panel",
 		Usage:   "Homelab panel service",
 		Version: version,
@@ -63,13 +63,13 @@ func main() {
 		},
 	}
 
-	if err := app.Run(normalizeArgs(os.Args)); err != nil {
+	if err := cliApp.Run(normalizeArgs(os.Args)); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func runServe(_ *cli.Context) error {
-	err := initialize.InitApp()
+	err := app.InitApp()
 	if err != nil {
 		return fmt.Errorf("初始化错误: %w", err)
 	}
@@ -90,7 +90,7 @@ func runConfig(c *cli.Context) error {
 }
 
 func runPasswordReset(_ *cli.Context) error {
-	return initialize.ResetAdminPassword()
+	return app.ResetAdminPassword()
 }
 
 func runVersion(c *cli.Context) error {
