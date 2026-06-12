@@ -51,7 +51,6 @@ test: web
 
 clean:
 	rm -rf $(BIN) $(WEB_DIST) release logs coverage
-	rm -rf assets/bindata.go bindata.go
 
 serve: build
 	./$(BIN) serve
