@@ -20,7 +20,6 @@ const (
 const defaultConfigYAML = `base:
   http_port: "3002"
   source_path: ./uploads
-  source_temp_path: ./runtime/temp
 
 sqlite:
   file_path: ./data.db
@@ -29,7 +28,6 @@ sqlite:
 var configKeys = []string{
 	"base.http_port",
 	"base.source_path",
-	"base.source_temp_path",
 	"sqlite.file_path",
 }
 
@@ -121,7 +119,6 @@ func (c *Config) SetValue(section string, name string, value string) error {
 func setDefaults(v *viper.Viper) {
 	v.SetDefault("base.http_port", "3002")
 	v.SetDefault("base.source_path", "./uploads")
-	v.SetDefault("base.source_temp_path", "./runtime/temp")
 	v.SetDefault("sqlite.file_path", "./data.db")
 }
 
@@ -176,8 +173,6 @@ func mapEnvKey(key string) (string, bool) {
 		return "base.http_port", true
 	case "source_path", "base_source_path":
 		return "base.source_path", true
-	case "source_temp_path", "base_source_temp_path":
-		return "base.source_temp_path", true
 	case "sqlite_file_path", "database_path", "sqlite_path":
 		return "sqlite.file_path", true
 	default:
