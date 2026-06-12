@@ -1,11 +1,11 @@
 {
-  "name": "sun-panel",
+  "name": "homelab-panel",
   "version": "0.0.0",
   "private": false,
-  "description": "Sun-Panel Web",
+  "description": "Homelab Panel Web",
   "author": "BraisedHunter <95302870@qq.com>",
   "keywords": [
-    "Sun-Panel",
+    "Homelab Panel",
     "vue"
   ],
   "scripts": {
