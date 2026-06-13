@@ -13,6 +13,8 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 
+import { StylePanel } from '@/components/apps/StylePanel'
+
 function PanelPlaceholder({
   title,
   description,
@@ -37,7 +39,7 @@ function UserInfo() {
 }
 
 function Style() {
-  return <PanelPlaceholder title="样式设置" description="面板样式配置入口已保留，后续可继续迁移旧版配置表单。" />
+  return <StylePanel />
 }
 
 function Users() {
