@@ -15,12 +15,12 @@ import Stack from '@mui/material/Stack'
 import { useEffect, useMemo, useState } from 'react'
 
 import { StylePanel } from '@/components/apps/StylePanel'
-import { FileManagerPanel } from '@/components/common/FileManagerPanel'
 import { GroupManager } from '@/components/apps/GroupManager'
 import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
 import { SystemMonitorSettingsPanel } from '@/components/apps/SystemMonitorSettingsPanel'
 import { UserInfoPanel } from '@/components/apps/UserInfoPanel'
 import { UsersPanel } from '@/components/apps/UsersPanel'
+import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 import { useAuthStore } from '@/store/auth'
 
 function UserInfo() {

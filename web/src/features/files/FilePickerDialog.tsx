@@ -2,7 +2,7 @@ import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 
-import { FileManagerPanel } from '@/components/common/FileManagerPanel'
+import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 
 interface Props {
   open: boolean
