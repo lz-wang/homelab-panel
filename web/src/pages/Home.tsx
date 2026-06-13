@@ -18,6 +18,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { deletes, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 import { getList as getGroupList } from '@/api/panel/itemIconGroup'
+import { AppStarter } from '@/components/apps/AppStarter'
 import { AppIcon } from '@/components/common/AppIcon'
 import { IframeDialog } from '@/components/common/IframeDialog'
 import { useNotify } from '@/components/common/NotifyProvider'
@@ -57,6 +58,7 @@ export default function Home() {
   const [items, setItems] = useState<ItemGroup[]>([])
   const [keyword, setKeyword] = useState('')
   const [dragState, setDragState] = useState<DragState | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [iframe, setIframe] = useState({
     open: false,
     src: '',
@@ -417,7 +419,7 @@ export default function Home() {
 
       <Stack spacing={1} sx={{ position: 'fixed', right: 10, bottom: 50 }}>
         <Tooltip title="设置">
-          <Fab size="small">
+          <Fab size="small" onClick={() => setSettingsOpen(true)}>
             <SettingsIcon />
           </Fab>
         </Tooltip>
@@ -445,6 +447,7 @@ export default function Home() {
         src={iframe.src}
         onClose={() => setIframe({ open: false, src: '', title: '' })}
       />
+      <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </Box>
   )
 }
