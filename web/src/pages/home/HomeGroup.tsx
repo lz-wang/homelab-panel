@@ -56,17 +56,15 @@ export function HomeGroup({
 
   return (
     <Box
-      sx={theme => ({
+      sx={{
         mt: 6,
         p: sorting ? 1.25 : 0,
-        borderRadius: 6,
-        bgcolor: sorting ? `rgba(${theme.vars.palette.primary.mainChannel} / 0.14)` : 'transparent',
-        border: sorting ? `1px solid ${theme.vars.palette.m3.outlineVariant}` : '1px solid transparent',
-        backdropFilter: sorting ? 'blur(18px)' : undefined,
-      })}
+        borderRadius: 2,
+        boxShadow: sorting ? '0 0 30px 10px rgba(0,0,0,0.3)' : 'none',
+      }}
     >
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
-        <Typography color="common.white" variant="h6" sx={{ fontWeight: 800, textShadow: '0 2px 24px rgba(0,0,0,0.42)' }}>
+        <Typography color="white" variant="h6" sx={{ fontWeight: 800, textShadow: '2px 2px 50px #000' }}>
           {group.title}
         </Typography>
         {canManage && (

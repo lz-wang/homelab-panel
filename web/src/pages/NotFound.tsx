@@ -10,7 +10,7 @@ export default function NotFound() {
   return (
     <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', bgcolor: 'background.default' }}>
       <Stack spacing={2} sx={{ alignItems: 'center' }}>
-        <Typography variant="h2" color="text.primary" sx={{ fontWeight: 700 }}>404</Typography>
+        <Typography variant="h2" color="white" sx={{ fontWeight: 700 }}>404</Typography>
         <Button onClick={() => navigate('/')}>返回首页</Button>
       </Stack>
     </Box>

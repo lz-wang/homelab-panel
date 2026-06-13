@@ -50,8 +50,6 @@ export interface PanelConfig {
   systemMonitorShowTitle?: boolean
   systemMonitorPublicVisitModeShow?: boolean
   netModeChangeButtonShow?: boolean
-  themeMode?: 'system' | 'light' | 'dark'
-  surfaceStyle?: 'glass' | 'solid'
 }
 
 export interface PanelState {

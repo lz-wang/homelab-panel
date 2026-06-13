@@ -79,56 +79,22 @@ export function AppStarter({ open, onClose }: Props) {
   }, [activeKey, visibleApps])
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-      slotProps={{
-        paper: {
-          sx: theme => ({
-            overflow: 'hidden',
-            bgcolor: theme.vars.palette.m3.surfaceContainerHigh,
-          }),
-        },
-      }}
-    >
-      <DialogTitle sx={{ px: 3, py: 2.5, fontWeight: 700 }}>设置</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>设置</DialogTitle>
       <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ minHeight: 520 }}>
-        <List
-          sx={theme => ({
-            width: { xs: '100%', sm: 220 },
-            display: { xs: 'flex', sm: 'block' },
-            gap: { xs: 0.5, sm: 0 },
-            overflowX: { xs: 'auto', sm: 'visible' },
-            px: { xs: 1, sm: 0 },
-            pb: { xs: 1, sm: 0 },
-            borderRight: { sm: 1 },
-            borderBottom: { xs: 1, sm: 0 },
-            borderColor: theme.vars.palette.m3.outlineVariant,
-            bgcolor: theme.vars.palette.m3.surfaceContainer,
-          })}
-        >
+        <List sx={{ width: { xs: '100%', sm: 220 }, borderRight: { sm: 1 }, borderBottom: { xs: 1, sm: 0 }, borderColor: 'divider' }}>
           {visibleApps.map(app => (
             <ListItemButton
               key={app.key}
               selected={app.key === activeKey}
               onClick={() => setActiveKey(app.key)}
-              sx={{ flexShrink: 0 }}
             >
               <ListItemIcon>{app.icon}</ListItemIcon>
               <ListItemText primary={app.name} />
             </ListItemButton>
           ))}
         </List>
-        <Box
-          sx={theme => ({
-            flex: 1,
-            p: 3,
-            overflow: 'auto',
-            bgcolor: theme.vars.palette.m3.surfaceContainerLow,
-          })}
-        >
+        <Box sx={{ flex: 1, p: 3, overflow: 'auto' }}>
           <ActiveComponent />
         </Box>
       </Stack>

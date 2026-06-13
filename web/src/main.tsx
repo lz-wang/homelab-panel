@@ -12,14 +12,12 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { ConfirmProvider } from './components/common/ConfirmProvider'
 import { NotifyProvider } from './components/common/NotifyProvider'
-import { ThemeModeBridge } from './theme/ThemeModeBridge'
 import { theme } from './theme/theme'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme} disableTransitionOnChange>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ThemeModeBridge />
       <NotifyProvider>
         <ConfirmProvider>
           <App />

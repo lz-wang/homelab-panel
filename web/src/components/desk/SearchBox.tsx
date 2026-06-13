@@ -3,11 +3,8 @@ import InputAdornment from '@mui/material/InputAdornment'
 import TextField from '@mui/material/TextField'
 import { useState } from 'react'
 
-import { usePanelStore } from '@/store/panel'
-
 export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void }) {
   const [value, setValue] = useState('')
-  const surfaceStyle = usePanelStore(s => s.panelConfig.surfaceStyle)
 
   return (
     <TextField
@@ -26,20 +23,10 @@ export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void })
               <SearchIcon />
             </InputAdornment>
           ),
-          sx: theme => ({
-            bgcolor: surfaceStyle === 'solid'
-              ? theme.vars.palette.m3.surfaceContainerHigh
-              : `rgba(${theme.vars.palette.primary.mainChannel} / 0.14)`,
-            color: theme.vars.palette.m3.onSurface,
-            borderRadius: 7,
-            backdropFilter: surfaceStyle === 'solid' ? undefined : 'blur(18px)',
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: theme.vars.palette.m3.outlineVariant,
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: theme.vars.palette.m3.outline,
-            },
-          }),
+          sx: {
+            bgcolor: 'rgba(255,255,255,0.86)',
+            borderRadius: 2,
+          },
         },
       }}
     />

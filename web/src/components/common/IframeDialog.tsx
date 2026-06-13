@@ -27,11 +27,10 @@ export function IframeDialog({ open, title, src, onClose }: Props) {
       fullWidth
       slotProps={{
         paper: {
-          sx: theme => ({
+          sx: {
             height: '80vh',
-            borderRadius: 6,
-            bgcolor: theme.vars.palette.m3.surfaceContainerHigh,
-          }),
+            borderRadius: 2,
+          },
         },
       }}
     >

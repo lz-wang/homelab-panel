@@ -51,25 +51,18 @@ export default function Login() {
 
   return (
     <Box
-      sx={theme => ({
+      sx={{
         width: '100%',
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: theme.vars.palette.m3.surface,
+        bgcolor: '#f2f6ff',
         p: 2,
-      })}
+      }}
     >
-      <Card
-        sx={theme => ({
-          width: '100%',
-          maxWidth: 420,
-          bgcolor: theme.vars.palette.m3.surfaceContainerHigh,
-          borderRadius: 7,
-        })}
-      >
-        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+      <Card sx={{ width: '100%', maxWidth: 420 }}>
+        <CardContent>
           <Stack spacing={3}>
             <Typography variant="h5" sx={{ textAlign: 'center', fontWeight: 700 }}>
               {t('common.appName')}
