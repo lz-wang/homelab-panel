@@ -45,6 +45,22 @@ const defaultItem: ItemInfo = {
   openMethod: 2,
 }
 
+function normalizeUrl(value?: string) {
+  const trimmed = value?.trim() ?? ''
+
+  if (!trimmed)
+    return ''
+
+  if (/^https?:\/\//i.test(trimmed))
+    return trimmed
+
+  return `https://${trimmed}`
+}
+
+function isValidUrl(value: string) {
+  return URL.canParse(value)
+}
+
 export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }: Props) {
   const notify = useNotify()
   const [form, setForm] = useState<ItemInfo>(defaultItem)
@@ -80,8 +96,17 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     if (!form.title.trim())
       return '名称不能为空'
 
-    if (!form.url.trim())
+    const url = normalizeUrl(form.url)
+    const lanUrl = normalizeUrl(form.lanUrl)
+
+    if (!url)
       return '互联网地址不能为空'
+
+    if (!isValidUrl(url))
+      return '互联网地址无效'
+
+    if (lanUrl && !isValidUrl(lanUrl))
+      return '局域网地址无效'
 
     if (![1, 2, 3].includes(form.openMethod))
       return '打开方式无效'
@@ -115,7 +140,11 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     setSaving(true)
 
     try {
-      const res = await edit(form)
+      const res = await edit({
+        ...form,
+        url: normalizeUrl(form.url),
+        lanUrl: normalizeUrl(form.lanUrl),
+      })
 
       if (res.code === 0) {
         notify.success(t('common.saveSuccess'))
@@ -279,6 +308,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
             value={form.openMethod}
             onChange={event => setForm({ ...form, openMethod: Number(event.target.value) })}
             fullWidth
+            helperText={form.openMethod === 3 ? '部分站点可能因 X-Frame-Options 无法嵌入 iframe。' : undefined}
           >
             <MenuItem value={1}>当前窗口</MenuItem>
             <MenuItem value={2}>新窗口</MenuItem>
