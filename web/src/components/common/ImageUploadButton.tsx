@@ -1,10 +1,12 @@
 import UploadIcon from '@mui/icons-material/Upload'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import { useRef, useState } from 'react'
 
 import { uploadImg } from '@/api/system/file'
+import { FilePickerDialog } from '@/components/common/FilePickerDialog'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 
@@ -18,6 +20,7 @@ export function ImageUploadButton({ label, value, onChange }: Props) {
   const notify = useNotify()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   async function handleFileChange(file?: File) {
     if (!file)
@@ -63,12 +66,25 @@ export function ImageUploadButton({ label, value, onChange }: Props) {
       >
         上传
       </Button>
+      <Button
+        variant="outlined"
+        startIcon={<FolderOpenIcon />}
+        onClick={() => setPickerOpen(true)}
+        sx={{ minWidth: 120 }}
+      >
+        选择
+      </Button>
       <input
         ref={inputRef}
         hidden
         type="file"
         accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon"
         onChange={event => handleFileChange(event.target.files?.[0])}
+      />
+      <FilePickerDialog
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={onChange}
       />
     </Stack>
   )
