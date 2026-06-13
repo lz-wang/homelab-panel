@@ -1,4 +1,5 @@
 import BackupOutlinedIcon from '@mui/icons-material/BackupOutlined'
+import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
@@ -14,6 +15,7 @@ import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 
 import { StylePanel } from '@/components/apps/StylePanel'
+import { GroupManager } from '@/components/apps/GroupManager'
 
 function PanelPlaceholder({
   title,
@@ -46,6 +48,10 @@ function Users() {
   return <PanelPlaceholder title="用户管理" description="用户管理入口已保留，后续可继续接入用户列表和编辑弹窗。" />
 }
 
+function Groups() {
+  return <GroupManager />
+}
+
 function ImportExport() {
   return <PanelPlaceholder title="导入导出" description="备份恢复入口已保留，后续可继续迁移 JSON 导入导出流程。" />
 }
@@ -53,6 +59,7 @@ function ImportExport() {
 const apps = [
   { key: 'userInfo', name: '用户信息', icon: <PersonOutlineOutlinedIcon />, component: UserInfo },
   { key: 'style', name: '样式设置', icon: <PaletteOutlinedIcon />, component: Style },
+  { key: 'groups', name: '分组管理', icon: <FolderOutlinedIcon />, component: Groups },
   { key: 'users', name: '用户管理', icon: <PeopleAltOutlinedIcon />, component: Users },
   { key: 'importExport', name: '导入导出', icon: <BackupOutlinedIcon />, component: ImportExport },
 ]
