@@ -1,28 +1,60 @@
 package router
 
 import (
+	"context"
+	"errors"
+	"io/fs"
+	"mime"
+	"net/http"
+	"os"
+	"os/signal"
+	"path"
+	"strings"
+	"syscall"
+	"time"
+
 	_ "homelab-panel/docs"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/server/router/openness"
 	"homelab-panel/internal/server/router/panel"
 	"homelab-panel/internal/server/router/system"
-	"io/fs"
-	"mime"
-	"net/http"
-	"path"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// 初始化总路由
+// 初始化总路由，启动 HTTP 服务并在收到中断信号后优雅关闭
 func InitRouters(addr string) error {
-	router := NewRouter()
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: NewRouter(),
+	}
 
-	global.Logger.Infof("Homelab Panel (version=%s) is Started. Listening and serving HTTP on %s", global.Version, addr)
-	return router.Run(addr)
+	// 异步启动监听，主流程阻塞在信号等待上以便优雅关闭
+	go func() {
+		global.Logger.Infof("Homelab Panel (version=%s) is Started. Listening and serving HTTP on %s", global.Version, addr)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			global.Logger.Errorf("HTTP server error: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	sig := <-quit
+	global.Logger.Infof("received signal %v, shutting down...", sig)
+
+	// 给进行中的请求留出完成时间
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		global.Logger.Errorf("server shutdown error: %v", err)
+		return err
+	}
+
+	global.Logger.Info("server exited gracefully")
+	return nil
 }
 
 func NewRouter() *gin.Engine {
