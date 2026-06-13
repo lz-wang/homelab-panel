@@ -10,6 +10,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 
 import App from './App'
+import { ConfirmProvider } from './components/common/ConfirmProvider'
 import { NotifyProvider } from './components/common/NotifyProvider'
 import { theme } from './theme/theme'
 
@@ -18,7 +19,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <NotifyProvider>
-        <App />
+        <ConfirmProvider>
+          <App />
+        </ConfirmProvider>
       </NotifyProvider>
     </ThemeProvider>
   </React.StrictMode>,

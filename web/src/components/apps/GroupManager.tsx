@@ -20,6 +20,7 @@ import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
 import { deletes, edit, getList, saveSort } from '@/api/panel/itemIconGroup'
+import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import type { SortItemRequest } from '@/types/common'
@@ -41,6 +42,7 @@ function move<T>(list: T[], index: number, direction: -1 | 1) {
 
 export function GroupManager() {
   const notify = useNotify()
+  const confirm = useConfirm()
   const [groups, setGroups] = useState<ItemIconGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [savingSort, setSavingSort] = useState(false)
@@ -105,8 +107,12 @@ export function GroupManager() {
     if (!group.id)
       return
 
-    // eslint-disable-next-line no-alert
-    const ok = window.confirm(t('common.deleteConfirmByName', { name: group.title ?? '' }))
+    const ok = await confirm({
+      title: t('common.delete'),
+      content: t('common.deleteConfirmByName', { name: group.title ?? '' }),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+    })
 
     if (!ok)
       return

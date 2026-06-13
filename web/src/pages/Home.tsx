@@ -22,6 +22,7 @@ import { deletes, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 import { getList as getGroupList } from '@/api/panel/itemIconGroup'
 import { AppStarter } from '@/components/apps/AppStarter'
 import { AppIcon } from '@/components/common/AppIcon'
+import { useConfirm } from '@/components/common/ConfirmProvider'
 import { EditItemDialog } from '@/components/common/EditItemDialog'
 import { IframeDialog } from '@/components/common/IframeDialog'
 import { useNotify } from '@/components/common/NotifyProvider'
@@ -58,6 +59,7 @@ function reorder<T>(list: T[], from: number, to: number): T[] {
 export default function Home() {
   const navigate = useNavigate()
   const notify = useNotify()
+  const confirm = useConfirm()
   const authStore = useAuthStore()
   const { panelConfig, networkMode, setNetworkMode, updatePanelConfigByCloud } = usePanelStore()
   const [items, setItems] = useState<ItemGroup[]>([])
@@ -201,8 +203,12 @@ export default function Home() {
     if (!canManage || !item.id)
       return
 
-    // eslint-disable-next-line no-alert
-    const ok = window.confirm(t('common.deleteConfirmByName', { name: item.title }))
+    const ok = await confirm({
+      title: t('common.delete'),
+      content: t('common.deleteConfirmByName', { name: item.title }),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+    })
 
     if (!ok)
       return

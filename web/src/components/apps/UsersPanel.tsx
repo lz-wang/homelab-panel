@@ -32,6 +32,7 @@ import {
   update,
 } from '@/api/panel/users'
 import { ImageUploadButton } from '@/components/common/ImageUploadButton'
+import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import type { SaveUserRequest, UserInfo } from '@/types/user'
@@ -46,6 +47,7 @@ const defaultUser: SaveUserRequest = {
 
 export function UsersPanel() {
   const notify = useNotify()
+  const confirm = useConfirm()
   const [users, setUsers] = useState<UserInfo[]>([])
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(0)
@@ -141,8 +143,12 @@ export function UsersPanel() {
     if (!user.id)
       return
 
-    // eslint-disable-next-line no-alert
-    const ok = window.confirm(t('common.deleteConfirmByName', { name: user.name ?? user.username ?? String(user.id) }))
+    const ok = await confirm({
+      title: t('common.delete'),
+      content: t('common.deleteConfirmByName', { name: user.name ?? user.username ?? String(user.id) }),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+    })
 
     if (!ok)
       return
