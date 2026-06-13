@@ -69,11 +69,6 @@ export interface ItemIconSortRequest {
   itemIconGroupId: number
 }
 
-export interface AddMultipleItemIconRequest {
-  itemIconGroupId: number
-  urls: string[]
-}
-
 export interface SiteFaviconRequest {
   url: string
 }
@@ -81,15 +76,6 @@ export interface SiteFaviconRequest {
 export interface SiteFaviconResponse {
   iconUrl?: string
   url?: string
-}
-
-export interface ModuleConfig {
-  id?: number
-  name: string
-  value?: string
-  userId?: number
-  createTime?: string
-  updateTime?: string
 }
 
 export interface FileInfo {

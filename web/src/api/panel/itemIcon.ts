@@ -1,7 +1,6 @@
 import { post } from '@/api/request'
 import type { ListResponse, SortItemRequest } from '@/types/common'
 import type {
-  AddMultipleItemIconRequest,
   ItemInfo,
   SiteFaviconRequest,
   SiteFaviconResponse,
@@ -38,8 +37,8 @@ export function edit(data: ItemInfo) {
   })
 }
 
-export function addMultiple(data: AddMultipleItemIconRequest) {
-  return post<void>({
+export function addMultiple(data: ItemInfo[]) {
+  return post<ItemInfo[]>({
     url: '/panel/itemIcon/addMultiple',
     data,
   })
