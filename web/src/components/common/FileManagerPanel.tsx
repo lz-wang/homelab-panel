@@ -4,11 +4,18 @@ import RefreshIcon from '@mui/icons-material/Refresh'
 import UploadIcon from '@mui/icons-material/Upload'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import FormControl from '@mui/material/FormControl'
 import IconButton from '@mui/material/IconButton'
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem from '@mui/material/MenuItem'
+import Pagination from '@mui/material/Pagination'
+import Select from '@mui/material/Select'
 import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { deletes, getList, uploadFiles } from '@/api/system/file'
 import { useConfirm } from '@/components/common/ConfirmProvider'
@@ -21,6 +28,10 @@ interface Props {
   onSelect?: (url: string) => void
 }
 
+type FileKindFilter = 'all' | 'image' | 'other'
+
+const pageSizeOptions = [12, 24, 48]
+
 function isImage(url: string) {
   return /\.(?:png|jpe?g|gif|webp|svg|ico)(?:\?.*)?$/i.test(url)
 }
@@ -32,6 +43,39 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
   const [files, setFiles] = useState<FileInfo[]>([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const [kindFilter, setKindFilter] = useState<FileKindFilter>('all')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(12)
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+
+  const filteredFiles = useMemo(() => {
+    const normalizedKeyword = keyword.trim().toLowerCase()
+
+    return files
+      .filter((file) => {
+        if (kindFilter === 'image')
+          return isImage(file.src)
+
+        if (kindFilter === 'other')
+          return !isImage(file.src)
+
+        return true
+      })
+      .filter((file) => {
+        if (!normalizedKeyword)
+          return true
+
+        return file.fileName.toLowerCase().includes(normalizedKeyword)
+          || file.src.toLowerCase().includes(normalizedKeyword)
+      })
+      .sort((a, b) => (b.createTime ?? '').localeCompare(a.createTime ?? ''))
+  }, [files, keyword, kindFilter])
+
+  const pageCount = Math.max(1, Math.ceil(filteredFiles.length / pageSize))
+  const pagedFiles = filteredFiles.slice((page - 1) * pageSize, page * pageSize)
+  const pagedSelectedIds = pagedFiles.filter(file => selectedIds.includes(file.id)).map(file => file.id)
+  const isCurrentPageSelected = Boolean(pagedFiles.length) && pagedSelectedIds.length === pagedFiles.length
 
   async function loadFiles() {
     setLoading(true)
@@ -52,6 +96,27 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
   useEffect(() => {
     loadFiles()
   }, [])
+
+  useEffect(() => {
+    setPage(1)
+  }, [keyword, kindFilter, pageSize])
+
+  useEffect(() => {
+    setPage(current => Math.min(current, pageCount))
+  }, [pageCount])
+
+  function toggleFile(fileId: number, checked: boolean) {
+    setSelectedIds(prev => checked ? Array.from(new Set([...prev, fileId])) : prev.filter(id => id !== fileId))
+  }
+
+  function toggleCurrentPage(checked: boolean) {
+    if (checked) {
+      setSelectedIds(prev => Array.from(new Set([...prev, ...pagedFiles.map(file => file.id)])))
+      return
+    }
+
+    setSelectedIds(prev => prev.filter(id => !pagedFiles.some(file => file.id === id)))
+  }
 
   async function handleUpload(selected?: FileList | null) {
     const nextFiles = Array.from(selected ?? [])
@@ -104,6 +169,34 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
     }
   }
 
+  async function handleBatchDelete() {
+    const filesToDelete = files.filter(file => selectedIds.includes(file.id))
+
+    if (!filesToDelete.length)
+      return
+
+    const ok = await confirm({
+      title: t('common.delete'),
+      content: `确定删除选中的 ${filesToDelete.length} 个文件吗？`,
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
+    })
+
+    if (!ok)
+      return
+
+    const res = await deletes(filesToDelete.map(file => file.id))
+
+    if (res.code === 0) {
+      notify.success(t('common.deleteSuccess'))
+      setSelectedIds([])
+      await loadFiles()
+    }
+    else {
+      notify.error(`${t('common.deleteFail')}:${res.msg}`)
+    }
+  }
+
   async function copyUrl(url: string) {
     await navigator.clipboard.writeText(url)
     notify.success('已复制 URL')
@@ -114,6 +207,15 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>文件管理</Typography>
         <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteIcon />}
+            disabled={!selectedIds.length}
+            onClick={handleBatchDelete}
+          >
+            批量删除
+          </Button>
           <Button variant="outlined" startIcon={<RefreshIcon />} loading={loading} onClick={loadFiles}>
             刷新
           </Button>
@@ -123,6 +225,62 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
         </Stack>
       </Stack>
 
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ alignItems: { md: 'center' } }}>
+        <TextField
+          label="搜索文件"
+          value={keyword}
+          onChange={event => setKeyword(event.target.value)}
+          fullWidth
+          size="small"
+        />
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>类型</InputLabel>
+          <Select
+            label="类型"
+            value={kindFilter}
+            onChange={event => setKindFilter(event.target.value as FileKindFilter)}
+          >
+            <MenuItem value="all">全部</MenuItem>
+            <MenuItem value="image">图片</MenuItem>
+            <MenuItem value="other">非图片</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>每页</InputLabel>
+          <Select
+            label="每页"
+            value={pageSize}
+            onChange={event => setPageSize(Number(event.target.value))}
+          >
+            {pageSizeOptions.map(option => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Stack>
+
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+        <Checkbox
+          checked={isCurrentPageSelected}
+          indeterminate={Boolean(pagedSelectedIds.length) && !isCurrentPageSelected}
+          disabled={!pagedFiles.length}
+          onChange={event => toggleCurrentPage(event.target.checked)}
+        />
+        <Typography variant="body2" color="text.secondary">
+          共
+          {' '}
+          {filteredFiles.length}
+          {' '}
+          个文件，已选择
+          {' '}
+          {selectedIds.length}
+          {' '}
+          个
+        </Typography>
+      </Stack>
+
       <Box
         sx={{
           display: 'grid',
@@ -130,10 +288,11 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
           gap: 1.5,
         }}
       >
-        {files.map(file => (
+        {pagedFiles.map(file => (
           <Box
             key={file.id}
             sx={{
+              position: 'relative',
               border: 1,
               borderColor: 'divider',
               borderRadius: 1,
@@ -141,6 +300,11 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
               bgcolor: 'background.paper',
             }}
           >
+            <Checkbox
+              checked={selectedIds.includes(file.id)}
+              onChange={event => toggleFile(file.id, event.target.checked)}
+              sx={{ position: 'absolute', zIndex: 1, bgcolor: 'rgba(255,255,255,0.72)' }}
+            />
             <Box
               sx={{
                 height: 96,
@@ -159,6 +323,9 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                 <Typography variant="body2" noWrap>{file.fileName}</Typography>
               </Tooltip>
               <Typography variant="caption" color="text.secondary" noWrap>{file.src}</Typography>
+              {file.createTime && (
+                <Typography variant="caption" color="text.secondary" noWrap>{file.createTime}</Typography>
+              )}
               <Stack direction="row" spacing={0.5} sx={{ justifyContent: 'space-between' }}>
                 {selectable && (
                   <Button size="small" onClick={() => onSelect?.(file.src)}>
@@ -182,7 +349,13 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
         ))}
       </Box>
 
-      {!files.length && !loading && (
+      {pageCount > 1 && (
+        <Stack direction="row" sx={{ justifyContent: 'center' }}>
+          <Pagination count={pageCount} page={page} onChange={(_, value) => setPage(value)} />
+        </Stack>
+      )}
+
+      {!filteredFiles.length && !loading && (
         <Typography color="text.secondary">暂无文件</Typography>
       )}
 
