@@ -180,9 +180,10 @@ export function StylePanel() {
       </Box>
 
       <TextField
-        label="页脚 HTML"
+        label="页脚 HTML（仅可信管理员）"
         value={form.footerHtml ?? ''}
         onChange={event => patch({ footerHtml: event.target.value })}
+        helperText="页脚内容会作为 HTML 渲染，仅应由可信管理员维护。"
         fullWidth
         multiline
         minRows={3}
