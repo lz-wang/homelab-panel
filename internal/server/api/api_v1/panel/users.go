@@ -51,12 +51,12 @@ func (a UsersApi) Create(c *gin.Context) {
 	}
 
 	// 验证账号是否存在
-	if _, err := mUser.CheckUsernameExist(param.Username); err != nil {
+	if _, err := mUser.CheckUsernameExist(global.Db, param.Username); err != nil {
 		apiReturn.ErrorByCode(c, 1006)
 		return
 	}
 
-	userInfo, err := mUser.CreateOne()
+	userInfo, err := mUser.CreateOne(global.Db)
 
 	if err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
@@ -161,7 +161,7 @@ func (a UsersApi) Update(c *gin.Context) {
 
 	userInfo := models.User{}
 	// 验证账号是否存在
-	if user, err := mUser.CheckUsernameExist(param.Username); err != nil {
+	if user, err := mUser.CheckUsernameExist(global.Db, param.Username); err != nil {
 		userInfo = user
 		if user.ID != param.ID {
 			apiReturn.ErrorByCode(c, 1006)

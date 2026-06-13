@@ -61,7 +61,7 @@ func (a *UserApi) UpdateInfo(c *gin.Context) {
 	}
 
 	mUser := models.User{}
-	err = mUser.UpdateUserInfoByUserId(userInfo.ID, map[string]interface{}{
+	err = mUser.UpdateUserInfoByUserId(global.Db, userInfo.ID, map[string]interface{}{
 		"head_image": params.HeadImage,
 		"name":       params.Name,
 	})
@@ -89,7 +89,7 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 	}
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	mUser := models.User{}
-	if v, err := mUser.GetUserInfoByUid(userInfo.ID); err != nil {
+	if v, err := mUser.GetUserInfoByUid(global.Db, userInfo.ID); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return
 	} else {
@@ -116,7 +116,7 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 func (a *UserApi) GetReferralCode(c *gin.Context) {
 	currentUserInfo, _ := base.GetCurrentUserInfo(c)
 	mUser := models.User{}
-	userInfo, err := mUser.GetUserInfoByUid(currentUserInfo.ID)
+	userInfo, err := mUser.GetUserInfoByUid(global.Db, currentUserInfo.ID)
 	if err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return

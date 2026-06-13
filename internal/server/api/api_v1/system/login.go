@@ -49,7 +49,7 @@ func (l LoginApi) Login(c *gin.Context) {
 	bToken := ""
 	param.Username = strings.TrimSpace(param.Username)
 	// 先按用户名查询，再校验密码（bcrypt 哈希含随机 salt，无法在 SQL 层比对）
-	if info, err = mUser.GetUserInfoByUsername(param.Username); err != nil {
+	if info, err = mUser.GetUserInfoByUsername(global.Db, param.Username); err != nil {
 		// 未找到记录 账号或密码错误
 		if err == gorm.ErrRecordNotFound {
 			apiReturn.ErrorByCode(c, 1003)
@@ -72,7 +72,7 @@ func (l LoginApi) Login(c *gin.Context) {
 	// 旧哈希迁移：校验通过后自动升级为 bcrypt
 	if cmn.IsLegacyPassword(info.Password) {
 		newHash := cmn.PasswordEncryption(param.Password)
-		if err := mUser.UpdateUserInfoByUserId(info.ID, map[string]interface{}{
+		if err := mUser.UpdateUserInfoByUserId(global.Db, info.ID, map[string]interface{}{
 			"password": newHash,
 		}); err != nil {
 			apiReturn.Error(c, err.Error())
@@ -95,13 +95,13 @@ func (l LoginApi) Login(c *gin.Context) {
 		for i := 0; i < maxTokenRetries; i++ {
 			candidate := cmn.BuildRandCode(32, cmn.RAND_CODE_MODE2)
 			// 仅当确认为"未找到记录"（即无碰撞）时才采用该候选 token
-			if _, err := mUser.GetUserInfoByToken(candidate); err != nil {
+			if _, err := mUser.GetUserInfoByToken(global.Db, candidate); err != nil {
 				if err != gorm.ErrRecordNotFound {
 					apiReturn.Error(c, err.Error())
 					return
 				}
 				// 保存 token，处理写入错误（原先被丢弃）
-				if err := mUser.UpdateUserInfoByUserId(info.ID, map[string]interface{}{
+				if err := mUser.UpdateUserInfoByUserId(global.Db, info.ID, map[string]interface{}{
 					"token": candidate,
 				}); err != nil {
 					apiReturn.Error(c, err.Error())

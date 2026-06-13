@@ -1,5 +1,7 @@
 package models
 
+import "gorm.io/gorm"
+
 type File struct {
 	BaseModel
 	Src      string `json:"src"`
@@ -10,14 +12,14 @@ type File struct {
 }
 
 // 添加一个文件记录
-func (m *File) AddFile(userId uint, fileName, ext, src string) (File, error) {
+func (m *File) AddFile(db *gorm.DB, userId uint, fileName, ext, src string) (File, error) {
 	file := File{
 		UserId:   userId,
 		FileName: fileName,
 		Src:      src,
 		Ext:      ext,
 	}
-	err := Db.Create(&file).Error
+	err := db.Create(&file).Error
 
 	return file, err
 }

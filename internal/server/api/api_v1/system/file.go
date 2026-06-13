@@ -54,7 +54,7 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 
 		// 像数据库添加记录
 		mFile := models.File{}
-		mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
+		mFile.AddFile(global.Db, userInfo.ID, f.Filename, fileExt, filepath)
 		apiReturn.SuccessData(c, gin.H{
 			"imageUrl": filepath[1:],
 		})
@@ -88,7 +88,7 @@ func (a *FileApi) UploadFiles(c *gin.Context) {
 			// 成功
 			// 像数据库添加记录
 			mFile := models.File{}
-			mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
+			mFile.AddFile(global.Db, userInfo.ID, f.Filename, fileExt, filepath)
 			succMap[f.Filename] = filepath[1:]
 		}
 	}

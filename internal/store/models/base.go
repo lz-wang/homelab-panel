@@ -39,5 +39,3 @@ func calcPage(page_size, limit_size int) (offset, limit int) {
 	limit = limit_size
 	return
 }
-
-var Db *gorm.DB

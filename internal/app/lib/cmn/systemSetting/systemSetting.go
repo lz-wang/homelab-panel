@@ -17,6 +17,7 @@ const (
 
 type SystemSettingCache struct {
 	Cache cache.Cacher[interface{}]
+	Db    *gorm.DB
 }
 
 var (
@@ -32,7 +33,7 @@ func (s *SystemSettingCache) GetValueString(configName string) (result string, e
 	}
 
 	mSetting := models.SystemSetting{}
-	result, err = mSetting.Get(configName)
+	result, err = mSetting.Get(s.Db, configName)
 	if err == gorm.ErrRecordNotFound {
 		err = ErrorNoExists
 	}
@@ -53,7 +54,7 @@ func (s *SystemSettingCache) GetValueByInterface(configName string, value interf
 	}
 
 	mSetting := models.SystemSetting{}
-	result, err := mSetting.Get(configName)
+	result, err := mSetting.Get(s.Db, configName)
 	if err == gorm.ErrRecordNotFound {
 		err = ErrorNoExists
 		return err
@@ -69,6 +70,6 @@ func (s *SystemSettingCache) GetValueByInterface(configName string, value interf
 func (s *SystemSettingCache) Set(configName string, configValue interface{}) error {
 	s.Cache.Delete(configName)
 	mSetting := models.SystemSetting{}
-	err := mSetting.Set(configName, configValue)
+	err := mSetting.Set(s.Db, configName, configValue)
 	return err
 }

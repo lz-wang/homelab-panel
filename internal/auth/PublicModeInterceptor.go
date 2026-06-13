@@ -32,7 +32,7 @@ func PublicModeInterceptor(c *gin.Context) {
 				global.Logger.Debug("数据库查询TOKEN:", token)
 				mUser := models.User{}
 				// 去库中查询是否存在该用户
-				if info, err := mUser.GetUserInfoByToken(token); err == nil && info.Token != "" && info.ID != 0 {
+				if info, err := mUser.GetUserInfoByToken(global.Db, token); err == nil && info.Token != "" && info.ID != 0 {
 					global.Logger.Debug("数据库查询用户:", info.ID)
 					// 通过 设置当前用户信息
 					global.UserToken.SetDefault(info.Token, info)

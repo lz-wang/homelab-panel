@@ -49,7 +49,6 @@ func DatabaseConnect() {
 		global.Logger.Panicf("数据库初始化错误: %v", err)
 	} else {
 		global.Db = db
-		models.Db = global.Db
 	}
 
 	store.CreateDatabase(global.Db)
