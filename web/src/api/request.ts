@@ -1,12 +1,12 @@
 import axios, { type AxiosProgressEvent } from 'axios'
 
+import {
+  type ApiResponse,
+  handleLoginExpiration,
+  normalizeApiError,
+  normalizeApiResponse,
+} from '@/api/apiResult'
 import { useAuthStore } from '@/store/auth'
-
-export interface ApiResponse<T = unknown> {
-  data: T
-  msg: string
-  code: number
-}
 
 export interface HttpOption {
   url: string
@@ -34,26 +34,33 @@ request.interceptors.request.use((config) => {
 
 export async function http<T = unknown>(option: HttpOption): Promise<ApiResponse<T>> {
   const method = option.method ?? 'GET'
-  const response = method === 'GET'
-    ? await request.get<ApiResponse<T>>(option.url, {
-        params: option.data,
-        signal: option.signal,
-        onDownloadProgress: option.onDownloadProgress,
-      })
-    : await request.post<ApiResponse<T>>(option.url, option.data ?? {}, {
-        headers: option.headers,
-        signal: option.signal,
-        onDownloadProgress: option.onDownloadProgress,
-      })
 
-  const res = response.data
+  try {
+    const response = method === 'GET'
+      ? await request.get<ApiResponse<T>>(option.url, {
+          params: option.data,
+          signal: option.signal,
+          onDownloadProgress: option.onDownloadProgress,
+        })
+      : await request.post<ApiResponse<T>>(option.url, option.data ?? {}, {
+          headers: option.headers,
+          signal: option.signal,
+          onDownloadProgress: option.onDownloadProgress,
+        })
 
-  if (res.code === 1000 || res.code === 1001) {
-    useAuthStore.getState().removeToken()
-    window.location.hash = '#/login'
+    const res = normalizeApiResponse<T>(response.data)
+
+    handleLoginExpiration(res)
+
+    return res
   }
+  catch (error) {
+    const res = normalizeApiError<T>(error)
 
-  return res
+    handleLoginExpiration(res)
+
+    return res
+  }
 }
 
 export function get<T = unknown>(option: Omit<HttpOption, 'method'>) {
