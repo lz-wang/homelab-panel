@@ -6,7 +6,6 @@ import (
 	"homelab-panel/internal/app"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/server/router"
-	embeddedAssets "homelab-panel/internal/webui/assets"
 	"log"
 	"os"
 
@@ -26,13 +25,9 @@ var version = "dev"
 //go:embed all:web/dist
 var webFS embed.FS
 
-//go:embed internal/webui/assets/version
-var assetsFS embed.FS
-
 func main() {
 	global.Version = version
 	global.WebFS = webFS
-	embeddedAssets.FS = assetsFS
 
 	cliApp := &cli.App{
 		Name:    "homelab-panel",

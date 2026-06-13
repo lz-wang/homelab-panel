@@ -3,13 +3,10 @@ package cmn
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"homelab-panel/internal/webui/assets"
 	"math/rand"
 	"os"
-	"path"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -29,11 +26,6 @@ const (
 	RAND_CODE_MODE2 = "abcdefghijklmnopqrstuvwxyz0123456789"                           // 小写，数字
 	RAND_CODE_MODE3 = "0123456789"                                                     // 数字
 )
-
-type Version_Info struct {
-	Version      string
-	Version_code int
-}
 
 func GetTime() string {
 	return time.Unix(time.Now().Unix(), 0).Format(TimeFormatMode1)
@@ -104,18 +96,6 @@ func StrToUint(s string) uint {
 	// i, _ := strconv.Atoi(s)
 	u, _ := strconv.ParseUint(s, 10, 64)
 	return uint(u)
-}
-
-// 获取系统信息
-func GetSysVersionInfo() Version_Info {
-	cBytes, _ := assets.Asset("assets/version")
-	c := string(cBytes)
-	info := strings.Split(c, "|")
-
-	return Version_Info{
-		Version_code: StrToInt(info[0]),
-		Version:      info[1],
-	}
 }
 
 // 文件是否存在
@@ -190,24 +170,6 @@ func InArray[T uint | int | int8 | int64 | float32 | float64 | string](arr []T, 
 	})
 
 	return index < len(arr) && arr[index] == item
-}
-
-// 从Assets文件夹中抽取文件保存到路劲
-// AssetsTakeFileToPath("config.ini", targetPath string)
-func AssetsTakeFileToPath(assetsPath, targetPath string) error {
-	bytes, _ := assets.Asset("assets/" + assetsPath)
-	targetPathPath := path.Dir(targetPath)
-	exists, err := PathExists(targetPathPath)
-
-	if err != nil {
-		return err
-	}
-	if !exists {
-		if err := os.MkdirAll(targetPathPath, 0777); err != nil {
-			return err
-		}
-	}
-	return os.WriteFile(targetPath, bytes, 0666)
 }
 
 // 密码加密
