@@ -23,10 +23,18 @@ export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void })
               <SearchIcon />
             </InputAdornment>
           ),
-          sx: {
-            bgcolor: 'rgba(255,255,255,0.86)',
-            borderRadius: 2,
-          },
+          sx: theme => ({
+            bgcolor: `rgba(${theme.vars.palette.primary.mainChannel} / 0.14)`,
+            color: theme.vars.palette.m3.onSurface,
+            borderRadius: 7,
+            backdropFilter: 'blur(18px)',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.vars.palette.m3.outlineVariant,
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.vars.palette.m3.outline,
+            },
+          }),
         },
       }}
     />

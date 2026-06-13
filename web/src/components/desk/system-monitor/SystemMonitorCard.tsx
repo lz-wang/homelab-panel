@@ -17,21 +17,35 @@ export function SystemMonitorCard({
   return (
     <Paper
       elevation={0}
-      sx={{
+      sx={theme => ({
         width: 210,
-        p: 1.5,
-        bgcolor: 'rgba(20,20,20,0.55)',
-        color: 'white',
-        border: '1px solid rgba(255,255,255,0.12)',
-      }}
+        p: 2,
+        borderRadius: 6,
+        bgcolor: `rgba(${theme.vars.palette.primary.mainChannel} / 0.14)`,
+        color: theme.vars.palette.m3.onSurface,
+        border: `1px solid ${theme.vars.palette.m3.outlineVariant}`,
+        backdropFilter: 'blur(18px)',
+      })}
     >
       <Stack spacing={1}>
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
           {icon}
           <Typography variant="body2" sx={{ fontWeight: 700 }}>{title}</Typography>
         </Stack>
-        <LinearProgress variant="determinate" value={value} sx={{ height: 8, borderRadius: 1 }} />
-        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.75)' }}>
+        <LinearProgress
+          variant="determinate"
+          value={value}
+          sx={theme => ({
+            height: 8,
+            borderRadius: 999,
+            bgcolor: theme.vars.palette.m3.surfaceContainerHighest,
+            '& .MuiLinearProgress-bar': {
+              borderRadius: 999,
+              bgcolor: theme.vars.palette.primary.main,
+            },
+          })}
+        />
+        <Typography variant="caption" sx={theme => ({ color: theme.vars.palette.m3.onSurfaceVariant })}>
           {value}
           % ·
           {' '}
