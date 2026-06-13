@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"homelab-panel/internal/app/lib/cmn"
 	"homelab-panel/internal/store/models"
 	"os"
@@ -81,16 +82,20 @@ func NotFoundAndCreateUser(db *gorm.DB) error {
 			return err
 		}
 		username := "admin"
+		// 随机生成初始密码并打印一次，避免硬编码弱口令 admin/admin
+		password := cmn.BuildRandCode(16, cmn.RAND_CODE_MODE1)
 		fUser.Mail = username
 		fUser.Username = username
 		fUser.Name = username
 		fUser.Status = 1
 		fUser.Role = 1
-		fUser.Password = cmn.PasswordEncryption("admin")
+		fUser.Password = cmn.PasswordEncryption(password)
 
 		if errCreate := db.Create(&fUser).Error; errCreate != nil {
 			return errCreate
 		}
+
+		fmt.Printf("[init] initial admin account created.\n[init] username: %s\n[init] password: %s\n", username, password)
 	}
 
 	return nil

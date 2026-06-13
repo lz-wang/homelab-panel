@@ -64,7 +64,8 @@ func ResetAdminPassword() error {
 		return err
 	}
 
-	newPassword := "admin"
+	// 随机生成新密码并打印一次，避免重置为固定弱口令
+	newPassword := cmn.BuildRandCode(16, cmn.RAND_CODE_MODE1)
 
 	updateInfo := models.User{
 		Password: cmn.PasswordEncryption(newPassword),
