@@ -118,7 +118,7 @@ func (l LoginApi) Login(c *gin.Context) {
 		}
 		info.Token = bToken
 	}
-	info.Password = ""
+	info.Password = "" // 即使已 json:"-"，仍清空避免在上下文中携带哈希
 	info.ReferralCode = ""
 
 	cToken := uuid.NewString() + "-" + cmn.Md5(cmn.Md5("userId"+strconv.Itoa(int(info.ID))))
@@ -126,10 +126,23 @@ func (l LoginApi) Login(c *gin.Context) {
 	global.Logger.Debug("token:", cToken, "|", bToken)
 	global.Logger.Debug(global.CUserToken.Get(cToken))
 
-	// 设置当前用户信息
-	c.Set("userInfo", info)
+	// 设置当前用户信息（上下文内传递，不经过 JSON 序列化）
 	info.Token = cToken // 重要 采用cToken,隐藏真实token
-	apiReturn.SuccessData(c, info)
+	c.Set("userInfo", info)
+	// 登录响应显式返回会话 token（cToken），model 上的 Password/Token 已 json:"-"
+	apiReturn.SuccessData(c, gin.H{
+		"id":         info.ID,
+		"userId":     info.ID,
+		"username":   info.Username,
+		"name":       info.Name,
+		"headImage":  info.HeadImage,
+		"status":     info.Status,
+		"role":       info.Role,
+		"mail":       info.Mail,
+		"createTime": info.CreatedAt,
+		"updateTime": info.UpdatedAt,
+		"token":      cToken,
+	})
 }
 
 // 安全退出
