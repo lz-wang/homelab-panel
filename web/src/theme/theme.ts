@@ -5,7 +5,9 @@ import { md3Components } from './md3Components'
 import { md3Typography } from './md3Typography'
 
 export const theme = createTheme({
-  cssVariables: true,
+  cssVariables: {
+    colorSchemeSelector: 'class',
+  },
   colorSchemes: {
     light: {
       palette: {
