@@ -1,11 +1,7 @@
-package commonApiStructs
+// Package dto 存放各 HTTP 接口共用的请求/响应结构体，集中管理以避免过深的目录嵌套。
+package dto
 
-type RequestPage struct {
-	Page    int    `json:"page"`
-	Limit   int    `json:"limit"`
-	Keyword string `json:"keyword"`
-}
-
+// RequestDeleteIds 批量删除请求（泛型支持 int/uint 主键）
 type RequestDeleteIds[T int | uint] struct {
 	Ids []T `json:"ids"`
 }

@@ -1,8 +1,8 @@
 package panel
 
 import (
+	"homelab-panel/internal/api/dto"
 	"homelab-panel/internal/app/global"
-	"homelab-panel/internal/server/api/api_v1/common/apiData/commonApiStructs"
 	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 	"homelab-panel/internal/server/api/api_v1/common/base"
 	"homelab-panel/internal/store/models"
@@ -89,7 +89,7 @@ func (a *ItemIconGroup) GetList(c *gin.Context) {
 }
 
 func (a *ItemIconGroup) Deletes(c *gin.Context) {
-	req := commonApiStructs.RequestDeleteIds[uint]{}
+	req := dto.RequestDeleteIds[uint]{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -132,7 +132,7 @@ func (a *ItemIconGroup) Deletes(c *gin.Context) {
 
 // 保存排序
 func (a *ItemIconGroup) SaveSort(c *gin.Context) {
-	req := commonApiStructs.SortRequest{}
+	req := dto.SortRequest{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())

@@ -2,9 +2,9 @@ package system
 
 import (
 	"fmt"
+	"homelab-panel/internal/api/dto"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
-	"homelab-panel/internal/server/api/api_v1/common/apiData/commonApiStructs"
 	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 	"homelab-panel/internal/server/api/api_v1/common/base"
 	"homelab-panel/internal/store/models"
@@ -123,7 +123,7 @@ func (a *FileApi) GetList(c *gin.Context) {
 }
 
 func (a *FileApi) Deletes(c *gin.Context) {
-	req := commonApiStructs.RequestDeleteIds[uint]{}
+	req := dto.RequestDeleteIds[uint]{}
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())

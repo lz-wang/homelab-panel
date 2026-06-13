@@ -1,8 +1,8 @@
 package system
 
 import (
+	"homelab-panel/internal/api/dto"
 	"homelab-panel/internal/app/global"
-	"homelab-panel/internal/server/api/api_v1/common/apiData/systemApiStructs"
 	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 	"homelab-panel/internal/store/models"
 
@@ -14,7 +14,7 @@ type NoticeApi struct {
 }
 
 func (a *NoticeApi) GetListByDisplayType(c *gin.Context) {
-	req := systemApiStructs.NoticeGetListByDisplayTypeReq{}
+	req := dto.NoticeGetListByDisplayTypeReq{}
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return

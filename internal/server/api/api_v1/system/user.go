@@ -1,9 +1,9 @@
 package system
 
 import (
+	"homelab-panel/internal/api/dto"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
-	"homelab-panel/internal/server/api/api_v1/common/apiData/systemApiStructs"
 	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 	"homelab-panel/internal/server/api/api_v1/common/base"
 	"homelab-panel/internal/store/models"
@@ -145,5 +145,5 @@ func (a *UserApi) GetReferralCode(c *gin.Context) {
 		}
 	}
 
-	apiReturn.SuccessData(c, systemApiStructs.GetReferralCodeResp{ReferralCode: userInfo.ReferralCode})
+	apiReturn.SuccessData(c, dto.GetReferralCodeResp{ReferralCode: userInfo.ReferralCode})
 }

@@ -3,11 +3,10 @@ package panel
 import (
 	"encoding/json"
 	"fmt"
+	"homelab-panel/internal/api/dto"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
 	"homelab-panel/internal/app/lib/siteFavicon"
-	"homelab-panel/internal/server/api/api_v1/common/apiData/commonApiStructs"
-	"homelab-panel/internal/server/api/api_v1/common/apiData/panelApiStructs"
 	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 	"homelab-panel/internal/server/api/api_v1/common/base"
 	"homelab-panel/internal/store/models"
@@ -116,7 +115,7 @@ func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
 }
 
 func (a *ItemIcon) Deletes(c *gin.Context) {
-	req := commonApiStructs.RequestDeleteIds[uint]{}
+	req := dto.RequestDeleteIds[uint]{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -134,7 +133,7 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 
 // 保存排序
 func (a *ItemIcon) SaveSort(c *gin.Context) {
-	req := panelApiStructs.ItemIconSaveSortRequest{}
+	req := dto.ItemIconSaveSortRequest{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -167,13 +166,13 @@ func (a *ItemIcon) SaveSort(c *gin.Context) {
 // 支持获取并直接下载对方网站图标到服务器
 func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	req := panelApiStructs.ItemIconGetSiteFaviconReq{}
+	req := dto.ItemIconGetSiteFaviconReq{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return
 	}
-	resp := panelApiStructs.ItemIconGetSiteFaviconResp{}
+	resp := dto.ItemIconGetSiteFaviconResp{}
 	fullUrl := ""
 	if iconUrl, err := siteFavicon.GetOneFaviconURL(req.Url); err != nil {
 		apiReturn.Error(c, "acquisition failed: get ico error:"+err.Error())
