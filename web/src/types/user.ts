@@ -1,0 +1,13 @@
+export interface UserInfo {
+  id?: number
+  name?: string
+  createTime?: string
+  username?: string
+  password?: string
+  headImage?: string
+  status?: number
+  role?: number
+  mail?: string
+  token?: string
+  isAdmin?: number
+}

@@ -9,6 +9,7 @@ export default antfu({
     'dist',
     'node_modules',
     'src/views/exception/test/**',
+    '../_backup_vue_frontend/**',
   ],
   rules: {
     'antfu/consistent-chaining': 'off',
