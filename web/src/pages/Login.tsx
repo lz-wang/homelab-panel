@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { login } from '@/api/auth'
 import { useNotify } from '@/components/common/NotifyProvider'
+import { VisitMode } from '@/constants/auth'
 import { t } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 import type { LoginRequest } from '@/types/login'
@@ -22,6 +23,8 @@ export default function Login() {
   const notify = useNotify()
   const setToken = useAuthStore(s => s.setToken)
   const setUserInfo = useAuthStore(s => s.setUserInfo)
+  const setVisitMode = useAuthStore(s => s.setVisitMode)
+  const setInitialized = useAuthStore(s => s.setInitialized)
   const [form, setForm] = useState<LoginRequest>({
     username: '',
     password: '',
@@ -37,6 +40,8 @@ export default function Login() {
       if (res.code === 0) {
         setToken(res.data.token)
         setUserInfo(res.data)
+        setVisitMode(VisitMode.VISIT_MODE_LOGIN)
+        setInitialized(true)
         notify.success(`Hi ${res.data.name ?? res.data.username ?? ''},${t('login.welcomeMessage')}`)
         navigate('/')
       }
