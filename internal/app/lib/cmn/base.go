@@ -157,7 +157,7 @@ func InStringArray(arr []string, item string) bool {
 			return true
 		}
 	}
-	return true
+	return false
 }
 
 func InArray[T uint | int | int8 | int64 | float32 | float64 | string](arr []T, item T) bool {
