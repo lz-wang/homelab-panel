@@ -2,6 +2,7 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import LanIcon from '@mui/icons-material/Lan'
+import LoginIcon from '@mui/icons-material/Login'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import PublicIcon from '@mui/icons-material/Public'
 import SaveIcon from '@mui/icons-material/Save'
@@ -15,6 +16,7 @@ import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { deletes, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 import { getList as getGroupList } from '@/api/panel/itemIconGroup'
@@ -54,6 +56,7 @@ function reorder<T>(list: T[], from: number, to: number): T[] {
 }
 
 export default function Home() {
+  const navigate = useNavigate()
   const notify = useNotify()
   const authStore = useAuthStore()
   const { panelConfig, networkMode, setNetworkMode, updatePanelConfigByCloud } = usePanelStore()
@@ -74,6 +77,7 @@ export default function Home() {
     mouseY: number
     item: ItemInfo | null
   } | null>(null)
+  const canManage = authStore.visitMode === VisitMode.VISIT_MODE_LOGIN && authStore.isLoggedIn()
 
   async function loadList() {
     const groupRes = await getGroupList()
@@ -175,7 +179,7 @@ export default function Home() {
   }
 
   async function handleSaveSort(group: ItemGroup) {
-    if (!group.id || !group.items)
+    if (!canManage || !group.id || !group.items)
       return
 
     const sortItems: SortItemRequest[] = group.items.map((item, index) => ({
@@ -194,7 +198,7 @@ export default function Home() {
   }
 
   async function handleDelete(item: ItemInfo) {
-    if (!item.id)
+    if (!canManage || !item.id)
       return
 
     // eslint-disable-next-line no-alert
@@ -240,12 +244,18 @@ export default function Home() {
   }
 
   function handleEditItem(item: ItemInfo) {
+    if (!canManage)
+      return
+
     setEditItem({ ...item })
     setAddItemIconGroupId(undefined)
     setEditItemOpen(true)
   }
 
   function handleAddItem(itemIconGroupId?: number) {
+    if (!canManage)
+      return
+
     setEditItem(null)
     setAddItemIconGroupId(itemIconGroupId)
     setEditItemOpen(true)
@@ -314,7 +324,7 @@ export default function Home() {
                   <Typography color="white" variant="h6" sx={{ fontWeight: 800, textShadow: '2px 2px 50px #000' }}>
                     {group.title}
                   </Typography>
-                  {authStore.visitMode === VisitMode.VISIT_MODE_LOGIN && (
+                  {canManage && (
                     <Stack direction="row" spacing={0.5}>
                       <Tooltip title={t('common.add')}>
                         <Fab size="small" color="default" onClick={() => handleAddItem(group.id)}>
@@ -426,7 +436,7 @@ export default function Home() {
             {t('panelHome.openWanUrl')}
           </MenuItem>
         )}
-        {authStore.visitMode === VisitMode.VISIT_MODE_LOGIN && (
+        {canManage && (
           <MenuItem
             onClick={() => {
               if (contextMenu?.item)
@@ -437,7 +447,7 @@ export default function Home() {
             {t('common.edit')}
           </MenuItem>
         )}
-        {authStore.visitMode === VisitMode.VISIT_MODE_LOGIN && (
+        {canManage && (
           <MenuItem
             onClick={() => {
               if (contextMenu?.item)
@@ -452,11 +462,20 @@ export default function Home() {
       </Menu>
 
       <Stack spacing={1} sx={{ position: 'fixed', right: 10, bottom: 50 }}>
-        <Tooltip title="设置">
-          <Fab size="small" onClick={() => setSettingsOpen(true)}>
-            <SettingsIcon />
-          </Fab>
-        </Tooltip>
+        {canManage && (
+          <Tooltip title="设置">
+            <Fab size="small" onClick={() => setSettingsOpen(true)}>
+              <SettingsIcon />
+            </Fab>
+          </Tooltip>
+        )}
+        {!canManage && authStore.visitMode === VisitMode.VISIT_MODE_PUBLIC && (
+          <Tooltip title="登录">
+            <Fab size="small" onClick={() => navigate('/login')}>
+              <LoginIcon />
+            </Fab>
+          </Tooltip>
+        )}
         {panelConfig.netModeChangeButtonShow && (
           <Tooltip title={networkMode === PanelStateNetworkModeEnum.lan ? t('panelHome.changeToWanModel') : t('panelHome.changeToLanModel')}>
             <Fab
