@@ -1,4 +1,5 @@
 import AddIcon from '@mui/icons-material/Add'
+import CancelIcon from '@mui/icons-material/Cancel'
 import DeleteIcon from '@mui/icons-material/Delete'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import LanIcon from '@mui/icons-material/Lan'
@@ -65,6 +66,7 @@ export default function Home() {
   const [items, setItems] = useState<ItemGroup[]>([])
   const [keyword, setKeyword] = useState('')
   const [dragState, setDragState] = useState<DragState | null>(null)
+  const [sortSnapshots, setSortSnapshots] = useState<Record<number, ItemInfo[]>>({})
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [editItemOpen, setEditItemOpen] = useState(false)
   const [editItem, setEditItem] = useState<ItemInfo | null>(null)
@@ -173,8 +175,31 @@ export default function Home() {
     openPage(item.openMethod, getItemUrl(item), item.title)
   }
 
+  function getSourceGroupIndex(group: ItemGroup, fallbackIndex: number) {
+    if (!group.id)
+      return fallbackIndex
+
+    const index = items.findIndex(item => item.id === group.id)
+
+    return index >= 0 ? index : fallbackIndex
+  }
+
   function setGroupSortStatus(groupIndex: number, sortStatus: boolean) {
-    setItems(prev => prev.map((group, index) => index === groupIndex ? { ...group, sortStatus } : group))
+    const group = items[groupIndex]
+
+    if (sortStatus && group?.id) {
+      setSortSnapshots(snapshots => ({
+        ...snapshots,
+        [group.id as number]: [...(group.items ?? [])],
+      }))
+    }
+
+    setItems(prev => prev.map((group, index) => {
+      if (index !== groupIndex)
+        return group
+
+      return { ...group, sortStatus }
+    }))
   }
 
   async function handleSaveSort(group: ItemGroup) {
@@ -192,10 +217,35 @@ export default function Home() {
     if (res.code === 0) {
       notify.success(t('common.saveSuccess'))
       setItems(prev => prev.map(item => item.id === group.id ? { ...item, sortStatus: false } : item))
+      if (group.id) {
+        setSortSnapshots(prev => {
+          const next = { ...prev }
+          delete next[group.id as number]
+          return next
+        })
+      }
     }
     else {
       notify.error(`${t('common.saveFail')}:${res.msg}`)
     }
+  }
+
+  function handleCancelSort(group: ItemGroup) {
+    if (!group.id)
+      return
+
+    const snapshot = sortSnapshots[group.id]
+
+    setItems(prev => prev.map(item => item.id === group.id ? {
+      ...item,
+      sortStatus: false,
+      items: snapshot ?? item.items,
+    } : item))
+    setSortSnapshots(prev => {
+      const next = { ...prev }
+      delete next[group.id as number]
+      return next
+    })
   }
 
   async function handleDelete(item: ItemInfo) {
@@ -315,84 +365,93 @@ export default function Home() {
               <SystemMonitor showTitle={panelConfig.systemMonitorShowTitle} />
             )}
 
-            {filteredItems.map((group, groupIndex) => (
-              <Box
-                key={group.id ?? groupIndex}
-                sx={{
-                  mt: 6,
-                  p: group.sortStatus ? 1.25 : 0,
-                  borderRadius: 2,
-                  boxShadow: group.sortStatus ? '0 0 30px 10px rgba(0,0,0,0.3)' : 'none',
-                }}
-              >
-                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
-                  <Typography color="white" variant="h6" sx={{ fontWeight: 800, textShadow: '2px 2px 50px #000' }}>
-                    {group.title}
-                  </Typography>
-                  {canManage && (
-                    <Stack direction="row" spacing={0.5}>
-                      <Tooltip title={t('common.add')}>
-                        <Fab size="small" color="default" onClick={() => handleAddItem(group.id)}>
-                          <AddIcon fontSize="small" />
-                        </Fab>
-                      </Tooltip>
-                      <Tooltip title={t('common.sort')}>
-                        <Fab size="small" color="default" onClick={() => setGroupSortStatus(groupIndex, !group.sortStatus)}>
-                          <DragIndicatorIcon fontSize="small" />
-                        </Fab>
-                      </Tooltip>
-                    </Stack>
-                  )}
-                </Stack>
+            {filteredItems.map((group, groupIndex) => {
+              const sourceGroupIndex = getSourceGroupIndex(group, groupIndex)
 
+              return (
                 <Box
+                  key={group.id ?? groupIndex}
                   sx={{
-                    display: 'grid',
-                    gridTemplateColumns:
-                      panelConfig.iconStyle === PanelPanelConfigStyleEnum.info
-                        ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                        : 'repeat(auto-fill, minmax(75px, 1fr))',
-                    gap: 2.25,
+                    mt: 6,
+                    p: group.sortStatus ? 1.25 : 0,
+                    borderRadius: 2,
+                    boxShadow: group.sortStatus ? '0 0 30px 10px rgba(0,0,0,0.3)' : 'none',
                   }}
                 >
-                  {group.items?.map((item, itemIndex) => (
-                    <Box
-                      key={item.id ?? itemIndex}
-                      draggable={Boolean(group.sortStatus)}
-                      onDragStart={() => setDragState({ groupIndex, itemIndex })}
-                      onDragOver={event => event.preventDefault()}
-                      onDrop={() => handleDrop(groupIndex, itemIndex)}
-                      onClick={() => handleItemClick(groupIndex, item)}
-                      onContextMenu={(event) => {
-                        if (group.sortStatus)
-                          return
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
+                    <Typography color="white" variant="h6" sx={{ fontWeight: 800, textShadow: '2px 2px 50px #000' }}>
+                      {group.title}
+                    </Typography>
+                    {canManage && (
+                      <Stack direction="row" spacing={0.5}>
+                        <Tooltip title={t('common.add')}>
+                          <Fab size="small" color="default" onClick={() => handleAddItem(group.id)}>
+                            <AddIcon fontSize="small" />
+                          </Fab>
+                        </Tooltip>
+                        <Tooltip title={t('common.sort')}>
+                          <Fab size="small" color="default" onClick={() => setGroupSortStatus(sourceGroupIndex, !group.sortStatus)}>
+                            <DragIndicatorIcon fontSize="small" />
+                          </Fab>
+                        </Tooltip>
+                      </Stack>
+                    )}
+                  </Stack>
 
-                        event.preventDefault()
-                        setContextMenu({
-                          mouseX: event.clientX,
-                          mouseY: event.clientY,
-                          item,
-                        })
-                      }}
-                    >
-                      <AppIcon
-                        item={item}
-                        style={panelConfig.iconStyle ?? PanelPanelConfigStyleEnum.icon}
-                        iconTextColor={panelConfig.iconTextColor ?? '#ffffff'}
-                        hideDescription={panelConfig.iconTextInfoHideDescription ?? false}
-                        hideTitle={panelConfig.iconTextIconHideTitle ?? false}
-                      />
-                    </Box>
-                  ))}
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns:
+                        panelConfig.iconStyle === PanelPanelConfigStyleEnum.info
+                          ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                          : 'repeat(auto-fill, minmax(75px, 1fr))',
+                      gap: 2.25,
+                    }}
+                  >
+                    {group.items?.map((item, itemIndex) => (
+                      <Box
+                        key={item.id ?? itemIndex}
+                        draggable={Boolean(group.sortStatus)}
+                        onDragStart={() => setDragState({ groupIndex: sourceGroupIndex, itemIndex })}
+                        onDragOver={event => event.preventDefault()}
+                        onDrop={() => handleDrop(sourceGroupIndex, itemIndex)}
+                        onClick={() => handleItemClick(sourceGroupIndex, item)}
+                        onContextMenu={(event) => {
+                          if (group.sortStatus)
+                            return
+
+                          event.preventDefault()
+                          setContextMenu({
+                            mouseX: event.clientX,
+                            mouseY: event.clientY,
+                            item,
+                          })
+                        }}
+                      >
+                        <AppIcon
+                          item={item}
+                          style={panelConfig.iconStyle ?? PanelPanelConfigStyleEnum.icon}
+                          iconTextColor={panelConfig.iconTextColor ?? '#ffffff'}
+                          hideDescription={panelConfig.iconTextInfoHideDescription ?? false}
+                          hideTitle={panelConfig.iconTextIconHideTitle ?? false}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+
+                  {group.sortStatus && (
+                    <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                      <Button startIcon={<SaveIcon />} onClick={() => handleSaveSort(group)}>
+                        {t('common.saveSort')}
+                      </Button>
+                      <Button variant="outlined" startIcon={<CancelIcon />} onClick={() => handleCancelSort(group)}>
+                        {t('common.cancel')}
+                      </Button>
+                    </Stack>
+                  )}
                 </Box>
-
-                {group.sortStatus && (
-                  <Button sx={{ mt: 2 }} startIcon={<SaveIcon />} onClick={() => handleSaveSort(group)}>
-                    {t('common.saveSort')}
-                  </Button>
-                )}
-              </Box>
-            ))}
+              )
+            })}
           </Box>
 
           {panelConfig.footerHtml && (
