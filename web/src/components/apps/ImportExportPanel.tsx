@@ -13,50 +13,12 @@ import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import { usePanelStore } from '@/store/panel'
-import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
-
-interface HomelabPanelExportV1 {
-  version: 1
-  exportedAt: string
-  panel: PanelConfig
-  groups: Array<{
-    group: ItemIconGroup
-    items: ItemInfo[]
-  }>
-}
-
-function cleanGroup(group: ItemIconGroup): ItemIconGroup {
-  return {
-    icon: group.icon,
-    title: group.title,
-    sort: group.sort,
-  }
-}
-
-function cleanItem(item: ItemInfo, itemIconGroupId: number): ItemInfo {
-  return {
-    icon: item.icon,
-    title: item.title,
-    url: item.url,
-    lanUrl: item.lanUrl,
-    description: item.description,
-    openMethod: item.openMethod,
-    sort: item.sort,
-    itemIconGroupId,
-  }
-}
-
-function isExportV1(value: unknown): value is HomelabPanelExportV1 {
-  if (!value || typeof value !== 'object')
-    return false
-
-  const data = value as Partial<HomelabPanelExportV1>
-
-  return data.version === 1
-    && Boolean(data.panel)
-    && Array.isArray(data.groups)
-    && data.groups.every(group => Boolean(group.group) && Array.isArray(group.items))
-}
+import {
+  cleanGroup,
+  cleanItem,
+  type HomelabPanelExportV1,
+  isExportV1,
+} from '@/utils/exportFormat'
 
 function downloadJson(data: HomelabPanelExportV1) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })

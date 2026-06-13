@@ -11,33 +11,13 @@ import { addMultiple } from '@/api/panel/itemIcon'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import type { ItemInfo } from '@/types/panel'
+import { normalizeUrl, titleFromUrl } from '@/utils/url'
 
 interface Props {
   open: boolean
   itemIconGroupId?: number
   onClose: () => void
   onSaved: () => void
-}
-
-function normalizeUrl(value: string) {
-  const trimmed = value.trim()
-
-  if (!trimmed)
-    return ''
-
-  if (/^https?:\/\//i.test(trimmed))
-    return trimmed
-
-  return `https://${trimmed}`
-}
-
-function titleFromUrl(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  }
-  catch {
-    return url
-  }
 }
 
 export function BatchAddItemsDialog({ open, itemIconGroupId, onClose, onSaved }: Props) {

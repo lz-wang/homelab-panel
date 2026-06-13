@@ -20,6 +20,7 @@ import { ItemIcon } from '@/components/common/ItemIcon'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import type { ItemIcon as ItemIconType, ItemInfo } from '@/types/panel'
+import { isValidUrl, normalizeUrl } from '@/utils/url'
 
 interface Props {
   open: boolean
@@ -43,22 +44,6 @@ const defaultItem: ItemInfo = {
   lanUrl: '',
   description: '',
   openMethod: 2,
-}
-
-function normalizeUrl(value?: string) {
-  const trimmed = value?.trim() ?? ''
-
-  if (!trimmed)
-    return ''
-
-  if (/^https?:\/\//i.test(trimmed))
-    return trimmed
-
-  return `https://${trimmed}`
-}
-
-function isValidUrl(value: string) {
-  return URL.canParse(value)
 }
 
 export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }: Props) {
