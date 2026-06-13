@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
 import { setUserConfig } from '@/api/panel/userConfig'
+import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import { t } from '@/locales'
@@ -96,11 +97,10 @@ export function StylePanel() {
         </FormControl>
       </Stack>
 
-      <TextField
+      <ImageUploadButton
         label="背景图 URL"
         value={form.backgroundImageSrc ?? ''}
-        onChange={event => patch({ backgroundImageSrc: event.target.value })}
-        fullWidth
+        onChange={value => patch({ backgroundImageSrc: value })}
       />
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
