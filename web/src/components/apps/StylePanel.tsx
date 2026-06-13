@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import { API_SUCCESS_CODE } from '@/api/apiResult'
 import { setUserConfig } from '@/api/panel/userConfig'
 import { ImageUploadButton } from '@/components/common/ImageUploadButton'
+import { Md3Section } from '@/components/md3/Md3Section'
 import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
@@ -68,126 +69,167 @@ export function StylePanel() {
 
   return (
     <Stack spacing={3}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+      <Md3Section title="基础外观">
+        <Stack spacing={2}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              label="面板标题"
+              value={form.logoText ?? ''}
+              onChange={event => patch({ logoText: event.target.value })}
+              fullWidth
+            />
+            <FormControl sx={{ minWidth: 160 }}>
+              <InputLabel>图标样式</InputLabel>
+              <Select
+                label="图标样式"
+                value={form.iconStyle ?? PanelPanelConfigStyleEnum.icon}
+                onChange={event => patch({ iconStyle: Number(event.target.value) })}
+              >
+                <MenuItem value={PanelPanelConfigStyleEnum.icon}>图标</MenuItem>
+                <MenuItem value={PanelPanelConfigStyleEnum.info}>信息</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <FormControl sx={{ minWidth: 160 }}>
+              <InputLabel>主题模式</InputLabel>
+              <Select
+                label="主题模式"
+                value={form.themeMode ?? 'system'}
+                onChange={event => patch({ themeMode: event.target.value as PanelConfig['themeMode'] })}
+              >
+                <MenuItem value="system">跟随系统</MenuItem>
+                <MenuItem value="light">浅色</MenuItem>
+                <MenuItem value="dark">深色</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: 160 }}>
+              <InputLabel>表面风格</InputLabel>
+              <Select
+                label="表面风格"
+                value={form.surfaceStyle ?? 'glass'}
+                onChange={event => patch({ surfaceStyle: event.target.value as PanelConfig['surfaceStyle'] })}
+              >
+                <MenuItem value="glass">半透明</MenuItem>
+                <MenuItem value="solid">实色</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="图标文字颜色"
+              type="color"
+              value={form.iconTextColor ?? '#ffffff'}
+              onChange={event => patch({ iconTextColor: event.target.value })}
+              sx={{ width: { xs: '100%', sm: 180 } }}
+            />
+          </Stack>
+        </Stack>
+      </Md3Section>
+
+      <Md3Section title="背景">
+        <Stack spacing={2}>
+          <ImageUploadButton
+            label="背景图 URL"
+            value={form.backgroundImageSrc ?? ''}
+            onChange={value => patch({ backgroundImageSrc: value })}
+          />
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" color="text.secondary">背景模糊</Typography>
+              <Slider
+                min={0}
+                max={20}
+                value={form.backgroundBlur ?? 0}
+                onChange={(_, value) => patch({ backgroundBlur: value as number })}
+                valueLabelDisplay="auto"
+              />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body2" color="text.secondary">背景遮罩</Typography>
+              <Slider
+                min={0}
+                max={1}
+                step={0.05}
+                value={form.backgroundMaskNumber ?? 0}
+                onChange={(_, value) => patch({ backgroundMaskNumber: value as number })}
+                valueLabelDisplay="auto"
+              />
+            </Box>
+          </Stack>
+        </Stack>
+      </Md3Section>
+
+      <Md3Section title="布局">
+        <Stack spacing={2}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              label="最大宽度"
+              type="number"
+              value={form.maxWidth ?? 1200}
+              onChange={event => patch({ maxWidth: Number(event.target.value) })}
+            />
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel>单位</InputLabel>
+              <Select
+                label="单位"
+                value={form.maxWidthUnit ?? 'px'}
+                onChange={event => patch({ maxWidthUnit: event.target.value })}
+              >
+                <MenuItem value="px">px</MenuItem>
+                <MenuItem value="%">%</MenuItem>
+                <MenuItem value="vw">vw</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              label="顶部边距 (%)"
+              type="number"
+              value={form.marginTop ?? 10}
+              onChange={event => patch({ marginTop: Number(event.target.value) })}
+            />
+            <TextField
+              label="底部边距 (%)"
+              type="number"
+              value={form.marginBottom ?? 10}
+              onChange={event => patch({ marginBottom: Number(event.target.value) })}
+            />
+            <TextField
+              label="横向边距 (px)"
+              type="number"
+              value={form.marginX ?? 5}
+              onChange={event => patch({ marginX: Number(event.target.value) })}
+            />
+          </Stack>
+        </Stack>
+      </Md3Section>
+
+      <Md3Section title="显示选项">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
+          <BoolField checked={form.clockShowSecond ?? false} label="时钟显示秒" onChange={checked => patch({ clockShowSecond: checked })} />
+          <BoolField checked={form.searchBoxShow ?? false} label="显示搜索框" onChange={checked => patch({ searchBoxShow: checked })} />
+          <BoolField checked={form.searchBoxSearchIcon ?? false} label="搜索图标" onChange={checked => patch({ searchBoxSearchIcon: checked })} />
+          <BoolField checked={form.iconTextInfoHideDescription ?? false} label="隐藏描述" onChange={checked => patch({ iconTextInfoHideDescription: checked })} />
+          <BoolField checked={form.iconTextIconHideTitle ?? false} label="隐藏图标标题" onChange={checked => patch({ iconTextIconHideTitle: checked })} />
+          <BoolField checked={form.systemMonitorShow ?? false} label="显示系统监控" onChange={checked => patch({ systemMonitorShow: checked })} />
+          <BoolField checked={form.systemMonitorShowTitle ?? false} label="显示监控标题" onChange={checked => patch({ systemMonitorShowTitle: checked })} />
+          <BoolField checked={form.systemMonitorPublicVisitModeShow ?? false} label="公开模式显示监控" onChange={checked => patch({ systemMonitorPublicVisitModeShow: checked })} />
+          <BoolField checked={form.netModeChangeButtonShow ?? false} label="显示网络切换" onChange={checked => patch({ netModeChangeButtonShow: checked })} />
+        </Box>
+      </Md3Section>
+
+      <Md3Section title="页脚">
         <TextField
-          label="面板标题"
-          value={form.logoText ?? ''}
-          onChange={event => patch({ logoText: event.target.value })}
+          label="页脚 HTML（仅可信管理员）"
+          value={form.footerHtml ?? ''}
+          onChange={event => patch({ footerHtml: event.target.value })}
+          helperText="页脚内容会作为 HTML 渲染，仅应由可信管理员维护。"
           fullWidth
+          multiline
+          minRows={3}
         />
-        <FormControl sx={{ minWidth: 160 }}>
-          <InputLabel>图标样式</InputLabel>
-          <Select
-            label="图标样式"
-            value={form.iconStyle ?? PanelPanelConfigStyleEnum.icon}
-            onChange={event => patch({ iconStyle: Number(event.target.value) })}
-          >
-            <MenuItem value={PanelPanelConfigStyleEnum.icon}>图标</MenuItem>
-            <MenuItem value={PanelPanelConfigStyleEnum.info}>信息</MenuItem>
-          </Select>
-        </FormControl>
-      </Stack>
-
-      <ImageUploadButton
-        label="背景图 URL"
-        value={form.backgroundImageSrc ?? ''}
-        onChange={value => patch({ backgroundImageSrc: value })}
-      />
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" color="text.secondary">背景模糊</Typography>
-          <Slider
-            min={0}
-            max={20}
-            value={form.backgroundBlur ?? 0}
-            onChange={(_, value) => patch({ backgroundBlur: value as number })}
-            valueLabelDisplay="auto"
-          />
-        </Box>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" color="text.secondary">背景遮罩</Typography>
-          <Slider
-            min={0}
-            max={1}
-            step={0.05}
-            value={form.backgroundMaskNumber ?? 0}
-            onChange={(_, value) => patch({ backgroundMaskNumber: value as number })}
-            valueLabelDisplay="auto"
-          />
-        </Box>
-      </Stack>
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField
-          label="图标文字颜色"
-          type="color"
-          value={form.iconTextColor ?? '#ffffff'}
-          onChange={event => patch({ iconTextColor: event.target.value })}
-          sx={{ width: { xs: '100%', sm: 180 } }}
-        />
-        <TextField
-          label="最大宽度"
-          type="number"
-          value={form.maxWidth ?? 1200}
-          onChange={event => patch({ maxWidth: Number(event.target.value) })}
-        />
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel>单位</InputLabel>
-          <Select
-            label="单位"
-            value={form.maxWidthUnit ?? 'px'}
-            onChange={event => patch({ maxWidthUnit: event.target.value })}
-          >
-            <MenuItem value="px">px</MenuItem>
-            <MenuItem value="%">%</MenuItem>
-            <MenuItem value="vw">vw</MenuItem>
-          </Select>
-        </FormControl>
-      </Stack>
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField
-          label="顶部边距 (%)"
-          type="number"
-          value={form.marginTop ?? 10}
-          onChange={event => patch({ marginTop: Number(event.target.value) })}
-        />
-        <TextField
-          label="底部边距 (%)"
-          type="number"
-          value={form.marginBottom ?? 10}
-          onChange={event => patch({ marginBottom: Number(event.target.value) })}
-        />
-        <TextField
-          label="横向边距 (px)"
-          type="number"
-          value={form.marginX ?? 5}
-          onChange={event => patch({ marginX: Number(event.target.value) })}
-        />
-      </Stack>
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
-        <BoolField checked={form.clockShowSecond ?? false} label="时钟显示秒" onChange={checked => patch({ clockShowSecond: checked })} />
-        <BoolField checked={form.searchBoxShow ?? false} label="显示搜索框" onChange={checked => patch({ searchBoxShow: checked })} />
-        <BoolField checked={form.searchBoxSearchIcon ?? false} label="搜索图标" onChange={checked => patch({ searchBoxSearchIcon: checked })} />
-        <BoolField checked={form.iconTextInfoHideDescription ?? false} label="隐藏描述" onChange={checked => patch({ iconTextInfoHideDescription: checked })} />
-        <BoolField checked={form.iconTextIconHideTitle ?? false} label="隐藏图标标题" onChange={checked => patch({ iconTextIconHideTitle: checked })} />
-        <BoolField checked={form.systemMonitorShow ?? false} label="显示系统监控" onChange={checked => patch({ systemMonitorShow: checked })} />
-        <BoolField checked={form.systemMonitorShowTitle ?? false} label="显示监控标题" onChange={checked => patch({ systemMonitorShowTitle: checked })} />
-        <BoolField checked={form.systemMonitorPublicVisitModeShow ?? false} label="公开模式显示监控" onChange={checked => patch({ systemMonitorPublicVisitModeShow: checked })} />
-        <BoolField checked={form.netModeChangeButtonShow ?? false} label="显示网络切换" onChange={checked => patch({ netModeChangeButtonShow: checked })} />
-      </Box>
-
-      <TextField
-        label="页脚 HTML（仅可信管理员）"
-        value={form.footerHtml ?? ''}
-        onChange={event => patch({ footerHtml: event.target.value })}
-        helperText="页脚内容会作为 HTML 渲染，仅应由可信管理员维护。"
-        fullWidth
-        multiline
-        minRows={3}
-      />
+      </Md3Section>
 
       <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
         <Button startIcon={<SaveIcon />} loading={saving} onClick={handleSave}>

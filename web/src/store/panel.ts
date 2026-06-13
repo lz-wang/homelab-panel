@@ -32,6 +32,8 @@ export function defaultPanelConfig(): PanelConfig {
     systemMonitorShowTitle: true,
     systemMonitorPublicVisitModeShow: false,
     netModeChangeButtonShow: true,
+    themeMode: 'system',
+    surfaceStyle: 'glass',
   }
 }
 
