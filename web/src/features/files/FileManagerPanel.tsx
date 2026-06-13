@@ -303,7 +303,11 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
             <Checkbox
               checked={selectedIds.includes(file.id)}
               onChange={event => toggleFile(file.id, event.target.checked)}
-              sx={{ position: 'absolute', zIndex: 1, bgcolor: 'rgba(255,255,255,0.72)' }}
+              sx={theme => ({
+                position: 'absolute',
+                zIndex: 1,
+                bgcolor: theme.vars.palette.m3.surfaceContainerHighest,
+              })}
             />
             <Box
               sx={{

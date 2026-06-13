@@ -35,7 +35,7 @@ export function SystemMonitor({ showTitle, publicMode = false }: { showTitle?: b
   return (
     <Box sx={{ my: 3, width: '100%' }}>
       {(showTitle && config.showTitle) && (
-        <Typography color="white" variant="h6" sx={{ mb: 1, fontWeight: 800, textShadow: '2px 2px 50px #000' }}>
+        <Typography color="common.white" variant="h6" sx={{ mb: 1, fontWeight: 800, textShadow: '0 2px 24px rgba(0,0,0,0.42)' }}>
           System Monitor
         </Typography>
       )}
@@ -68,7 +68,7 @@ export function SystemMonitor({ showTitle, publicMode = false }: { showTitle?: b
         </Stack>
       )}
       {(configError || snapshotError) && (
-        <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'rgba(255,255,255,0.75)' }}>
+        <Typography variant="caption" sx={{ mt: 1, display: 'block', color: 'rgba(255 255 255 / 0.75)' }}>
           {configError || snapshotError}
         </Typography>
       )}

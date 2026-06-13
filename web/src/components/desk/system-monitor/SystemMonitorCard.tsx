@@ -3,6 +3,8 @@ import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 
+import { usePanelStore } from '@/store/panel'
+
 export function SystemMonitorCard({
   icon,
   title,
@@ -14,6 +16,8 @@ export function SystemMonitorCard({
   value: number
   detail: string
 }) {
+  const surfaceStyle = usePanelStore(s => s.panelConfig.surfaceStyle)
+
   return (
     <Paper
       elevation={0}
@@ -21,10 +25,12 @@ export function SystemMonitorCard({
         width: 210,
         p: 2,
         borderRadius: 6,
-        bgcolor: `rgba(${theme.vars.palette.primary.mainChannel} / 0.14)`,
+        bgcolor: surfaceStyle === 'solid'
+          ? theme.vars.palette.m3.surfaceContainerHigh
+          : `rgba(${theme.vars.palette.primary.mainChannel} / 0.14)`,
         color: theme.vars.palette.m3.onSurface,
         border: `1px solid ${theme.vars.palette.m3.outlineVariant}`,
-        backdropFilter: 'blur(18px)',
+        backdropFilter: surfaceStyle === 'solid' ? undefined : 'blur(18px)',
       })}
     >
       <Stack spacing={1}>

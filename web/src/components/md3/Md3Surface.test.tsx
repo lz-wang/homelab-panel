@@ -10,7 +10,7 @@ afterEach(() => {
   cleanup()
 })
 
-describe('Md3Surface', () => {
+describe('md3 surface', () => {
   it('renders content inside the MD3 theme', () => {
     render(
       <ThemeProvider theme={theme}>
