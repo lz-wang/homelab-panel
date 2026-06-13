@@ -89,17 +89,32 @@ func (l LoginApi) Login(c *gin.Context) {
 
 	bToken = info.Token
 	if info.Token == "" {
-		// 生成token
-		buildTokenOver := false
-		for !buildTokenOver {
-			bToken = cmn.BuildRandCode(32, cmn.RAND_CODE_MODE2)
-			if _, err := mUser.GetUserInfoByToken(bToken); err != nil {
-				// 保存token
-				mUser.UpdateUserInfoByUserId(info.ID, map[string]interface{}{
-					"token": bToken,
-				})
-				buildTokenOver = true
+		// 生成 token：固定重试上限，避免极端碰撞时无上限自旋
+		const maxTokenRetries = 8
+		tokenOK := false
+		for i := 0; i < maxTokenRetries; i++ {
+			candidate := cmn.BuildRandCode(32, cmn.RAND_CODE_MODE2)
+			// 仅当确认为"未找到记录"（即无碰撞）时才采用该候选 token
+			if _, err := mUser.GetUserInfoByToken(candidate); err != nil {
+				if err != gorm.ErrRecordNotFound {
+					apiReturn.Error(c, err.Error())
+					return
+				}
+				// 保存 token，处理写入错误（原先被丢弃）
+				if err := mUser.UpdateUserInfoByUserId(info.ID, map[string]interface{}{
+					"token": candidate,
+				}); err != nil {
+					apiReturn.Error(c, err.Error())
+					return
+				}
+				bToken = candidate
+				tokenOK = true
+				break
 			}
+		}
+		if !tokenOK {
+			apiReturn.Error(c, "token generation failed after retries")
+			return
 		}
 		info.Token = bToken
 	}
