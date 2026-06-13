@@ -24,6 +24,7 @@ import { IframeDialog } from '@/components/common/IframeDialog'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { Clock } from '@/components/desk/Clock'
 import { SearchBox } from '@/components/desk/SearchBox'
+import { SystemMonitor } from '@/components/desk/SystemMonitor'
 import { VisitMode } from '@/constants/auth'
 import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/constants/panel'
 import { t } from '@/locales'
@@ -277,6 +278,12 @@ export default function Home() {
           )}
 
           <Box sx={{ mx: `${panelConfig.marginX ?? 5}px` }}>
+            {panelConfig.systemMonitorShow
+              && ((panelConfig.systemMonitorPublicVisitModeShow && authStore.visitMode === VisitMode.VISIT_MODE_PUBLIC)
+                || authStore.visitMode === VisitMode.VISIT_MODE_LOGIN) && (
+              <SystemMonitor showTitle={panelConfig.systemMonitorShowTitle} />
+            )}
+
             {filteredItems.map((group, groupIndex) => (
               <Box
                 key={group.id ?? groupIndex}
