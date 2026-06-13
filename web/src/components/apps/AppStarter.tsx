@@ -1,5 +1,6 @@
 import BackupOutlinedIcon from '@mui/icons-material/BackupOutlined'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
@@ -11,33 +12,16 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
 import { useEffect, useMemo, useState } from 'react'
 
 import { StylePanel } from '@/components/apps/StylePanel'
+import { FileManagerPanel } from '@/components/common/FileManagerPanel'
 import { GroupManager } from '@/components/apps/GroupManager'
+import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
+import { SystemMonitorSettingsPanel } from '@/components/apps/SystemMonitorSettingsPanel'
 import { UserInfoPanel } from '@/components/apps/UserInfoPanel'
 import { UsersPanel } from '@/components/apps/UsersPanel'
 import { useAuthStore } from '@/store/auth'
-
-function PanelPlaceholder({
-  title,
-  description,
-}: {
-  title: string
-  description: string
-}) {
-  return (
-    <Stack spacing={1}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        {title}
-      </Typography>
-      <Typography color="text.secondary">
-        {description}
-      </Typography>
-    </Stack>
-  )
-}
 
 function UserInfo() {
   return <UserInfoPanel />
@@ -56,13 +40,23 @@ function Groups() {
 }
 
 function ImportExport() {
-  return <PanelPlaceholder title="导入导出" description="备份恢复入口已保留，后续可继续迁移 JSON 导入导出流程。" />
+  return <ImportExportPanel />
+}
+
+function Files() {
+  return <FileManagerPanel />
+}
+
+function SystemMonitorSettings() {
+  return <SystemMonitorSettingsPanel />
 }
 
 const apps = [
   { key: 'userInfo', name: '用户信息', icon: <PersonOutlineOutlinedIcon />, component: UserInfo },
   { key: 'style', name: '样式设置', icon: <PaletteOutlinedIcon />, component: Style },
   { key: 'groups', name: '分组管理', icon: <FolderOutlinedIcon />, component: Groups },
+  { key: 'files', name: '文件管理', icon: <FolderOutlinedIcon />, component: Files },
+  { key: 'systemMonitor', name: '系统监控', icon: <MonitorHeartOutlinedIcon />, component: SystemMonitorSettings },
   { key: 'users', name: '用户管理', icon: <PeopleAltOutlinedIcon />, component: Users },
   { key: 'importExport', name: '导入导出', icon: <BackupOutlinedIcon />, component: ImportExport },
 ]
