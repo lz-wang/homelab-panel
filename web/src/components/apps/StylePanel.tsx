@@ -13,10 +13,11 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
+import { API_SUCCESS_CODE } from '@/api/apiResult'
 import { setUserConfig } from '@/api/panel/userConfig'
 import { ImageUploadButton } from '@/components/common/ImageUploadButton'
-import { useNotify } from '@/components/common/NotifyProvider'
 import { PanelPanelConfigStyleEnum } from '@/constants/panel'
+import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
 import { defaultPanelConfig, usePanelStore } from '@/store/panel'
 import type { PanelConfig } from '@/types/panel'
@@ -39,11 +40,10 @@ function BoolField({
 }
 
 export function StylePanel() {
-  const notify = useNotify()
   const panelConfig = usePanelStore(s => s.panelConfig)
   const setPanelConfig = usePanelStore(s => s.setPanelConfig)
   const [form, setForm] = useState<PanelConfig>({ ...defaultPanelConfig(), ...panelConfig })
-  const [saving, setSaving] = useState(false)
+  const { loading: saving, run } = useApiAction()
 
   useEffect(() => {
     setForm({ ...defaultPanelConfig(), ...panelConfig })
@@ -54,25 +54,16 @@ export function StylePanel() {
   }
 
   async function handleSave() {
-    setSaving(true)
+    const res = await run(
+      () => setUserConfig({ panel: form }),
+      {
+        successMessage: t('common.saveSuccess'),
+        errorMessage: response => `${t('common.saveFail')}:${response.msg}`,
+      },
+    )
 
-    try {
-      const res = await setUserConfig({ panel: form })
-
-      if (res.code === 0) {
-        setPanelConfig(form)
-        notify.success(t('common.saveSuccess'))
-      }
-      else {
-        notify.error(`${t('common.saveFail')}:${res.msg}`)
-      }
-    }
-    catch {
-      notify.error(t('common.saveFail'))
-    }
-    finally {
-      setSaving(false)
-    }
+    if (res?.code === API_SUCCESS_CODE)
+      setPanelConfig(form)
   }
 
   return (

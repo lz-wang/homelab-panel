@@ -11,16 +11,16 @@ import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { API_SUCCESS_CODE } from '@/api/apiResult'
 import { login } from '@/api/auth'
-import { useNotify } from '@/components/common/NotifyProvider'
 import { VisitMode } from '@/constants/auth'
+import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 import type { LoginRequest } from '@/types/login'
 
 export default function Login() {
   const navigate = useNavigate()
-  const notify = useNotify()
   const setToken = useAuthStore(s => s.setToken)
   const setUserInfo = useAuthStore(s => s.setUserInfo)
   const setVisitMode = useAuthStore(s => s.setVisitMode)
@@ -29,32 +29,24 @@ export default function Login() {
     username: '',
     password: '',
   })
-  const [loading, setLoading] = useState(false)
+  const { loading, run } = useApiAction()
 
   async function handleSubmit() {
-    setLoading(true)
+    const res = await run(
+      () => login(form),
+      {
+        successMessage: response => `Hi ${response.data.name ?? response.data.username ?? ''},${t('login.welcomeMessage')}`,
+      },
+    )
 
-    try {
-      const res = await login(form)
+    if (res?.code !== API_SUCCESS_CODE)
+      return
 
-      if (res.code === 0) {
-        setToken(res.data.token)
-        setUserInfo(res.data)
-        setVisitMode(VisitMode.VISIT_MODE_LOGIN)
-        setInitialized(true)
-        notify.success(`Hi ${res.data.name ?? res.data.username ?? ''},${t('login.welcomeMessage')}`)
-        navigate('/')
-      }
-      else {
-        notify.error(res.msg)
-      }
-    }
-    catch {
-      notify.error('请检查网络或者服务器错误')
-    }
-    finally {
-      setLoading(false)
-    }
+    setToken(res.data.token)
+    setUserInfo(res.data)
+    setVisitMode(VisitMode.VISIT_MODE_LOGIN)
+    setInitialized(true)
+    navigate('/')
   }
 
   return (
