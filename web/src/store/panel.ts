@@ -38,9 +38,6 @@ export function defaultPanelConfig(): PanelConfig {
     maxWidthUnit: 'px',
     marginX: 5,
     footerHtml: defaultFooterHtml,
-    systemMonitorShow: false,
-    systemMonitorShowTitle: true,
-    systemMonitorPublicVisitModeShow: false,
     netModeChangeButtonShow: true,
   }
 }

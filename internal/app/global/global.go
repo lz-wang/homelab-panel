@@ -24,7 +24,6 @@ var (
 	Db                  *gorm.DB
 	DataDir             string
 	SystemSetting       *systemSetting.SystemSettingCache
-	SystemMonitor       cache.Cacher[interface{}]
 	RateLimit           *RateLimiter
 	WebFS               fs.FS
 )

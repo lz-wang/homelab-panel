@@ -86,4 +86,3 @@ func (c *GoCacheStruct[T]) ItemCount() (int64, error) {
 func (c *GoCacheStruct[T]) Flush() {
 	c.gocahce.Flush()
 }
-

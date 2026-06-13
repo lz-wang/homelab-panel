@@ -46,9 +46,6 @@ export interface PanelConfig {
   maxWidthUnit: string
   marginX?: number
   footerHtml?: string
-  systemMonitorShow?: boolean
-  systemMonitorShowTitle?: boolean
-  systemMonitorPublicVisitModeShow?: boolean
   netModeChangeButtonShow?: boolean
 }
 

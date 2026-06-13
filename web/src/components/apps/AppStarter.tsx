@@ -1,6 +1,5 @@
 import BackupOutlinedIcon from '@mui/icons-material/BackupOutlined'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
-import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
@@ -17,7 +16,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { StylePanel } from '@/components/apps/StylePanel'
 import { GroupManager } from '@/components/apps/GroupManager'
 import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
-import { SystemMonitorSettingsPanel } from '@/components/apps/SystemMonitorSettingsPanel'
 import { UserInfoPanel } from '@/components/apps/UserInfoPanel'
 import { UsersPanel } from '@/components/apps/UsersPanel'
 import { FileManagerPanel } from '@/features/files/FileManagerPanel'
@@ -47,16 +45,11 @@ function Files() {
   return <FileManagerPanel />
 }
 
-function SystemMonitorSettings() {
-  return <SystemMonitorSettingsPanel />
-}
-
 const apps = [
   { key: 'userInfo', name: '用户信息', icon: <PersonOutlineOutlinedIcon />, component: UserInfo },
   { key: 'style', name: '样式设置', icon: <PaletteOutlinedIcon />, component: Style },
   { key: 'groups', name: '分组管理', icon: <FolderOutlinedIcon />, component: Groups },
   { key: 'files', name: '文件管理', icon: <FolderOutlinedIcon />, component: Files },
-  { key: 'systemMonitor', name: '系统监控', icon: <MonitorHeartOutlinedIcon />, component: SystemMonitorSettings },
   { key: 'users', name: '用户管理', icon: <PeopleAltOutlinedIcon />, component: Users },
   { key: 'importExport', name: '导入导出', icon: <BackupOutlinedIcon />, component: ImportExport },
 ]

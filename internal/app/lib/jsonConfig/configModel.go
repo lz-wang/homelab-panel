@@ -62,4 +62,3 @@ func ConfigModelCheck(data *ConfigModel, ability, abilityVersion string) bool {
 	}
 	return true
 }
-

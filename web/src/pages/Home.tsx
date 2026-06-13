@@ -6,7 +6,6 @@ import { AppStarter } from '@/components/apps/AppStarter'
 import { BatchAddItemsDialog } from '@/components/common/BatchAddItemsDialog'
 import { EditItemDialog } from '@/components/common/EditItemDialog'
 import { IframeDialog } from '@/components/common/IframeDialog'
-import { SystemMonitor } from '@/components/desk/SystemMonitor'
 import { VisitMode } from '@/constants/auth'
 import { useAuthStore } from '@/store/auth'
 import { usePanelStore } from '@/store/panel'
@@ -102,8 +101,6 @@ export default function Home() {
     })
   }
 
-  const isPublicMode = authStore.visitMode === VisitMode.VISIT_MODE_PUBLIC
-
   return (
     <Box sx={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       <Box
@@ -135,12 +132,6 @@ export default function Home() {
           <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
 
           <Box sx={{ mx: `${panelConfig.marginX ?? 5}px` }}>
-            {panelConfig.systemMonitorShow
-              && ((panelConfig.systemMonitorPublicVisitModeShow && isPublicMode)
-                || authStore.visitMode === VisitMode.VISIT_MODE_LOGIN) && (
-              <SystemMonitor showTitle={panelConfig.systemMonitorShowTitle} publicMode={isPublicMode} />
-            )}
-
             {filteredItems.map((group, groupIndex) => {
               const sourceGroupIndex = getSourceGroupIndex(group, groupIndex)
 

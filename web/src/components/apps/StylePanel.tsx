@@ -224,9 +224,6 @@ export function StylePanel() {
         <BoolField checked={form.searchBoxSearchIcon ?? false} label="搜索图标" onChange={checked => patch({ searchBoxSearchIcon: checked })} />
         <BoolField checked={form.iconTextInfoHideDescription ?? false} label="隐藏描述" onChange={checked => patch({ iconTextInfoHideDescription: checked })} />
         <BoolField checked={form.iconTextIconHideTitle ?? false} label="隐藏图标标题" onChange={checked => patch({ iconTextIconHideTitle: checked })} />
-        <BoolField checked={form.systemMonitorShow ?? false} label="显示系统监控" onChange={checked => patch({ systemMonitorShow: checked })} />
-        <BoolField checked={form.systemMonitorShowTitle ?? false} label="显示监控标题" onChange={checked => patch({ systemMonitorShowTitle: checked })} />
-        <BoolField checked={form.systemMonitorPublicVisitModeShow ?? false} label="公开模式显示监控" onChange={checked => patch({ systemMonitorPublicVisitModeShow: checked })} />
         <BoolField checked={form.netModeChangeButtonShow ?? false} label="显示网络切换" onChange={checked => patch({ netModeChangeButtonShow: checked })} />
       </Box>
 

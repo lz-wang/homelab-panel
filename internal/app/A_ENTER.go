@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"log"
 	"homelab-panel/internal/app/cUserToken"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
@@ -12,8 +11,8 @@ import (
 	appLogger "homelab-panel/internal/logger"
 	"homelab-panel/internal/store"
 	"homelab-panel/internal/store/models"
+	"log"
 	"path/filepath"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,7 +37,6 @@ func InitApp() error {
 	// 其他的初始化
 	global.VerifyCodeCachePool = other.InitVerifyCodeCachePool()
 	global.SystemSetting = systemSettingCache.InItSystemSettingCache()
-	global.SystemMonitor = global.NewCache[interface{}](5*time.Hour, -1, "systemMonitorCache")
 
 	return nil
 }
