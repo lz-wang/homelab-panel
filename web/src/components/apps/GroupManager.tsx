@@ -129,12 +129,12 @@ export function GroupManager() {
   }
 
   async function handleSaveSort() {
-    const sortItems: SortItemRequest[] = groups
-      .filter(group => group.id)
-      .map((group, index) => ({
-        id: group.id as number,
-        sort: index + 1,
-      }))
+    const sortItems = groups.reduce<SortItemRequest[]>((result, group, index) => {
+      if (group.id)
+        result.push({ id: group.id, sort: index + 1 })
+
+      return result
+    }, [])
 
     setSavingSort(true)
 

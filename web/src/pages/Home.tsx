@@ -34,7 +34,7 @@ import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/constant
 import { t } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 import { usePanelStore } from '@/store/panel'
-import type { ListResponse, SortItemRequest } from '@/types/common'
+import type { SortItemRequest } from '@/types/common'
 import type { ItemIconGroup, ItemInfo } from '@/types/panel'
 
 interface ItemGroup extends ItemIconGroup {
@@ -87,8 +87,7 @@ export default function Home() {
     if (groupRes.code !== 0)
       return
 
-    const groupData = groupRes.data as ListResponse<ItemGroup[]>
-    const groups = groupData.list.map(group => ({
+    const groups: ItemGroup[] = groupRes.data.list.map(group => ({
       ...group,
       hoverStatus: false,
       items: [],
@@ -100,11 +99,9 @@ export default function Home() {
           return group
 
         const itemRes = await getListByGroupId(group.id)
-        const itemData = itemRes.data as ListResponse<ItemInfo[]>
-
         return {
           ...group,
-          items: itemRes.code === 0 ? itemData.list : [],
+          items: itemRes.code === 0 ? itemRes.data.list : [],
         }
       }),
     )
@@ -184,10 +181,12 @@ export default function Home() {
     if (!canManage || !group.id || !group.items)
       return
 
-    const sortItems: SortItemRequest[] = group.items.map((item, index) => ({
-      id: item.id as number,
-      sort: index + 1,
-    }))
+    const sortItems: SortItemRequest[] = group.items.reduce<SortItemRequest[]>((result, item, index) => {
+      if (item.id)
+        result.push({ id: item.id, sort: index + 1 })
+
+      return result
+    }, [])
     const res = await saveSort({ itemIconGroupId: group.id, sortItems })
 
     if (res.code === 0) {
