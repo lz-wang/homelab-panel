@@ -3,7 +3,6 @@ package system
 import (
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
-	"homelab-panel/internal/app/lib/cmn/systemSetting"
 	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 	"homelab-panel/internal/server/api/api_v1/common/base"
 	"homelab-panel/internal/store/models"
@@ -22,8 +21,6 @@ type LoginApi struct {
 type LoginLoginVerify struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required,max=50"`
-	VCode    string `json:"vcode" validate:"max=6"`
-	Email    string `json:"email"`
 }
 
 // @Summary 登录账号
@@ -43,9 +40,6 @@ func (l LoginApi) Login(c *gin.Context) {
 		apiReturn.ErrorParamFomat(c, errMsg)
 		return
 	}
-
-	settings := systemSetting.ApplicationSetting{}
-	global.SystemSetting.GetValueByInterface("system_application", &settings)
 
 	mUser := models.User{}
 	var (

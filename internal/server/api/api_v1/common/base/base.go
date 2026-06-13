@@ -2,9 +2,6 @@ package base
 
 import (
 	"homelab-panel/internal/app/global"
-	"homelab-panel/internal/app/lib/captcha"
-	"homelab-panel/internal/app/lib/cmn"
-	"homelab-panel/internal/server/api/api_v1/common/apiReturn"
 	"homelab-panel/internal/store/models"
 	"reflect"
 	"strings"
@@ -95,24 +92,5 @@ func GetCurrentVisitMode(c *gin.Context) (visitMode int) {
 			return v
 		}
 	}
-	return
-}
-
-// 验证器验证
-func VerificationCheck(verificationId, vCode string) (errCode int, verificationIdRes string) {
-
-	// 需要进一步验证并返回验证信息
-	if verificationId == "" || vCode == "" {
-		verificationIdRes = cmn.BuildRandCode(16, cmn.RAND_CODE_MODE1)
-		errCode = apiReturn.ERROR_CODE_VERIFICATION_MUST
-		return
-	}
-
-	// 验证码错误
-	if !captcha.CaptchaVerifyHandle(verificationId, vCode) {
-		errCode = apiReturn.ERROR_CODE_VERIFICATION_FAIL
-		return
-	}
-	errCode = apiReturn.ERROR_CODE_SUCCESS
 	return
 }

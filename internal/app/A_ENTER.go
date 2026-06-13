@@ -5,7 +5,6 @@ import (
 	"homelab-panel/internal/app/cUserToken"
 	"homelab-panel/internal/app/global"
 	"homelab-panel/internal/app/lib/cmn"
-	"homelab-panel/internal/app/other"
 	"homelab-panel/internal/app/systemSettingCache"
 	"homelab-panel/internal/app/userToken"
 	appLogger "homelab-panel/internal/logger"
@@ -35,7 +34,6 @@ func InitApp() error {
 	global.CUserToken = cUserToken.InitCUserToken()
 
 	// 其他的初始化
-	global.VerifyCodeCachePool = other.InitVerifyCodeCachePool()
 	global.SystemSetting = systemSettingCache.InItSystemSettingCache()
 
 	return nil

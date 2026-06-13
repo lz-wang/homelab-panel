@@ -41,15 +41,6 @@ func (m *User) GetUserInfoByUsername(username string) (User, error) {
 	return mUser, err
 }
 
-// 根据邮箱查询用户
-func (m *User) GetUserInfoByMail() *User {
-	mUser := User{}
-	if Db.Where("mail=?", m.Mail).First(&mUser).Error != nil {
-		return nil
-	}
-	return &mUser
-}
-
 // 根据token查询用户
 func (m *User) GetUserInfoByToken(userToken string) (User, error) {
 	mUser := User{}
@@ -111,31 +102,6 @@ func (m *User) UpdateUserInfoByUserId(user_id uint, updateInfo map[string]interf
 func (m *User) CreateOne() (User, error) {
 	err := Db.Create(m).Error
 	return *m, err
-}
-
-// 验证是否有重复的用户名或者邮箱
-func (m *User) CheckMailAndUsername(mail, username string) error {
-	hasUser := User{}
-	count := Db.Where("mail=?", mail).First(&hasUser).RowsAffected
-	if count != 0 {
-		return errors.New("该邮箱已被注册")
-	}
-
-	count = Db.Where("username=?", username).First(&hasUser).RowsAffected
-	if count != 0 {
-		return errors.New("该用户名已被注册")
-	}
-	return nil
-}
-
-// 验证是否有重复的用户名或者邮箱
-func (m *User) CheckMailExist(mail string) (User, error) {
-	hasUser := User{}
-	count := Db.Where("mail=?", mail).First(&hasUser).RowsAffected
-	if count != 0 {
-		return hasUser, errors.New("该邮箱已被注册")
-	}
-	return hasUser, nil
 }
 
 // 验证是否有重复的用户名或者邮箱

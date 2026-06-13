@@ -13,11 +13,6 @@ type Response struct {
 }
 
 const (
-	// 验证器类
-
-	ERROR_CODE_VERIFICATION_MUST = 1101 // 错误码 验证器类：必须需要验证或者验证数据为空
-	ERROR_CODE_VERIFICATION_FAIL = 1102 // 错误码 验证器类：验证失败，验证错误
-
 	// 数据类
 
 	ERROR_CODE_DATA_DATABASE         = 1200 // 错误码 数据类：数据库报错

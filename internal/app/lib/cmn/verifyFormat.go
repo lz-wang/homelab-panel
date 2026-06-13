@@ -13,8 +13,3 @@ func VerifyFormat(exp, str string) bool {
 	reg := regexp.MustCompile(exp)
 	return reg.MatchString(str)
 }
-
-// 验证邮箱
-func VerifyEmail(email string) bool {
-	return VerifyFormat(`\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`, email)
-}
