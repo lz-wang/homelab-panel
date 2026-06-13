@@ -2,8 +2,8 @@ package cmn
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
-	"math/rand"
 	"os"
 	"sort"
 	"strconv"
@@ -47,26 +47,21 @@ func Md5(str string) string {
 	return hex.EncodeToString(md5Byte[:])
 }
 
-func RandNum(n int) int {
-	rand.Seed(time.Now().Unix())
-	return rand.Intn(n)
-}
-
 // 随机生成编码
+// 使用 crypto/rand 生成密码学安全的随机码，用于 token / 推荐码等敏感场景
 // 随机码字典内容 参考常量 RAND_CODE_MODE*
 func BuildRandCode(count int, secret_content string) (code string) {
-	return BuildRandCodeBySeed(count, secret_content, time.Now().UnixNano()+int64(rand.Intn(100)))
-}
-
-// 随机生成编码 参考常量 RAND_CODE_MODE*
-func BuildRandCodeBySeed(count int, secret_content string, seed int64) (code string) {
-	// 获取纳秒作为随机数种子
-	rand.Seed(seed)
 	if secret_content == "" {
 		secret_content = RAND_CODE_MODE1
 	}
+	dictLen := len(secret_content)
+	buf := make([]byte, count)
+	if _, err := rand.Read(buf); err != nil {
+		// crypto/rand 读取失败极其罕见（通常是系统熵池异常），无法安全降级，直接 panic
+		panic("crypto/rand read failed: " + err.Error())
+	}
 	for i := 0; i < count; i++ {
-		code += string(secret_content[rand.Intn(len(secret_content))])
+		code += string(secret_content[int(buf[i])%dictLen])
 	}
 	return code
 }
