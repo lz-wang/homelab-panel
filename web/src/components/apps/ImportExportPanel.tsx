@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useRef, useState } from 'react'
 
+import { exportBackup, importBackup } from '@/api/panel/backup'
 import { getListByGroupId, addMultiple } from '@/api/panel/itemIcon'
 import { edit as editGroup, getList as getGroupList } from '@/api/panel/itemIconGroup'
 import { getUserConfig, setUserConfig } from '@/api/panel/userConfig'
@@ -30,6 +31,8 @@ function downloadJson(data: HomelabPanelExportV1) {
   URL.revokeObjectURL(url)
 }
 
+type FrontendBackupResult = { data: HomelabPanelExportV1 } | { data?: never, error: string }
+
 export function ImportExportPanel() {
   const notify = useNotify()
   const confirm = useConfirm()
@@ -39,41 +42,58 @@ export function ImportExportPanel() {
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
 
-  async function handleExport() {
-    setExporting(true)
+  async function buildFrontendBackup(): Promise<FrontendBackupResult> {
+    const [configRes, groupRes] = await Promise.all([getUserConfig(), getGroupList()])
 
-    try {
-      const [configRes, groupRes] = await Promise.all([getUserConfig(), getGroupList()])
+    if (configRes.code !== 0)
+      return { error: configRes.msg }
 
-      if (configRes.code !== 0) {
-        notify.error(`导出失败:${configRes.msg}`)
-        return
-      }
+    if (groupRes.code !== 0)
+      return { error: groupRes.msg }
 
-      if (groupRes.code !== 0) {
-        notify.error(`导出失败:${groupRes.msg}`)
-        return
-      }
+    const groups = await Promise.all(
+      groupRes.data.list.map(async (group) => {
+        if (!group.id)
+          return { group, items: [] }
 
-      const groups = await Promise.all(
-        groupRes.data.list.map(async (group) => {
-          if (!group.id)
-            return { group, items: [] }
+        const itemRes = await getListByGroupId(group.id)
+        return {
+          group,
+          items: itemRes.code === 0 ? itemRes.data.list : [],
+        }
+      }),
+    )
 
-          const itemRes = await getListByGroupId(group.id)
-          return {
-            group,
-            items: itemRes.code === 0 ? itemRes.data.list : [],
-          }
-        }),
-      )
-
-      downloadJson({
+    return {
+      data: {
         version: 1,
         exportedAt: new Date().toISOString(),
         panel: configRes.data.panel,
         groups,
-      })
+      } satisfies HomelabPanelExportV1,
+    }
+  }
+
+  async function handleExport() {
+    setExporting(true)
+
+    try {
+      const backupRes = await exportBackup()
+
+      if (backupRes.code === 0) {
+        downloadJson(backupRes.data)
+        notify.success('导出成功')
+        return
+      }
+
+      const fallback = await buildFrontendBackup()
+
+      if ('error' in fallback) {
+        notify.error(`导出失败:${fallback.error}`)
+        return
+      }
+
+      downloadJson(fallback.data)
       notify.success('导出成功')
     }
     finally {
@@ -84,7 +104,7 @@ export function ImportExportPanel() {
   async function importData(data: HomelabPanelExportV1) {
     const ok = await confirm({
       title: '导入配置',
-      content: '导入会保存面板配置，并将备份中的分组和图标作为新数据添加。后端当前没有事务导入接口，中途失败可能出现部分成功。',
+      content: '导入会保存面板配置，并将备份中的分组和图标作为新数据添加。当前版本会优先使用后端事务导入，接口不可用时回退到前端顺序导入。',
       confirmText: '导入',
       cancelText: t('common.cancel'),
     })
@@ -95,6 +115,15 @@ export function ImportExportPanel() {
     setImporting(true)
 
     try {
+      const backendRes = await importBackup(data)
+
+      if (backendRes.code === 0) {
+        await updatePanelConfigByCloud()
+        markPanelDataChanged()
+        notify.success(`导入成功：${backendRes.data.groupCount} 个分组，${backendRes.data.itemCount} 个图标`)
+        return
+      }
+
       const configRes = await setUserConfig({ panel: data.panel })
 
       if (configRes.code !== 0) {
