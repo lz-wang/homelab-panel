@@ -16,6 +16,7 @@ import { useState } from 'react'
 
 import { StylePanel } from '@/components/apps/StylePanel'
 import { GroupManager } from '@/components/apps/GroupManager'
+import { UserInfoPanel } from '@/components/apps/UserInfoPanel'
 
 function PanelPlaceholder({
   title,
@@ -37,7 +38,7 @@ function PanelPlaceholder({
 }
 
 function UserInfo() {
-  return <PanelPlaceholder title="用户信息" description="用户资料编辑将在后续细化表单中接入现有接口。" />
+  return <UserInfoPanel />
 }
 
 function Style() {
