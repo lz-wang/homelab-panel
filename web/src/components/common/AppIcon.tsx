@@ -35,27 +35,31 @@ export function AppIcon({
   hideDescription,
   hideTitle,
 }: Props) {
-  const background = item.icon?.backgroundColor || '#2a2a2a6b'
+  const background = item.icon?.backgroundColor
   const computedTextColor = iconTextColor === '#ffffff'
-    ? readableTextColor(background)
+    ? readableTextColor(background ?? '#4F378B')
     : iconTextColor
 
   if (style === PanelPanelConfigStyleEnum.info) {
     return (
       <Box
-        sx={{
+        sx={theme => ({
           width: '100%',
           minHeight: 70,
           display: 'flex',
-          borderRadius: 2,
+          borderRadius: 6,
           overflow: 'hidden',
-          bgcolor: background,
+          bgcolor: background ?? theme.vars.palette.m3.surfaceContainerHigh,
+          border: `1px solid ${theme.vars.palette.m3.outlineVariant}`,
           cursor: 'pointer',
-          transition: 'box-shadow .2s',
+          transition: theme.transitions.create(['background-color', 'transform'], {
+            duration: theme.transitions.duration.shorter,
+          }),
           '&:hover': {
-            boxShadow: '0 0 20px 10px rgba(0,0,0,0.2)',
+            bgcolor: background ?? theme.vars.palette.m3.surfaceContainerHighest,
+            transform: 'translateY(-1px)',
           },
-        }}
+        })}
       >
         <Box sx={{ width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <ItemIcon itemIcon={item.icon} forceBackground="transparent" size={50} />
@@ -87,17 +91,19 @@ export function AppIcon({
   return (
     <Box sx={{ width: '100%', cursor: 'pointer', textAlign: 'center' }}>
       <Box
-        sx={{
+        sx={theme => ({
           width: 70,
           height: 70,
           mx: 'auto',
           overflow: 'hidden',
-          borderRadius: 2,
-          transition: 'box-shadow .2s',
+          borderRadius: 6,
+          transition: theme.transitions.create(['background-color', 'transform'], {
+            duration: theme.transitions.duration.shorter,
+          }),
           '&:hover': {
-            boxShadow: '0 0 20px 10px rgba(0,0,0,0.2)',
+            transform: 'translateY(-1px)',
           },
-        }}
+        })}
         title={item.description}
       >
         <ItemIcon itemIcon={item.icon} />
@@ -108,7 +114,7 @@ export function AppIcon({
           sx={{
             mt: 0.25,
             color: iconTextColor,
-            textShadow: '2px 2px 5px #000',
+            textShadow: '0 2px 16px rgba(0,0,0,0.42)',
             overflowWrap: 'anywhere',
           }}
         >

@@ -12,23 +12,29 @@ interface Props {
 }
 
 export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
-  const backgroundColor = forceBackground ?? itemIcon?.backgroundColor ?? '#2a2a2a6b'
+  const backgroundColor = forceBackground ?? itemIcon?.backgroundColor
 
   if (!itemIcon) {
     return (
       <Avatar
-        sx={{
+        sx={theme => ({
           width: size,
           height: size,
-          bgcolor: backgroundColor,
-        }}
+          bgcolor: backgroundColor ?? theme.vars.palette.m3.surfaceContainerHigh,
+        })}
       />
     )
   }
 
   if (itemIcon.itemType === 1) {
     return (
-      <Avatar sx={{ width: size, height: size, bgcolor: backgroundColor }}>
+      <Avatar
+        sx={theme => ({
+          width: size,
+          height: size,
+          bgcolor: backgroundColor ?? theme.vars.palette.m3.surfaceContainerHigh,
+        })}
+      >
         {itemIcon.text}
       </Avatar>
     )
@@ -43,8 +49,8 @@ export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
           width: size,
           height: size,
           objectFit: 'cover',
-          bgcolor: backgroundColor,
-          borderRadius: 2,
+          bgcolor: backgroundColor ?? 'transparent',
+          borderRadius: 6,
         }}
       />
     )
@@ -52,7 +58,13 @@ export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
 
   if (itemIcon.itemType === 3) {
     return (
-      <Avatar sx={{ width: size, height: size, bgcolor: backgroundColor }}>
+      <Avatar
+        sx={theme => ({
+          width: size,
+          height: size,
+          bgcolor: backgroundColor ?? theme.vars.palette.m3.surfaceContainerHigh,
+        })}
+      >
         <IconifyIcon icon={itemIcon.text} size={Math.round(size * 0.5)} />
       </Avatar>
     )
