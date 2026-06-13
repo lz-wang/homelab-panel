@@ -10,9 +10,7 @@ definitions:
     type: object
   system.AboutData:
     properties:
-      versionCode:
-        type: integer
-      versionName:
+      version:
         type: string
     type: object
   system.AboutResponse:
@@ -26,15 +24,10 @@ definitions:
     type: object
   system.LoginLoginVerify:
     properties:
-      email:
-        type: string
       password:
         maxLength: 50
         type: string
       username:
-        type: string
-      vcode:
-        maxLength: 6
         type: string
     required:
     - password

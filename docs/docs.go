@@ -101,10 +101,7 @@ const docTemplate = `{
         "system.AboutData": {
             "type": "object",
             "properties": {
-                "versionCode": {
-                    "type": "integer"
-                },
-                "versionName": {
+                "version": {
                     "type": "string"
                 }
             }
@@ -130,19 +127,12 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string"
-                },
                 "password": {
                     "type": "string",
                     "maxLength": 50
                 },
                 "username": {
                     "type": "string"
-                },
-                "vcode": {
-                    "type": "string",
-                    "maxLength": 6
                 }
             }
         }
