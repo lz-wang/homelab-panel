@@ -8,7 +8,6 @@ export default antfu({
     'kubernetes',
     'dist',
     'node_modules',
-    'src/views/exception/test/**',
   ],
   rules: {
     'antfu/consistent-chaining': 'off',
@@ -46,8 +45,5 @@ export default antfu({
     'unicorn/prefer-node-protocol': 'off',
     'unicorn/prefer-number-properties': 'off',
     'unused-imports/no-unused-vars': 'off',
-    'vue/block-tag-newline': 'off',
-    'vue/no-unused-refs': 'off',
-    'vue/v-on-event-hyphenation': 'off',
   },
 })
