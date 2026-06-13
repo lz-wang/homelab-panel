@@ -25,7 +25,7 @@ import type { ItemGroup } from './home/types'
 export default function Home() {
   const navigate = useNavigate()
   const authStore = useAuthStore()
-  const { panelConfig, networkMode, setNetworkMode, updatePanelConfigByCloud } = usePanelStore()
+  const { panelConfig, networkMode, panelDataVersion, setNetworkMode, updatePanelConfigByCloud } = usePanelStore()
   const { items, setItems, loadList } = useHomeData()
   const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -69,9 +69,12 @@ export default function Home() {
   })
 
   useEffect(() => {
-    loadList()
     updatePanelConfigByCloud()
-  }, [loadList, updatePanelConfigByCloud])
+  }, [updatePanelConfigByCloud])
+
+  useEffect(() => {
+    loadList()
+  }, [loadList, panelDataVersion])
 
   useEffect(() => {
     if (panelConfig.logoText)

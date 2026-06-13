@@ -34,6 +34,7 @@ export function ImportExportPanel() {
   const notify = useNotify()
   const confirm = useConfirm()
   const updatePanelConfigByCloud = usePanelStore(s => s.updatePanelConfigByCloud)
+  const markPanelDataChanged = usePanelStore(s => s.markPanelDataChanged)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -127,6 +128,7 @@ export function ImportExportPanel() {
       }
 
       await updatePanelConfigByCloud()
+      markPanelDataChanged()
       notify.success('导入成功')
     }
     finally {

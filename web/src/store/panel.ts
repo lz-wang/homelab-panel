@@ -36,9 +36,11 @@ export function defaultPanelConfig(): PanelConfig {
 }
 
 interface PanelStore extends PanelState {
+  panelDataVersion: number
   setNetworkMode: (mode: PanelStateNetworkModeEnum) => void
   setPanelConfig: (panelConfig: PanelConfig) => void
   patchPanelConfig: (partial: Partial<PanelConfig>) => void
+  markPanelDataChanged: () => void
   updatePanelConfigByCloud: () => Promise<void>
   resetPanelConfig: () => void
 }
@@ -50,9 +52,11 @@ export const usePanelStore = create<PanelStore>()(
       leftSiderCollapsed: false,
       networkMode: PanelStateNetworkModeEnum.wan,
       panelConfig: defaultPanelConfig(),
+      panelDataVersion: 0,
       setNetworkMode: networkMode => set({ networkMode }),
       setPanelConfig: panelConfig => set({ panelConfig: { ...defaultPanelConfig(), ...panelConfig } }),
       patchPanelConfig: partial => set(state => ({ panelConfig: { ...state.panelConfig, ...partial } })),
+      markPanelDataChanged: () => set(state => ({ panelDataVersion: state.panelDataVersion + 1 })),
       resetPanelConfig: () => set({ panelConfig: defaultPanelConfig() }),
       updatePanelConfigByCloud: async () => {
         const res = await getUserConfig()
