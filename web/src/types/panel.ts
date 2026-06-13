@@ -68,3 +68,44 @@ export interface ItemIconSortRequest {
   sortItems: SortItemRequest[]
   itemIconGroupId: number
 }
+
+export interface AddMultipleItemIconRequest {
+  itemIconGroupId: number
+  urls: string[]
+}
+
+export interface SiteFaviconRequest {
+  url: string
+}
+
+export interface SiteFaviconResponse {
+  iconUrl?: string
+  url?: string
+}
+
+export interface ModuleConfig {
+  id?: number
+  name: string
+  value?: string
+  userId?: number
+  createTime?: string
+  updateTime?: string
+}
+
+export interface FileInfo {
+  id: number
+  src: string
+  path: string
+  fileName: string
+  createTime?: string
+  updateTime?: string
+}
+
+export interface UploadImgResponse {
+  imageUrl: string
+}
+
+export interface UploadFilesResponse {
+  succMap: Record<string, string>
+  errFiles: string[]
+}

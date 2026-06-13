@@ -8,7 +8,7 @@ export function getUserConfig() {
 }
 
 export function setUserConfig(data: UserConfig) {
-  return post({
+  return post<void>({
     url: '/panel/userConfig/set',
     data,
   })

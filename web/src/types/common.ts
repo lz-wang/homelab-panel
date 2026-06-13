@@ -13,3 +13,7 @@ export interface SortItemRequest {
   id: number
   sort: number
 }
+
+export interface DeleteIdsRequest {
+  ids: number[]
+}
