@@ -1,40 +1,25 @@
 import path from 'node:path'
 import react from '@vitejs/plugin-react'
-import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
 
-export default defineConfig((env) => {
-  const viteEnv = loadEnv(env.mode, process.cwd()) as unknown as ImportMetaEnv
-
-  return {
-    resolve: {
-      alias: {
-        '@': path.resolve(process.cwd(), 'src'),
-      },
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(process.cwd(), 'src'),
     },
-    plugins: [react()],
-    server: {
-      host: '0.0.0.0',
-      port: 1002,
-      open: false,
-      proxy: {
-        '/api': {
-          target: viteEnv.VITE_APP_API_BASE_URL,
-          changeOrigin: true,
-        },
-        '/uploads': {
-          target: viteEnv.VITE_APP_API_BASE_URL,
-          changeOrigin: true,
-        },
-      },
-    },
-    build: {
-      reportCompressedSize: false,
-      sourcemap: false,
-    },
-    test: {
-      environment: 'jsdom',
-      setupFiles: './src/test/setup.ts',
-    },
-  }
+  },
+  plugins: [react()],
+  server: {
+    host: '0.0.0.0',
+    port: 1002,
+    open: false,
+  },
+  build: {
+    reportCompressedSize: false,
+    sourcemap: false,
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+  },
 })

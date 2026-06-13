@@ -25,6 +25,7 @@ lerna-debug.log*
 
 # Frontend
 node_modules/
+web/.env
 dist/
 dist-ssr/
 coverage/

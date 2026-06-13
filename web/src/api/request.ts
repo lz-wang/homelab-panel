@@ -18,7 +18,7 @@ export interface HttpOption {
 }
 
 export const request = axios.create({
-  baseURL: import.meta.env.VITE_GLOB_API_URL,
+  baseURL: '/api',
 })
 
 request.interceptors.request.use((config) => {
