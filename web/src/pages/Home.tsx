@@ -20,6 +20,7 @@ import { deletes, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 import { getList as getGroupList } from '@/api/panel/itemIconGroup'
 import { AppStarter } from '@/components/apps/AppStarter'
 import { AppIcon } from '@/components/common/AppIcon'
+import { EditItemDialog } from '@/components/common/EditItemDialog'
 import { IframeDialog } from '@/components/common/IframeDialog'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { Clock } from '@/components/desk/Clock'
@@ -60,6 +61,9 @@ export default function Home() {
   const [keyword, setKeyword] = useState('')
   const [dragState, setDragState] = useState<DragState | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [editItemOpen, setEditItemOpen] = useState(false)
+  const [editItem, setEditItem] = useState<ItemInfo | null>(null)
+  const [addItemIconGroupId, setAddItemIconGroupId] = useState<number | undefined>()
   const [iframe, setIframe] = useState({
     open: false,
     src: '',
@@ -235,6 +239,18 @@ export default function Home() {
     )
   }
 
+  function handleEditItem(item: ItemInfo) {
+    setEditItem({ ...item })
+    setAddItemIconGroupId(undefined)
+    setEditItemOpen(true)
+  }
+
+  function handleAddItem(itemIconGroupId?: number) {
+    setEditItem(null)
+    setAddItemIconGroupId(itemIconGroupId)
+    setEditItemOpen(true)
+  }
+
   return (
     <Box sx={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       <Box
@@ -301,7 +317,7 @@ export default function Home() {
                   {authStore.visitMode === VisitMode.VISIT_MODE_LOGIN && (
                     <Stack direction="row" spacing={0.5}>
                       <Tooltip title={t('common.add')}>
-                        <Fab size="small" color="default">
+                        <Fab size="small" color="default" onClick={() => handleAddItem(group.id)}>
                           <AddIcon fontSize="small" />
                         </Fab>
                       </Tooltip>
@@ -414,6 +430,17 @@ export default function Home() {
           <MenuItem
             onClick={() => {
               if (contextMenu?.item)
+                handleEditItem(contextMenu.item)
+              setContextMenu(null)
+            }}
+          >
+            {t('common.edit')}
+          </MenuItem>
+        )}
+        {authStore.visitMode === VisitMode.VISIT_MODE_LOGIN && (
+          <MenuItem
+            onClick={() => {
+              if (contextMenu?.item)
                 handleDelete(contextMenu.item)
               setContextMenu(null)
             }}
@@ -455,6 +482,13 @@ export default function Home() {
         onClose={() => setIframe({ open: false, src: '', title: '' })}
       />
       <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <EditItemDialog
+        open={editItemOpen}
+        item={editItem}
+        itemIconGroupId={addItemIconGroupId}
+        onClose={() => setEditItemOpen(false)}
+        onSaved={loadList}
+      />
     </Box>
   )
 }
