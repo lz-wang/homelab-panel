@@ -197,10 +197,12 @@ export function UsersPanel() {
               }
             }}
           />
-          <Button variant="outlined" onClick={() => {
-            setPage(0)
-            loadUsers()
-          }}
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setPage(0)
+              loadUsers()
+            }}
           >
             搜索
           </Button>

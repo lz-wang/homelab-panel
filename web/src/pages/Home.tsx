@@ -218,7 +218,7 @@ export default function Home() {
       notify.success(t('common.saveSuccess'))
       setItems(prev => prev.map(item => item.id === group.id ? { ...item, sortStatus: false } : item))
       if (group.id) {
-        setSortSnapshots(prev => {
+        setSortSnapshots((prev) => {
           const next = { ...prev }
           delete next[group.id as number]
           return next
@@ -236,12 +236,14 @@ export default function Home() {
 
     const snapshot = sortSnapshots[group.id]
 
-    setItems(prev => prev.map(item => item.id === group.id ? {
-      ...item,
-      sortStatus: false,
-      items: snapshot ?? item.items,
-    } : item))
-    setSortSnapshots(prev => {
+    setItems(prev => prev.map(item => item.id === group.id
+      ? {
+          ...item,
+          sortStatus: false,
+          items: snapshot ?? item.items,
+        }
+      : item))
+    setSortSnapshots((prev) => {
       const next = { ...prev }
       delete next[group.id as number]
       return next
