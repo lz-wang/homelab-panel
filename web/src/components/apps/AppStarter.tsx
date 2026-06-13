@@ -12,11 +12,13 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { StylePanel } from '@/components/apps/StylePanel'
 import { GroupManager } from '@/components/apps/GroupManager'
 import { UserInfoPanel } from '@/components/apps/UserInfoPanel'
+import { UsersPanel } from '@/components/apps/UsersPanel'
+import { useAuthStore } from '@/store/auth'
 
 function PanelPlaceholder({
   title,
@@ -46,7 +48,7 @@ function Style() {
 }
 
 function Users() {
-  return <PanelPlaceholder title="用户管理" description="用户管理入口已保留，后续可继续接入用户列表和编辑弹窗。" />
+  return <UsersPanel />
 }
 
 function Groups() {
@@ -71,16 +73,23 @@ interface Props {
 }
 
 export function AppStarter({ open, onClose }: Props) {
+  const isAdmin = useAuthStore(s => s.isAdmin)
+  const visibleApps = useMemo(() => apps.filter(app => app.key !== 'users' || isAdmin()), [isAdmin])
   const [activeKey, setActiveKey] = useState(apps[0].key)
-  const active = apps.find(item => item.key === activeKey) ?? apps[0]
+  const active = visibleApps.find(item => item.key === activeKey) ?? visibleApps[0]
   const ActiveComponent = active.component
+
+  useEffect(() => {
+    if (!visibleApps.some(app => app.key === activeKey))
+      setActiveKey(visibleApps[0].key)
+  }, [activeKey, visibleApps])
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>设置</DialogTitle>
       <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ minHeight: 520 }}>
         <List sx={{ width: { xs: '100%', sm: 220 }, borderRight: { sm: 1 }, borderBottom: { xs: 1, sm: 0 }, borderColor: 'divider' }}>
-          {apps.map(app => (
+          {visibleApps.map(app => (
             <ListItemButton
               key={app.key}
               selected={app.key === activeKey}
