@@ -32,3 +32,29 @@ export interface SystemMonitorSnapshot {
   netIOCountersInfo: NetIOCountersInfo[]
   memoryInfo: MemoryInfo
 }
+
+export interface SystemMonitorConfig {
+  enabled: boolean
+  showTitle: boolean
+  publicVisible: boolean
+  refreshIntervalSeconds: number
+  showCpu: boolean
+  showMemory: boolean
+  showDisk: boolean
+  diskMountpoint?: string
+}
+
+export const systemMonitorConfigName = 'systemMonitor'
+
+export function defaultSystemMonitorConfig(): SystemMonitorConfig {
+  return {
+    enabled: true,
+    showTitle: true,
+    publicVisible: false,
+    refreshIntervalSeconds: 10,
+    showCpu: true,
+    showMemory: true,
+    showDisk: true,
+    diskMountpoint: '',
+  }
+}
