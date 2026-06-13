@@ -20,7 +20,10 @@ func (k *Pool) LPush(value ...interface{}) error {
 	k.Lock.Lock()
 	defer k.Lock.Unlock()
 	for i := 0; i < len(value); i++ {
-		v, _ := json.Marshal(value[i])
+		v, err := json.Marshal(value[i])
+		if err != nil {
+			return err
+		}
 		k.Values = append([][]byte{v}, k.Values...)
 	}
 	return nil
@@ -30,7 +33,10 @@ func (k *Pool) RPush(value ...interface{}) error {
 	k.Lock.Lock()
 	defer k.Lock.Unlock()
 	for i := 0; i < len(value); i++ {
-		v, _ := json.Marshal(value[i])
+		v, err := json.Marshal(value[i])
+		if err != nil {
+			return err
+		}
 		k.Values = append(k.Values, v)
 	}
 	return nil
@@ -39,13 +45,14 @@ func (k *Pool) RPush(value ...interface{}) error {
 func (k *Pool) Delete(value interface{}) error {
 	k.Lock.Lock()
 	defer k.Lock.Unlock()
-	var index int64
-	v, _ := json.Marshal(value)
+	target, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
 
 	for i, item := range k.Values {
-		if reflect.DeepEqual(item, v) {
-			index = int64(i)
-			k.removeIndex(index)
+		if reflect.DeepEqual(item, target) {
+			k.Values = append(k.Values[:i], k.Values[i+1:]...)
 			return nil
 		}
 	}
@@ -57,43 +64,50 @@ func (k *Pool) Delete(value interface{}) error {
 func (k *Pool) GetByIndex(index int64, v interface{}) error {
 	k.Lock.RLock()
 	defer k.Lock.RUnlock()
-	if int64(len(k.Values)) >= index {
-		json.Unmarshal(k.Values[index], v)
-		return nil
-	} else {
+	// index 等于长度时也会越界，必须严格小于
+	if index < 0 || index >= int64(len(k.Values)) {
 		return errors.New("index non-existent")
 	}
+	if err := json.Unmarshal(k.Values[index], v); err != nil {
+		return err
+	}
+	return nil
 }
 
 // 左-取出并删除
 func (k *Pool) LPop(v interface{}) error {
-	if err := k.GetByIndex(0, v); err != nil {
-		return err
-	} else {
-		k.removeIndex(0)
+	k.Lock.Lock()
+	defer k.Lock.Unlock()
+	if len(k.Values) == 0 {
+		return errors.New("index non-existent")
 	}
+	// 读取与删除在同一把写锁内完成，避免 TOCTOU 竞争删错元素
+	if err := json.Unmarshal(k.Values[0], v); err != nil {
+		return err
+	}
+	k.Values = k.Values[1:]
 	return nil
 }
 
 // 右-取出并删除
 func (k *Pool) RPop(v interface{}) error {
-	index := int64(len(k.Values) - 1)
-	if err := k.GetByIndex(index, v); err != nil {
-		return err
-	} else {
-		k.removeIndex(index)
-	}
-	return nil
-}
-
-func (k *Pool) removeIndex(index int64) error {
 	k.Lock.Lock()
 	defer k.Lock.Unlock()
-	k.Values = append(k.Values[:index], k.Values[index+1:]...)
+	n := len(k.Values)
+	if n == 0 {
+		return errors.New("index non-existent")
+	}
+	// 读取与删除在同一把写锁内完成，避免 TOCTOU 竞争删错元素
+	if err := json.Unmarshal(k.Values[n-1], v); err != nil {
+		return err
+	}
+	k.Values = k.Values[:n-1]
 	return nil
 }
 
 func (k *Pool) Length() (int64, error) {
+	k.Lock.RLock()
+	defer k.Lock.RUnlock()
 	return int64(len(k.Values)), nil
 }
 
