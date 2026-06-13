@@ -7,7 +7,10 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -167,7 +170,31 @@ func InArray[T uint | int | int8 | int64 | float32 | float64 | string](arr []T, 
 	return index < len(arr) && arr[index] == item
 }
 
-// 密码加密
+// 密码加密（使用 bcrypt，含随机 salt）
 func PasswordEncryption(password string) string {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		// 仅在密码超过 72 字节时失败，业务层已做长度校验，此处防御性处理
+		panic("bcrypt hash failed: " + err.Error())
+	}
+	return string(hash)
+}
+
+// IsLegacyPassword 判断是否为旧的三次 MD5（无 salt）哈希，用于登录时迁移升级。
+// bcrypt 哈希以 "$2" 开头且长度为 60，旧 MD5 哈希固定为 32 位十六进制。
+func IsLegacyPassword(hash string) bool {
+	return len(hash) == 32 && !strings.HasPrefix(hash, "$2")
+}
+
+// legacyPasswordEncryption 复现旧的三次 MD5 哈希，仅用于迁移期校验旧密码。
+func legacyPasswordEncryption(password string) string {
 	return Md5(Md5(Md5(password)))
+}
+
+// PasswordVerify 校验明文密码与存储哈希是否匹配，兼容 bcrypt 与旧三次 MD5 哈希。
+func PasswordVerify(password, hash string) bool {
+	if IsLegacyPassword(hash) {
+		return legacyPasswordEncryption(password) == hash
+	}
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
 }

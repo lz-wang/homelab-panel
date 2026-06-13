@@ -48,7 +48,8 @@ func (l LoginApi) Login(c *gin.Context) {
 	)
 	bToken := ""
 	param.Username = strings.TrimSpace(param.Username)
-	if info, err = mUser.GetUserInfoByUsernameAndPassword(param.Username, cmn.PasswordEncryption(param.Password)); err != nil {
+	// 先按用户名查询，再校验密码（bcrypt 哈希含随机 salt，无法在 SQL 层比对）
+	if info, err = mUser.GetUserInfoByUsername(param.Username); err != nil {
 		// 未找到记录 账号或密码错误
 		if err == gorm.ErrRecordNotFound {
 			apiReturn.ErrorByCode(c, 1003)
@@ -59,6 +60,25 @@ func (l LoginApi) Login(c *gin.Context) {
 			return
 		}
 
+	}
+
+	// 校验密码（兼容 bcrypt 与旧三次 MD5 哈希）
+	if !cmn.PasswordVerify(param.Password, info.Password) {
+		// 账号或密码错误
+		apiReturn.ErrorByCode(c, 1003)
+		return
+	}
+
+	// 旧哈希迁移：校验通过后自动升级为 bcrypt
+	if cmn.IsLegacyPassword(info.Password) {
+		newHash := cmn.PasswordEncryption(param.Password)
+		if err := mUser.UpdateUserInfoByUserId(info.ID, map[string]interface{}{
+			"password": newHash,
+		}); err != nil {
+			apiReturn.Error(c, err.Error())
+			return
+		}
+		info.Password = newHash
 	}
 
 	// 停用或未激活

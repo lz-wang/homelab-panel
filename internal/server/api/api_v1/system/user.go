@@ -93,7 +93,7 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return
 	} else {
-		if v.Password != cmn.PasswordEncryption(params.OldPassword) {
+		if !cmn.PasswordVerify(params.OldPassword, v.Password) {
 			// 旧密码不正确
 			apiReturn.ErrorByCode(c, 1007)
 			return

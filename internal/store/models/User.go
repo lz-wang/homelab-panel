@@ -8,7 +8,7 @@ import (
 type User struct {
 	BaseModel
 	Username     string `gorm:"index:;index:idx_username_password,priority:1;type:varchar(50)" json:"username" validate:"required"` // 账号
-	Password     string `gorm:"index:idx_username_password;type:varchar(32)" json:"password" validate:"required"`                   // 密码
+	Password     string `gorm:"index:idx_username_password;type:varchar(255)" json:"password" validate:"required"`                   // 密码
 	Name         string `gorm:"type:varchar(20)" json:"name"`                                                                       // 名称
 	HeadImage    string `gorm:"type:varchar(200)" json:"headImage"`                                                                 // 头像地址
 	Status       int    `gorm:"type:tinyint(1)" json:"status"`                                                                      // 状态 1.启用 2.停用 3.未激活
@@ -25,13 +25,6 @@ func (m *User) GetUserInfoByUid(uid uint) (User, error) {
 	mUser := User{}
 	err := Db.Where("id=?", uid).First(&mUser).Error
 	return mUser, err
-}
-
-// 根据用户名和密码查询用户
-func (m *User) GetUserInfoByUsernameAndPassword(username, password string) (User, error) {
-	userInfo := User{}
-	err := Db.Where("username=?", username).Where("password=?", password).First(&userInfo).Error
-	return userInfo, err
 }
 
 // 根据用户名查询用户
