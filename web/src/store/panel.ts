@@ -2,15 +2,25 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 import { getUserConfig } from '@/api/panel/userConfig'
-import defaultBackground from '@/assets/defaultBackground.webp'
+import background1 from '@/assets/background-1.jpg'
+import background2 from '@/assets/background-2.jpg'
+import background3 from '@/assets/background-3.jpg'
+import background4 from '@/assets/background-4.jpg'
 import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/constants/panel'
 import type { PanelConfig, PanelState } from '@/types/panel'
 
 const defaultFooterHtml = '<div style="display:flex;justify-content:center;color:#cbd5e1;margin-top:100px">Powered By <a href="https://github.com/hslr-s/homelab-panel" target="_blank" style="margin-left:5px">Homelab Panel</a></div>'
 
+export const builtinBackgrounds = [
+  { label: '背景 1', src: background1 },
+  { label: '背景 2', src: background2 },
+  { label: '背景 3', src: background3 },
+  { label: '背景 4', src: background4 },
+]
+
 export function defaultPanelConfig(): PanelConfig {
   return {
-    backgroundImageSrc: defaultBackground,
+    backgroundImageSrc: background1,
     backgroundBlur: 0,
     backgroundMaskNumber: 0,
     iconStyle: PanelPanelConfigStyleEnum.icon,

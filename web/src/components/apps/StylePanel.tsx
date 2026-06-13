@@ -1,6 +1,8 @@
 import SaveIcon from '@mui/icons-material/Save'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import ButtonBase from '@mui/material/ButtonBase'
 import FormControl from '@mui/material/FormControl'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import InputLabel from '@mui/material/InputLabel'
@@ -19,7 +21,7 @@ import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
-import { defaultPanelConfig, usePanelStore } from '@/store/panel'
+import { builtinBackgrounds, defaultPanelConfig, usePanelStore } from '@/store/panel'
 import type { PanelConfig } from '@/types/panel'
 
 function BoolField({
@@ -93,6 +95,55 @@ export function StylePanel() {
         value={form.backgroundImageSrc ?? ''}
         onChange={value => patch({ backgroundImageSrc: value })}
       />
+
+      <Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>内置背景</Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: 'repeat(2, minmax(0, 1fr))',
+              sm: 'repeat(4, minmax(0, 1fr))',
+            },
+            gap: 1,
+          }}
+        >
+          {builtinBackgrounds.map((background) => {
+            const selected = form.backgroundImageSrc === background.src
+
+            return (
+              <ButtonBase
+                key={background.src}
+                aria-label={background.label}
+                onClick={() => patch({ backgroundImageSrc: background.src })}
+                sx={{
+                  position: 'relative',
+                  aspectRatio: '16 / 9',
+                  overflow: 'hidden',
+                  borderRadius: 1,
+                  border: selected ? '2px solid' : '1px solid',
+                  borderColor: selected ? 'primary.main' : 'divider',
+                  background: `url(${background.src}) center / cover no-repeat`,
+                  boxShadow: selected ? 2 : 0,
+                }}
+              >
+                {selected && (
+                  <CheckCircleIcon
+                    color="primary"
+                    sx={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      bgcolor: 'background.paper',
+                      borderRadius: '50%',
+                    }}
+                  />
+                )}
+              </ButtonBase>
+            )
+          })}
+        </Box>
+      </Box>
 
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
         <Box sx={{ flex: 1 }}>
