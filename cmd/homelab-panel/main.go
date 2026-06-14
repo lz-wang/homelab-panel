@@ -1,11 +1,8 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"homelab-panel/internal/app"
-	"homelab-panel/internal/app/global"
-	"homelab-panel/internal/server/router"
 	"log"
 	"os"
 
@@ -22,13 +19,7 @@ var version = "dev"
 // @in header
 // @name token
 
-//go:embed all:web/dist
-var webFS embed.FS
-
 func main() {
-	global.Version = version
-	global.WebFS = webFS
-
 	cliApp := &cli.App{
 		Name:    "homelab-panel",
 		Usage:   "Homelab panel service",
@@ -72,21 +63,17 @@ func main() {
 }
 
 func runServe(c *cli.Context) error {
-	global.DataDir = c.String("dir")
-
-	if err := app.InitApp(); err != nil {
-		return fmt.Errorf("初始化错误: %w", err)
+	cfg := app.Config{
+		Port:    c.String("port"),
+		DataDir: c.String("dir"),
+		Version: version,
+		WebFS:   os.DirFS("web/dist"),
 	}
-
-	httpPort := c.String("port")
-	if err := router.InitRouters(":" + httpPort); err != nil {
-		return err
-	}
-	return nil
+	return app.Run(c.Context, cfg)
 }
 
 func runPasswordReset(_ *cli.Context) error {
-	return app.ResetAdminPassword()
+	return fmt.Errorf("password reset is not implemented for the rewritten backend")
 }
 
 func runVersion(c *cli.Context) error {
