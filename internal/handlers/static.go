@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"io/fs"
 	"net/http"
 	"path"
@@ -24,9 +25,38 @@ func (h *Handler) Static(c *gin.Context) {
 		name = "index.html"
 	}
 
-	if stat, err := fs.Stat(h.WebFS, name); err == nil && !stat.IsDir() {
-		c.FileFromFS(name, http.FS(h.WebFS))
+	if h.serveStaticFile(c, name) {
 		return
 	}
-	c.FileFromFS("index.html", http.FS(h.WebFS))
+	h.serveStaticFile(c, "index.html")
+}
+
+func (h *Handler) serveStaticFile(c *gin.Context, name string) bool {
+	file, err := h.WebFS.Open(name)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	stat, err := file.Stat()
+	if err != nil || stat.IsDir() {
+		return false
+	}
+
+	reader, ok := file.(interface {
+		Read([]byte) (int, error)
+		Seek(int64, int) (int64, error)
+	})
+	if !ok {
+		writeError(c, http.StatusInternalServerError, "static file is not seekable")
+		return true
+	}
+
+	if _, err := reader.Seek(0, 0); err != nil && !errors.Is(err, fs.ErrInvalid) {
+		writeError(c, http.StatusInternalServerError, "read static file failed")
+		return true
+	}
+
+	http.ServeContent(c.Writer, c.Request, path.Base(name), stat.ModTime(), reader)
+	return true
 }
