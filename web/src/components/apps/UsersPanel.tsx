@@ -31,7 +31,6 @@ import {
   setPublicVisitUser,
   update,
 } from '@/api/panel/users'
-import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
@@ -41,7 +40,6 @@ const defaultUser: SaveUserRequest = {
   username: '',
   name: '',
   password: '',
-  headImage: '',
   role: 2,
 }
 
@@ -304,11 +302,6 @@ export function UsersPanel() {
                 value={editing.password ?? ''}
                 onChange={event => setEditing({ ...editing, password: event.target.value })}
                 fullWidth
-              />
-              <ImageUploadButton
-                label="头像 URL"
-                value={editing.headImage ?? ''}
-                onChange={value => setEditing({ ...editing, headImage: value })}
               />
               <FormControl fullWidth>
                 <InputLabel>角色</InputLabel>

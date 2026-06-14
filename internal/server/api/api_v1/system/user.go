@@ -17,11 +17,10 @@ type UserApi struct{}
 func (a *UserApi) GetInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	apiReturn.SuccessData(c, gin.H{
-		"userId":    userInfo.ID,
-		"id":        userInfo.ID,
-		"headImage": userInfo.HeadImage,
-		"name":      userInfo.Name,
-		"role":      userInfo.Role,
+		"userId": userInfo.ID,
+		"id":     userInfo.ID,
+		"name":   userInfo.Name,
+		"role":   userInfo.Role,
 	})
 }
 
@@ -30,7 +29,6 @@ func (a *UserApi) GetAuthInfo(c *gin.Context) {
 	visitMode := base.GetCurrentVisitMode(c)
 	user := models.User{}
 	user.ID = userInfo.ID
-	user.HeadImage = userInfo.HeadImage
 	user.Name = userInfo.Name
 	user.Role = userInfo.Role
 	user.Username = userInfo.Username
@@ -44,8 +42,7 @@ func (a *UserApi) GetAuthInfo(c *gin.Context) {
 func (a *UserApi) UpdateInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	type UpdateUserInfoStruct struct {
-		HeadImage string `json:"headImage"`
-		Name      string `json:"name" validate:"max=15,min=3,required"`
+		Name string `json:"name" validate:"max=15,min=3,required"`
 	}
 	params := UpdateUserInfoStruct{}
 
@@ -62,8 +59,7 @@ func (a *UserApi) UpdateInfo(c *gin.Context) {
 
 	mUser := models.User{}
 	err = mUser.UpdateUserInfoByUserId(global.Db, userInfo.ID, map[string]interface{}{
-		"head_image": params.HeadImage,
-		"name":       params.Name,
+		"name": params.Name,
 	})
 	// 删除缓存
 	global.UserToken.Delete(userInfo.Token)

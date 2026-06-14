@@ -135,7 +135,6 @@ func (l LoginApi) Login(c *gin.Context) {
 		"userId":     info.ID,
 		"username":   info.Username,
 		"name":       info.Name,
-		"headImage":  info.HeadImage,
 		"status":     info.Status,
 		"role":       info.Role,
 		"mail":       info.Mail,

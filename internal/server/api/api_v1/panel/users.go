@@ -42,12 +42,11 @@ func (a UsersApi) Create(c *gin.Context) {
 	}
 
 	mUser := models.User{
-		Username:  strings.TrimSpace(param.Username),
-		Password:  cmn.PasswordEncryption(param.Password),
-		Name:      param.Name,
-		HeadImage: param.HeadImage,
-		Status:    1,
-		Role:      param.Role,
+		Username: strings.TrimSpace(param.Username),
+		Password: cmn.PasswordEncryption(param.Password),
+		Name:     param.Name,
+		Status:   1,
+		Role:     param.Role,
 	}
 
 	// 验证账号是否存在

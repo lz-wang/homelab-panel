@@ -1,6 +1,5 @@
 import LogoutIcon from '@mui/icons-material/Logout'
 import SaveIcon from '@mui/icons-material/Save'
-import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
@@ -10,7 +9,6 @@ import { useNavigate } from 'react-router-dom'
 
 import { logout } from '@/api/auth'
 import { getInfo, updateInfo, updatePassword } from '@/api/user'
-import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import { useAuthStore } from '@/store/auth'
@@ -22,7 +20,6 @@ export function UserInfoPanel() {
   const setUserInfo = useAuthStore(s => s.setUserInfo)
   const removeToken = useAuthStore(s => s.removeToken)
   const [name, setName] = useState(userInfo?.name ?? '')
-  const [headImage, setHeadImage] = useState(userInfo?.headImage ?? '')
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [savingInfo, setSavingInfo] = useState(false)
@@ -31,7 +28,6 @@ export function UserInfoPanel() {
 
   useEffect(() => {
     setName(userInfo?.name ?? '')
-    setHeadImage(userInfo?.headImage ?? '')
   }, [userInfo])
 
   async function handleSaveInfo() {
@@ -43,7 +39,7 @@ export function UserInfoPanel() {
     setSavingInfo(true)
 
     try {
-      const res = await updateInfo({ name: name.trim(), headImage })
+      const res = await updateInfo({ name: name.trim() })
 
       if (res.code === 0) {
         const infoRes = await getInfo()
@@ -107,27 +103,12 @@ export function UserInfoPanel() {
         <Typography color="text.secondary">{userInfo?.username}</Typography>
       </Stack>
 
-      <Box
-        component="img"
-        src={headImage}
-        alt=""
-        sx={{
-          width: 72,
-          height: 72,
-          borderRadius: '50%',
-          objectFit: 'cover',
-          bgcolor: 'action.hover',
-          display: headImage ? 'block' : 'none',
-        }}
-      />
-
       <TextField
         label="昵称"
         value={name}
         onChange={event => setName(event.target.value)}
         fullWidth
       />
-      <ImageUploadButton label="头像 URL" value={headImage} onChange={setHeadImage} />
       <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
         <Button startIcon={<SaveIcon />} loading={savingInfo} onClick={handleSaveInfo}>
           {t('common.save')}

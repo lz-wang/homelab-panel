@@ -6,7 +6,6 @@ export interface UserInfo {
   updateTime?: string
   username?: string
   password?: string
-  headImage?: string
   status?: number
   role?: number
   mail?: string
@@ -22,7 +21,6 @@ export interface AuthInfoResponse {
 
 export interface UpdateUserInfoRequest {
   name: string
-  headImage?: string
 }
 
 export interface UpdatePasswordRequest {
