@@ -34,7 +34,7 @@ coverage/
 /cypress/screenshots/
 
 # Runtime data
-homelab-panel
+/homelab-panel
 release/
 data/
 conf/
