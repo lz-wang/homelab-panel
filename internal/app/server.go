@@ -8,16 +8,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type ServerDeps struct {
 	Config Config
 	Logger *zap.Logger
+	DB     *gorm.DB
 }
 
 type Server struct {
 	config Config
 	logger *zap.Logger
+	db     *gorm.DB
 	router *gin.Engine
 }
 
@@ -28,6 +31,7 @@ func NewServer(deps ServerDeps) *Server {
 	server := &Server{
 		config: deps.Config,
 		logger: deps.Logger,
+		db:     deps.DB,
 		router: router,
 	}
 	server.registerRoutes()

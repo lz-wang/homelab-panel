@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"homelab-panel/internal/data"
 	"os"
 	"path/filepath"
 
@@ -29,9 +30,21 @@ func New(config Config) (*App, error) {
 		return nil, fmt.Errorf("create data directories: %w", err)
 	}
 
+	db, err := data.OpenSQLite(filepath.Join(dataDir, "data.db"))
+	if err != nil {
+		return nil, err
+	}
+	if err := data.AutoMigrate(db); err != nil {
+		return nil, err
+	}
+	if err := data.SeedDefaultData(db); err != nil {
+		return nil, err
+	}
+
 	server := NewServer(ServerDeps{
 		Config: config,
 		Logger: logger,
+		DB:     db,
 	})
 
 	return &App{
