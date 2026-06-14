@@ -54,4 +54,5 @@ func (s *Server) registerRoutes() {
 
 	api.GET("/public/home", h.PublicHome)
 	s.router.GET("/uploads/*filepath", h.Upload)
+	s.router.NoRoute(h.Static)
 }
