@@ -36,6 +36,22 @@ func (s *Server) registerRoutes() {
 	auth.DELETE("/items/:id", h.DeleteItem)
 	auth.PUT("/items/order", h.UpdateItemOrder)
 	auth.POST("/items/batch", h.CreateItems)
+	auth.POST("/files", h.UploadFiles)
+	auth.GET("/files", h.ListFiles)
+	auth.GET("/files/:id", h.GetFile)
+	auth.DELETE("/files/:id", h.DeleteFile)
+
+	admin := auth.Group("")
+	admin.Use(h.RequireAdmin())
+	admin.GET("/users", h.ListUsers)
+	admin.POST("/users", h.CreateUser)
+	admin.GET("/users/:id", h.GetUser)
+	admin.PATCH("/users/:id", h.UpdateUser)
+	admin.DELETE("/users/:id", h.DeleteUser)
+	admin.PUT("/users/:id/password", h.UpdateUserPassword)
+	admin.GET("/settings", h.GetSetting)
+	admin.PUT("/settings", h.UpdateSetting)
 
 	api.GET("/public/home", h.PublicHome)
+	s.router.GET("/uploads/*filepath", h.Upload)
 }
