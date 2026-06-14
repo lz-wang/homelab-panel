@@ -1,15 +1,15 @@
-import { post } from '@/api/request'
-
 export function getByName<T>(name: string) {
-  return post<T | null>({
-    url: '/system/moduleConfig/getByName',
-    data: { name },
+  return Promise.resolve({
+    code: -3,
+    msg: `后端暂未提供模块配置接口：${name}`,
+    data: null as T | null,
   })
 }
 
 export function save<T>(name: string, value: T) {
-  return post<void>({
-    url: '/system/moduleConfig/save',
-    data: { name, value },
+  return Promise.resolve({
+    code: -3,
+    msg: `后端暂未提供模块配置接口：${name}`,
+    data: value as unknown as void,
   })
 }

@@ -9,7 +9,7 @@ export interface ApiResponse<T = unknown> {
 }
 
 export const API_SUCCESS_CODE = 0
-export const API_AUTH_EXPIRED_CODES = new Set([1000, 1001])
+export const API_AUTH_EXPIRED_CODES = new Set([401, 403, 1000, 1001])
 export const API_NETWORK_ERROR_CODE = -1
 export const API_HTTP_ERROR_CODE = -2
 export const API_INVALID_RESPONSE_CODE = -3
@@ -30,9 +30,9 @@ export function normalizeApiResponse<T = unknown>(value: unknown): ApiResponse<T
     return value as ApiResponse<T>
 
   return {
-    code: API_INVALID_RESPONSE_CODE,
-    msg: '服务器响应格式不正确',
-    data: null as T,
+    code: API_SUCCESS_CODE,
+    msg: 'OK',
+    data: value as T,
   }
 }
 
@@ -48,14 +48,15 @@ export function normalizeApiError<T = unknown>(error: unknown): ApiResponse<T> {
   const axiosError = error as AxiosError
 
   if (axiosError.response) {
-    const responseData = normalizeApiResponse<T>(axiosError.response.data)
+    const data = axiosError.response.data
+    const status = axiosError.response.status
 
-    if (responseData.code !== API_INVALID_RESPONSE_CODE)
-      return responseData
+    if (isApiResponse(data))
+      return data as ApiResponse<T>
 
     return {
-      code: API_HTTP_ERROR_CODE,
-      msg: `服务器错误(${axiosError.response.status})`,
+      code: status || API_HTTP_ERROR_CODE,
+      msg: errorMessage(data) ?? `服务器错误(${status})`,
       data: null as T,
     }
   }
@@ -92,4 +93,19 @@ export function handleLoginExpiration(response: ApiResponse) {
 
   if (window.location.hash !== '#/login')
     window.location.hash = '#/login'
+}
+
+function errorMessage(value: unknown) {
+  if (!value || typeof value !== 'object')
+    return null
+
+  const candidate = value as { error?: unknown, msg?: unknown, message?: unknown }
+  if (typeof candidate.error === 'string')
+    return candidate.error
+  if (typeof candidate.msg === 'string')
+    return candidate.msg
+  if (typeof candidate.message === 'string')
+    return candidate.message
+
+  return null
 }

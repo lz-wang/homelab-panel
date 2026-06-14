@@ -6,7 +6,6 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useRef, useState } from 'react'
 
-import { exportBackup, importBackup } from '@/api/panel/backup'
 import { getListByGroupId, addMultiple } from '@/api/panel/itemIcon'
 import { edit as editGroup, getList as getGroupList } from '@/api/panel/itemIconGroup'
 import { getUserConfig, setUserConfig } from '@/api/panel/userConfig'
@@ -78,14 +77,6 @@ export function ImportExportPanel() {
     setExporting(true)
 
     try {
-      const backupRes = await exportBackup()
-
-      if (backupRes.code === 0) {
-        downloadJson(backupRes.data)
-        notify.success('导出成功')
-        return
-      }
-
       const fallback = await buildFrontendBackup()
 
       if ('error' in fallback) {
@@ -104,7 +95,7 @@ export function ImportExportPanel() {
   async function importData(data: HomelabPanelExportV1) {
     const ok = await confirm({
       title: '导入配置',
-      content: '导入会保存面板配置，并将备份中的分组和图标作为新数据添加。当前版本会优先使用后端事务导入，接口不可用时回退到前端顺序导入。',
+      content: '导入会保存面板配置，并将备份中的分组和图标作为新数据添加。当前版本使用前端顺序导入，不会清空现有数据。',
       confirmText: '导入',
       cancelText: t('common.cancel'),
     })
@@ -115,15 +106,6 @@ export function ImportExportPanel() {
     setImporting(true)
 
     try {
-      const backendRes = await importBackup(data)
-
-      if (backendRes.code === 0) {
-        await updatePanelConfigByCloud()
-        markPanelDataChanged()
-        notify.success(`导入成功：${backendRes.data.groupCount} 个分组，${backendRes.data.itemCount} 个图标`)
-        return
-      }
-
       const configRes = await setUserConfig({ panel: data.panel })
 
       if (configRes.code !== 0) {

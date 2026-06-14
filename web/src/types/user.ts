@@ -4,11 +4,14 @@ export interface UserInfo {
   name?: string
   createTime?: string
   updateTime?: string
+  createdAt?: string
+  updatedAt?: string
   username?: string
   password?: string
-  status?: number
-  role?: number
+  status?: number | 'active' | 'disabled'
+  role?: number | 'admin' | 'user'
   mail?: string
+  email?: string
   token?: string
   referralCode?: string
   isAdmin?: number
@@ -47,4 +50,11 @@ export interface SaveUserRequest extends UserInfo {
 
 export interface PublicVisitUserRequest {
   userId: number | null
+}
+
+export interface AppSetting {
+  id?: number
+  siteName: string
+  publicEnabled: boolean
+  publicUserId: number
 }

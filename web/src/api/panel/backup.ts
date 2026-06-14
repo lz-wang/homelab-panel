@@ -1,4 +1,3 @@
-import { post } from '@/api/request'
 import type { HomelabPanelExportV1 } from '@/utils/exportFormat'
 
 export interface BackupImportStats {
@@ -7,14 +6,20 @@ export interface BackupImportStats {
 }
 
 export function exportBackup() {
-  return post<HomelabPanelExportV1>({
-    url: '/panel/backup/export',
+  return Promise.resolve({
+    code: -3,
+    msg: '后端暂未提供备份导出接口',
+    data: null as unknown as HomelabPanelExportV1,
   })
 }
 
 export function importBackup(data: HomelabPanelExportV1) {
-  return post<BackupImportStats>({
-    url: '/panel/backup/import',
-    data,
+  return Promise.resolve({
+    code: -3,
+    msg: '后端暂未提供备份导入接口',
+    data: {
+      groupCount: data.groups.length,
+      itemCount: data.groups.reduce((total, group) => total + group.items.length, 0),
+    },
   })
 }

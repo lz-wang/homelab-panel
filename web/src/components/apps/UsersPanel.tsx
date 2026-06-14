@@ -93,14 +93,16 @@ export function UsersPanel() {
     loadPublicUser()
   }, [])
 
-  function openEdit(user?: UserInfo) {
+function openEdit(user?: UserInfo) {
+    const role = user?.role === 'admin' || user?.role === 1 ? 1 : 2
+
     setEditing({
       ...defaultUser,
       ...user,
       username: user?.username ?? '',
       name: user?.name ?? '',
       password: '',
-      role: user?.role ?? 2,
+      role,
     })
   }
 

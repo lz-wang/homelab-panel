@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 import { getUserConfig } from '@/api/panel/userConfig'
+import { getPublicHome } from '@/api/public'
 import background1 from '@/assets/background-1.jpg'
 import background2 from '@/assets/background-2.jpg'
 import background3 from '@/assets/background-3.jpg'
@@ -66,19 +67,37 @@ export const usePanelStore = create<PanelStore>()(
       markPanelDataChanged: () => set(state => ({ panelDataVersion: state.panelDataVersion + 1 })),
       resetPanelConfig: () => set({ panelConfig: defaultPanelConfig() }),
       updatePanelConfigByCloud: async () => {
-        const res = await getUserConfig()
+        const { useAuthStore } = await import('@/store/auth')
+        const authState = useAuthStore.getState()
 
-        if (res.code === 0) {
-          set({
-            panelConfig: {
-              ...defaultPanelConfig(),
-              ...res.data.panel,
-            },
-          })
+        if (authState.token) {
+          const res = await getUserConfig()
+
+          if (res.code === 0) {
+            set({
+              panelConfig: {
+                ...defaultPanelConfig(),
+                ...res.data.panel,
+              },
+            })
+            return
+          }
         }
         else {
-          set({ panelConfig: defaultPanelConfig() })
+          const res = await getPublicHome()
+
+          if (res.code === 0) {
+            set({
+              panelConfig: {
+                ...defaultPanelConfig(),
+                ...res.data.config.panel,
+              },
+            })
+            return
+          }
         }
+
+        set({ panelConfig: defaultPanelConfig() })
       },
     }),
     {

@@ -7,4 +7,5 @@ export interface LoginRequest {
 
 export interface LoginResponse extends UserInfo {
   token: string
+  expiresAt?: string
 }

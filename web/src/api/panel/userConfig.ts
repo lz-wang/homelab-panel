@@ -1,15 +1,17 @@
-import { post } from '@/api/request'
+import { toBackendConfig, toFrontendConfig } from '@/api/adapters'
+import { get, put } from '@/api/request'
 import type { UserConfig } from '@/types/panel'
 
 export function getUserConfig() {
-  return post<UserConfig>({
-    url: '/panel/userConfig/get',
-  })
+  return get<unknown>({ url: '/me/config' }).then(res => ({
+    ...res,
+    data: res.code === 0 ? toFrontendConfig(res.data ?? undefined) : null as unknown as UserConfig,
+  }))
 }
 
 export function setUserConfig(data: UserConfig) {
-  return post<void>({
-    url: '/panel/userConfig/set',
-    data,
-  })
+  return put<unknown>({ url: '/me/config', data: toBackendConfig(data) }).then(res => ({
+    ...res,
+    data: undefined,
+  }))
 }

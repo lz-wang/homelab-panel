@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
       setInitialized: initialized => set({ initialized }),
       removeToken: () => set({ token: null, userInfo: null, visitMode: VisitMode.VISIT_MODE_LOGIN }),
       isLoggedIn: () => Boolean(get().token && get().userInfo),
-      isAdmin: () => get().userInfo?.role === 1,
+      isAdmin: () => get().userInfo?.role === 'admin',
       bootstrapAuth: async () => {
         try {
           const { getAuthInfo, getInfo } = await import('@/api/user')

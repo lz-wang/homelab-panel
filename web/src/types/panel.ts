@@ -61,6 +61,13 @@ export interface UserConfig {
   searchEngine?: unknown
 }
 
+export interface PublicHomeResponse {
+  setting: unknown
+  config: UserConfig
+  groups: ItemIconGroup[]
+  items: ItemInfo[]
+}
+
 export interface ItemIconSortRequest {
   sortItems: SortItemRequest[]
   itemIconGroupId: number

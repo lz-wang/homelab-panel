@@ -11,14 +11,14 @@ import { useAuthStore } from '@/store/auth'
 export interface HttpOption {
   url: string
   data?: unknown
-  method?: 'GET' | 'POST'
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   headers?: Record<string, string>
   onDownloadProgress?: (event: AxiosProgressEvent) => void
   signal?: AbortSignal
 }
 
 export const request = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/v1',
 })
 
 request.interceptors.request.use((config) => {
@@ -26,7 +26,6 @@ request.interceptors.request.use((config) => {
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
-    config.headers.token = token
   }
 
   return config
@@ -37,12 +36,15 @@ export async function http<T = unknown>(option: HttpOption): Promise<ApiResponse
 
   try {
     const response = method === 'GET'
-      ? await request.get<ApiResponse<T>>(option.url, {
+      ? await request.get<T>(option.url, {
           params: option.data,
           signal: option.signal,
           onDownloadProgress: option.onDownloadProgress,
         })
-      : await request.post<ApiResponse<T>>(option.url, option.data ?? {}, {
+      : await request.request<T>({
+          url: option.url,
+          method,
+          data: option.data,
           headers: option.headers,
           signal: option.signal,
           onDownloadProgress: option.onDownloadProgress,
@@ -69,4 +71,16 @@ export function get<T = unknown>(option: Omit<HttpOption, 'method'>) {
 
 export function post<T = unknown>(option: Omit<HttpOption, 'method'>) {
   return http<T>({ ...option, method: 'POST' })
+}
+
+export function put<T = unknown>(option: Omit<HttpOption, 'method'>) {
+  return http<T>({ ...option, method: 'PUT' })
+}
+
+export function patch<T = unknown>(option: Omit<HttpOption, 'method'>) {
+  return http<T>({ ...option, method: 'PATCH' })
+}
+
+export function del<T = unknown>(option: Omit<HttpOption, 'method'>) {
+  return http<T>({ ...option, method: 'DELETE' })
 }
