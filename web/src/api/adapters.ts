@@ -1,234 +1,74 @@
-import type { ListResponse } from '@/types/common'
-import type {
-  FileInfo,
-  ItemIcon,
-  ItemIconGroup,
-  ItemInfo,
-  PanelConfig,
-  PublicHomeResponse,
-  UserConfig,
-} from '@/types/panel'
-import type { AppSetting, SaveUserRequest, UserInfo } from '@/types/user'
+import type { ItemIcon, ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
 
-interface BackendBase {
-  id?: number
-  createdAt?: string
-  updatedAt?: string
+export interface PanelWire {
+  siteName: string
+  config: PanelConfig
+  searchEngine: unknown
+  groups: PanelGroupWire[]
+  items: PanelItemWire[]
 }
 
-interface BackendGroup extends BackendBase {
-  userId?: number
-  name?: string
+export interface PanelGroupWire {
+  id?: number
+  name: string
   icon?: string
   sort?: number
 }
 
-interface BackendItem extends BackendBase {
-  userId?: number
-  groupId?: number
-  name?: string
-  url?: string
+export interface PanelItemWire {
+  id?: number
+  groupId: number
+  title: string
+  url: string
   lanUrl?: string
   description?: string
-  icon?: string
-  openMethod?: string
+  icon: ItemIcon | null
+  openMethod: string
   sort?: number
 }
 
-interface BackendUser extends BackendBase {
-  username?: string
-  name?: string
-  email?: string
-  role?: 'admin' | 'user' | string
-  status?: 'active' | 'disabled' | string
-}
-
-interface BackendConfig extends BackendBase {
-  userId?: number
-  panel?: string | PanelConfig
-  searchEngine?: string | unknown
-}
-
-interface BackendSetting extends BackendBase {
-  siteName?: string
-  publicEnabled?: boolean
-  publicUserId?: number
-}
-
-interface BackendFile extends BackendBase {
-  originalName?: string
-  objectKey?: string
-  mimeType?: string
-  size?: number
-  url?: string
-}
-
-interface BackendPublicHome {
-  setting?: BackendSetting
-  config?: BackendConfig
-  groups?: BackendGroup[]
-  items?: BackendItem[]
-}
-
-export function listResponse<T>(list: T[]): ListResponse<T[]> {
+export function toFrontendGroup(w: PanelGroupWire): ItemIconGroup {
   return {
-    list,
-    count: list.length,
+    id: w.id,
+    icon: w.icon,
+    title: w.name ?? '',
+    sort: w.sort,
   }
 }
 
-export function toFrontendGroup(value: unknown): ItemIconGroup {
-  const group = (value ?? {}) as BackendGroup
+export function toBackendGroup(g: ItemIconGroup): PanelGroupWire {
+  return { id: g.id, name: g.title ?? '', icon: g.icon ?? '', sort: g.sort }
+}
 
+export function toFrontendItem(w: PanelItemWire): ItemInfo {
   return {
-    id: group.id,
-    createTime: group.createdAt,
-    updateTime: group.updatedAt,
-    icon: group.icon,
-    title: group.name ?? '',
-    sort: group.sort,
+    id: w.id,
+    icon: w.icon ?? null,
+    title: w.title ?? '',
+    url: w.url ?? '',
+    lanUrl: w.lanUrl ?? '',
+    description: w.description ?? '',
+    openMethod: toFrontendOpenMethod(w.openMethod),
+    sort: w.sort,
+    itemIconGroupId: w.groupId,
   }
 }
 
-export function toBackendGroup(group: ItemIconGroup) {
+export function toBackendItem(it: ItemInfo): PanelItemWire {
   return {
-    name: group.title ?? '',
-    icon: group.icon ?? '',
-    sort: group.sort,
+    id: it.id,
+    groupId: it.itemIconGroupId ?? 0,
+    title: it.title,
+    url: it.url,
+    lanUrl: it.lanUrl ?? '',
+    description: it.description ?? '',
+    icon: it.icon ?? null,
+    openMethod: toBackendOpenMethod(it.openMethod),
+    sort: it.sort,
   }
 }
 
-export function toFrontendItem(value: unknown): ItemInfo {
-  const item = (value ?? {}) as BackendItem
-
-  return {
-    id: item.id,
-    createTime: item.createdAt,
-    updateTime: item.updatedAt,
-    icon: parseIcon(item.icon),
-    title: item.name ?? '',
-    url: item.url ?? '',
-    lanUrl: item.lanUrl ?? '',
-    description: item.description ?? '',
-    openMethod: toFrontendOpenMethod(item.openMethod),
-    sort: item.sort,
-    itemIconGroupId: item.groupId,
-  }
-}
-
-export function toBackendItem(item: ItemInfo) {
-  return {
-    groupId: item.itemIconGroupId,
-    name: item.title,
-    url: item.url,
-    lanUrl: item.lanUrl ?? '',
-    description: item.description ?? '',
-    icon: JSON.stringify(item.icon ?? null),
-    openMethod: toBackendOpenMethod(item.openMethod),
-    sort: item.sort,
-  }
-}
-
-export function toFrontendUser(value: unknown): UserInfo {
-  const user = (value ?? {}) as BackendUser
-
-  return {
-    id: user.id,
-    userId: user.id,
-    createTime: user.createdAt,
-    updateTime: user.updatedAt,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    username: user.username,
-    name: user.name,
-    email: user.email,
-    mail: user.email,
-    role: user.role === 'admin' ? 1 : 2,
-    status: user.status === 'disabled' ? 'disabled' : 'active',
-    isAdmin: user.role === 'admin' ? 1 : 0,
-  }
-}
-
-export function toAuthUser(value: unknown): UserInfo {
-  const user = (value ?? {}) as BackendUser
-
-  return {
-    ...toFrontendUser(value),
-    role: user.role === 'admin' ? 'admin' : 'user',
-  }
-}
-
-export function toBackendUser(user: SaveUserRequest) {
-  return {
-    username: user.username,
-    password: user.password || undefined,
-    name: user.name,
-    email: user.email ?? user.mail ?? '',
-    role: user.role === 1 ? 'admin' : 'user',
-    status: user.status === 'disabled' ? 'disabled' : 'active',
-  }
-}
-
-export function toFrontendConfig(value: unknown): UserConfig {
-  const config = (value ?? {}) as BackendConfig
-
-  return {
-    panel: parseJSON<PanelConfig>(config?.panel, {} as PanelConfig),
-    searchEngine: parseJSON(config?.searchEngine, {}),
-  }
-}
-
-export function toBackendConfig(config: UserConfig) {
-  return {
-    panel: config.panel ?? {},
-    searchEngine: config.searchEngine ?? {},
-  }
-}
-
-export function toFrontendSetting(value: unknown): AppSetting {
-  const setting = (value ?? {}) as BackendSetting
-
-  return {
-    id: setting?.id,
-    siteName: setting?.siteName ?? 'Homelab Panel',
-    publicEnabled: Boolean(setting?.publicEnabled),
-    publicUserId: setting?.publicUserId ?? 1,
-  }
-}
-
-export function toBackendSetting(setting: AppSetting) {
-  return {
-    siteName: setting.siteName || 'Homelab Panel',
-    publicEnabled: setting.publicEnabled,
-    publicUserId: setting.publicUserId || 1,
-  }
-}
-
-export function toFrontendFile(value: unknown): FileInfo {
-  const file = (value ?? {}) as BackendFile
-
-  return {
-    id: file.id ?? 0,
-    src: file.url ?? '',
-    path: file.url ?? '',
-    fileName: file.originalName ?? file.objectKey ?? file.url ?? '',
-    createTime: file.createdAt,
-    updateTime: file.updatedAt,
-  }
-}
-
-export function toFrontendPublicHome(value: unknown): PublicHomeResponse {
-  const home = (value ?? {}) as BackendPublicHome
-
-  return {
-    setting: toFrontendSetting(home.setting),
-    config: toFrontendConfig(home.config),
-    groups: (home.groups ?? []).map(toFrontendGroup),
-    items: (home.items ?? []).map(toFrontendItem),
-  }
-}
-
-export function toFrontendOpenMethod(value?: string) {
+export function toFrontendOpenMethod(value?: string): number {
   if (value === 'current')
     return 1
   if (value === 'iframe')
@@ -236,7 +76,7 @@ export function toFrontendOpenMethod(value?: string) {
   return 2
 }
 
-export function toBackendOpenMethod(value?: number) {
+export function toBackendOpenMethod(value?: number): string {
   if (value === 1)
     return 'current'
   if (value === 3)
@@ -244,20 +84,30 @@ export function toBackendOpenMethod(value?: number) {
   return 'new_tab'
 }
 
-function parseIcon(value: string | undefined): ItemIcon | null {
-  if (!value)
-    return null
-  return parseJSON<ItemIcon | null>(value, null)
+export interface FrontendPanel {
+  siteName: string
+  config: PanelConfig
+  searchEngine: unknown
+  groups: ItemIconGroup[]
+  items: ItemInfo[]
 }
 
-function parseJSON<T>(value: unknown, fallback: T): T {
-  if (typeof value !== 'string')
-    return (value ?? fallback) as T
-
-  try {
-    return JSON.parse(value) as T
+export function toFrontendPanel(w: PanelWire): FrontendPanel {
+  return {
+    siteName: w.siteName ?? '',
+    config: (w.config ?? {}) as PanelConfig,
+    searchEngine: w.searchEngine ?? {},
+    groups: (w.groups ?? []).map(toFrontendGroup),
+    items: (w.items ?? []).map(toFrontendItem),
   }
-  catch {
-    return fallback
+}
+
+export function toBackendPanel(doc: FrontendPanel): PanelWire {
+  return {
+    siteName: doc.siteName,
+    config: doc.config,
+    searchEngine: doc.searchEngine ?? {},
+    groups: doc.groups.map(toBackendGroup),
+    items: doc.items.map(toBackendItem),
   }
 }
