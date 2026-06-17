@@ -1,91 +1,134 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
-	"fmt"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"homelab-panel/internal/data"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 func (h *Handler) UploadFiles(c *gin.Context) {
-	user, ok := currentUser(c)
-	if !ok {
-		writeError(c, http.StatusUnauthorized, "invalid user")
-		return
-	}
-
 	form, err := c.MultipartForm()
 	if err != nil {
 		writeError(c, http.StatusBadRequest, "invalid multipart form")
 		return
 	}
 
-	files := form.File["files[]"]
-	files = append(files, form.File["file"]...)
-	if len(files) == 0 {
+	incoming := form.File["files[]"]
+	incoming = append(incoming, form.File["file"]...)
+	if len(incoming) == 0 {
 		writeError(c, http.StatusBadRequest, "file is required")
 		return
 	}
 
-	saved := make([]data.File, 0, len(files))
-	for _, fileHeader := range files {
-		file, err := h.saveUploadedFile(c, user.ID, fileHeader.Filename, fileHeader.Size)
+	// 先全部落盘：任一失败则清理已写入的磁盘文件，保证不留下孤儿文件。
+	writtenFiles := make([]writtenFile, 0, len(incoming))
+	for _, header := range incoming {
+		objectKey, err := randomObjectName(header.Filename)
 		if err != nil {
-			writeError(c, http.StatusInternalServerError, err.Error())
+			cleanupWrittenFiles(h.DataDir, writtenFiles)
+			writeError(c, http.StatusInternalServerError, "generate object key failed")
 			return
 		}
-		if err := c.SaveUploadedFile(fileHeader, filepath.Join(h.DataDir, "uploads", file.ObjectKey)); err != nil {
+		if err := c.SaveUploadedFile(header, filepath.Join(h.DataDir, "uploads", objectKey)); err != nil {
+			cleanupWrittenFiles(h.DataDir, writtenFiles)
 			writeError(c, http.StatusInternalServerError, "save upload failed")
 			return
 		}
-		saved = append(saved, *file)
+		writtenFiles = append(writtenFiles, writtenFile{objectKey: objectKey, header: header})
 	}
-	c.JSON(http.StatusCreated, saved)
+
+	// 全部落盘成功后，用一次 Store.Save 原子提交所有元数据。
+	saved := make([]data.File, 0, len(writtenFiles))
+	err = h.Store.Save(func(d *data.StoreData) error {
+		for _, w := range writtenFiles {
+			file := data.File{
+				ID:           d.NextID.File,
+				OriginalName: w.header.Filename,
+				ObjectKey:    w.objectKey,
+				MimeType:     w.header.Header.Get("Content-Type"),
+				Size:         w.header.Size,
+				URL:          "/uploads/" + w.objectKey,
+				CreatedAt:    time.Now(),
+			}
+			d.NextID.File++
+			d.Files = append(d.Files, file)
+			saved = append(saved, file)
+		}
+		return nil
+	})
+	if err != nil {
+		// 元数据提交失败，回滚磁盘文件以保持一致性。
+		cleanupWrittenFiles(h.DataDir, writtenFiles)
+		writeError(c, http.StatusInternalServerError, "save file metadata failed")
+		return
+	}
+	writeJSON(c, http.StatusCreated, saved)
+}
+
+// writtenFile 记录一次成功落盘的 objectKey 与原始 header，便于失败时回滚。
+type writtenFile struct {
+	objectKey string
+	header    *multipart.FileHeader
+}
+
+// cleanupWrittenFiles 删除已落盘的临时文件，用于上传失败时的回滚。
+func cleanupWrittenFiles(dataDir string, written []writtenFile) {
+	for _, w := range written {
+		_ = os.Remove(filepath.Join(dataDir, "uploads", w.objectKey))
+	}
 }
 
 func (h *Handler) ListFiles(c *gin.Context) {
-	user, ok := currentUser(c)
-	if !ok {
-		writeError(c, http.StatusUnauthorized, "invalid user")
-		return
+	snap := h.Store.Snapshot()
+	// 倒序（最新在前）
+	files := snap.Files
+	out := make([]data.File, len(files))
+	for i, f := range files {
+		out[len(files)-1-i] = f
 	}
-
-	var files []data.File
-	if err := h.DB.Where("user_id = ?", user.ID).Order("id DESC").Find(&files).Error; err != nil {
-		writeError(c, http.StatusInternalServerError, "list files failed")
-		return
-	}
-	c.JSON(http.StatusOK, files)
-}
-
-func (h *Handler) GetFile(c *gin.Context) {
-	file, ok := h.fileForCurrentUser(c)
-	if !ok {
-		return
-	}
-	c.JSON(http.StatusOK, file)
+	writeJSON(c, http.StatusOK, out)
 }
 
 func (h *Handler) DeleteFile(c *gin.Context) {
-	file, ok := h.fileForCurrentUser(c)
-	if !ok {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		writeError(c, http.StatusBadRequest, "invalid file id")
 		return
 	}
 
-	if err := h.DB.Delete(file).Error; err != nil {
+	var removed data.File
+	var found bool
+	err = h.Store.Save(func(d *data.StoreData) error {
+		for i, f := range d.Files {
+			if f.ID == id {
+				removed = f
+				found = true
+				d.Files = append(d.Files[:i], d.Files[i+1:]...)
+				return nil
+			}
+		}
+		return nil
+	})
+	if err != nil {
 		writeError(c, http.StatusInternalServerError, "delete file failed")
 		return
 	}
-	if err := os.Remove(filepath.Join(h.DataDir, "uploads", file.ObjectKey)); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if !found {
+		writeError(c, http.StatusNotFound, "file not found")
+		return
+	}
+	if err := os.Remove(filepath.Join(h.DataDir, "uploads", removed.ObjectKey)); err != nil && !errors.Is(err, os.ErrNotExist) {
 		writeError(c, http.StatusInternalServerError, "remove file failed")
 		return
 	}
@@ -101,43 +144,10 @@ func (h *Handler) Upload(c *gin.Context) {
 	c.File(filepath.Join(h.DataDir, "uploads", objectKey))
 }
 
-func (h *Handler) saveUploadedFile(c *gin.Context, userID uint, originalName string, size int64) (*data.File, error) {
-	objectKey := uuid.NewString() + strings.ToLower(filepath.Ext(originalName))
-	file := data.File{
-		UserID:       userID,
-		OriginalName: originalName,
-		ObjectKey:    objectKey,
-		MimeType:     c.GetHeader("Content-Type"),
-		Size:         size,
-		URL:          "/uploads/" + objectKey,
+func randomObjectName(originalName string) (string, error) {
+	var buf [12]byte
+	if _, err := rand.Read(buf[:]); err != nil {
+		return "", err
 	}
-	if err := h.DB.Create(&file).Error; err != nil {
-		return nil, fmt.Errorf("save file metadata failed")
-	}
-	return &file, nil
-}
-
-func (h *Handler) fileForCurrentUser(c *gin.Context) (*data.File, bool) {
-	user, ok := currentUser(c)
-	if !ok {
-		writeError(c, http.StatusUnauthorized, "invalid user")
-		return nil, false
-	}
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		writeError(c, http.StatusBadRequest, "invalid file id")
-		return nil, false
-	}
-
-	var file data.File
-	err = h.DB.Where("id = ? AND user_id = ?", id, user.ID).First(&file).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		writeError(c, http.StatusNotFound, "file not found")
-		return nil, false
-	}
-	if err != nil {
-		writeError(c, http.StatusInternalServerError, "load file failed")
-		return nil, false
-	}
-	return &file, true
+	return hex.EncodeToString(buf[:]) + strings.ToLower(filepath.Ext(originalName)), nil
 }

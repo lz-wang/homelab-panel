@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"homelab-panel/internal/app"
 	"log"
 	"os"
@@ -10,14 +9,6 @@ import (
 )
 
 var version = "dev"
-
-// @title Homelab Panel API
-// @version 1.0
-// @description Homelab Panel HTTP API.
-// @BasePath /api
-// @securityDefinitions.apikey ApiTokenAuth
-// @in header
-// @name token
 
 func main() {
 	cliApp := &cli.App{
@@ -38,16 +29,11 @@ func main() {
 					&cli.StringFlag{
 						Name:    "dir",
 						Aliases: []string{"d"},
-						Usage:   "Data directory (contains data.db and uploads/)",
+						Usage:   "Data directory (contains homelab-panel.json and uploads/)",
 						Value:   "./data",
 					},
 				},
 				Action: runServe,
-			},
-			{
-				Name:   "password-reset",
-				Usage:  "Reset the first admin user's password",
-				Action: runPasswordReset,
 			},
 			{
 				Name:   "version",
@@ -57,7 +43,7 @@ func main() {
 		},
 	}
 
-	if err := cliApp.Run(normalizeArgs(os.Args)); err != nil {
+	if err := cliApp.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -72,24 +58,7 @@ func runServe(c *cli.Context) error {
 	return app.Run(c.Context, cfg)
 }
 
-func runPasswordReset(_ *cli.Context) error {
-	return fmt.Errorf("password reset is not implemented for the rewritten backend")
-}
-
 func runVersion(c *cli.Context) error {
-	fmt.Fprintln(c.App.Writer, version)
+	c.App.Writer.Write([]byte(version + "\n"))
 	return nil
-}
-
-func normalizeArgs(args []string) []string {
-	if len(args) == 1 {
-		return append(args, "serve")
-	}
-
-	normalized := append([]string(nil), args...)
-	switch normalized[1] {
-	case "--password-reset":
-		normalized[1] = "password-reset"
-	}
-	return normalized
 }

@@ -6,21 +6,22 @@ import (
 	"fmt"
 	"net/http"
 
+	"homelab-panel/internal/data"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type ServerDeps struct {
 	Config Config
 	Logger *zap.Logger
-	DB     *gorm.DB
+	Store  *data.Store
 }
 
 type Server struct {
 	config Config
 	logger *zap.Logger
-	db     *gorm.DB
+	store  *data.Store
 	router *gin.Engine
 }
 
@@ -31,7 +32,7 @@ func NewServer(deps ServerDeps) *Server {
 	server := &Server{
 		config: deps.Config,
 		logger: deps.Logger,
-		db:     deps.DB,
+		store:  deps.Store,
 		router: router,
 	}
 	server.registerRoutes()

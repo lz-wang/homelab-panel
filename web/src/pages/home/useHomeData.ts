@@ -1,10 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { getListByGroupId } from '@/api/panel/itemIcon'
-import { getList as getGroupList } from '@/api/panel/itemIconGroup'
-import { getPublicHome } from '@/api/public'
-import { VisitMode } from '@/constants/auth'
-import { useAuthStore } from '@/store/auth'
+import { getPanel } from '@/api/panel'
+import { usePanelStore } from '@/store/panel'
 
 import type { ItemGroup } from './types'
 
@@ -12,49 +9,27 @@ export function useHomeData() {
   const [items, setItems] = useState<ItemGroup[]>([])
 
   const loadList = useCallback(async () => {
-    const authState = useAuthStore.getState()
+    const res = await getPanel()
 
-    if (!authState.token && authState.visitMode === VisitMode.VISIT_MODE_PUBLIC) {
-      const publicRes = await getPublicHome()
-
-      if (publicRes.code !== 0)
-        return
-
-      const groups: ItemGroup[] = publicRes.data.groups.map(group => ({
-        ...group,
-        hoverStatus: false,
-        items: publicRes.data.items.filter(item => item.itemIconGroupId === group.id),
-      }))
-
-      setItems(groups)
-      return
-    }
-
-    const groupRes = await getGroupList()
-
-    if (groupRes.code !== 0)
+    if (res.code !== 0 || !res.data)
       return
 
-    const groups: ItemGroup[] = groupRes.data.list.map(group => ({
+    // 同步写入 panel store（供 GroupManager/StylePanel 等读取）
+    usePanelStore.setState({
+      siteName: res.data.siteName,
+      panelConfig: { ...usePanelStore.getState().panelConfig, ...res.data.config },
+      searchEngine: res.data.searchEngine,
+      groups: res.data.groups,
+      items: res.data.items,
+    })
+
+    const groups: ItemGroup[] = res.data.groups.map(group => ({
       ...group,
       hoverStatus: false,
-      items: [],
+      items: res.data!.items.filter(item => item.itemIconGroupId === group.id),
     }))
 
-    const withItems = await Promise.all(
-      groups.map(async (group) => {
-        if (!group.id)
-          return group
-
-        const itemRes = await getListByGroupId(group.id)
-        return {
-          ...group,
-          items: itemRes.code === 0 ? itemRes.data.list : [],
-        }
-      }),
-    )
-
-    setItems(withItems)
+    setItems(groups)
   }, [])
 
   return {

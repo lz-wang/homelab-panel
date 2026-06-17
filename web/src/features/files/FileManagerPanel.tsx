@@ -17,7 +17,7 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { deletes, getList, uploadFiles } from '@/api/system/file'
+import { deletes, getList, uploadFiles } from '@/api/files'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'

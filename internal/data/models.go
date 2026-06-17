@@ -1,84 +1,76 @@
 package data
 
 import (
+	"encoding/json"
 	"time"
-
-	"gorm.io/gorm"
 )
 
-type BaseModel struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+type StoreData struct {
+	Version   int       `json:"version"`
+	Admin     Admin     `json:"admin"`
+	Panel     Panel     `json:"panel"`
+	Files     []File    `json:"files"`
+	NextID    NextID    `json:"nextId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type User struct {
-	BaseModel
-
-	Username     string `gorm:"size:64;uniqueIndex;not null" json:"username"`
-	PasswordHash string `gorm:"size:255;not null" json:"-"`
-	Name         string `gorm:"size:64" json:"name"`
-	Email        string `gorm:"size:128" json:"email"`
-	Role         string `gorm:"size:16;not null;default:user" json:"role"`
-	Status       string `gorm:"size:16;not null;default:active" json:"status"`
+type Admin struct {
+	PasswordHash string    `json:"passwordHash"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
-type Session struct {
-	BaseModel
-
-	UserID    uint       `gorm:"index;not null" json:"userId"`
-	TokenHash string     `gorm:"size:64;uniqueIndex;not null" json:"-"`
-	ExpiresAt time.Time  `gorm:"index;not null" json:"expiresAt"`
-	RevokedAt *time.Time `json:"revokedAt"`
+type Panel struct {
+	SiteName     string          `json:"siteName"`
+	Config       json.RawMessage `json:"config"`
+	SearchEngine json.RawMessage `json:"searchEngine"`
+	Groups       []Group         `json:"groups"`
+	Items        []Item          `json:"items"`
 }
 
 type Group struct {
-	BaseModel
-
-	UserID uint   `gorm:"index;not null" json:"userId"`
-	Name   string `gorm:"size:64;not null" json:"name"`
-	Icon   string `gorm:"size:255" json:"icon"`
-	Sort   int    `gorm:"not null;default:1000" json:"sort"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Icon      string    `json:"icon,omitempty"`
+	Sort      int       `json:"sort"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Item struct {
-	BaseModel
-
-	UserID      uint   `gorm:"index;not null" json:"userId"`
-	GroupID     uint   `gorm:"index;not null" json:"groupId"`
-	Name        string `gorm:"size:64;not null" json:"name"`
-	URL         string `gorm:"size:1024;not null" json:"url"`
-	LANURL      string `gorm:"size:1024" json:"lanUrl"`
-	Description string `gorm:"size:1024" json:"description"`
-	Icon        string `gorm:"type:text" json:"icon"`
-	OpenMethod  string `gorm:"size:16;not null;default:new_tab" json:"openMethod"`
-	Sort        int    `gorm:"not null;default:1000" json:"sort"`
+	ID          int       `json:"id"`
+	GroupID     int       `json:"groupId"`
+	Title       string    `json:"title"`
+	URL         string    `json:"url"`
+	LANURL      string    `json:"lanUrl,omitempty"`
+	Description string    `json:"description,omitempty"`
+	Icon        *ItemIcon `json:"icon"`
+	OpenMethod  string    `json:"openMethod"`
+	Sort        int       `json:"sort"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
-type UserConfig struct {
-	BaseModel
-
-	UserID       uint   `gorm:"uniqueIndex;not null" json:"userId"`
-	Panel        string `gorm:"type:text;not null;default:'{}'" json:"panel"`
-	SearchEngine string `gorm:"type:text;not null;default:'{}'" json:"searchEngine"`
-}
-
-type AppSetting struct {
-	BaseModel
-
-	SiteName      string `gorm:"size:64;not null;default:Homelab Panel" json:"siteName"`
-	PublicEnabled bool   `gorm:"not null;default:false" json:"publicEnabled"`
-	PublicUserID  uint   `gorm:"not null;default:1" json:"publicUserId"`
+type ItemIcon struct {
+	ItemType        int    `json:"itemType"`
+	Src             string `json:"src,omitempty"`
+	Text            string `json:"text,omitempty"`
+	BackgroundColor string `json:"backgroundColor,omitempty"`
 }
 
 type File struct {
-	BaseModel
+	ID           int       `json:"id"`
+	OriginalName string    `json:"originalName"`
+	ObjectKey    string    `json:"objectKey"`
+	MimeType     string    `json:"mimeType"`
+	Size         int64     `json:"size"`
+	URL          string    `json:"url"`
+	CreatedAt    time.Time `json:"createdAt"`
+}
 
-	UserID       uint   `gorm:"index;not null" json:"userId"`
-	OriginalName string `gorm:"size:255;not null" json:"originalName"`
-	ObjectKey    string `gorm:"size:512;uniqueIndex;not null" json:"objectKey"`
-	MimeType     string `gorm:"size:128" json:"mimeType"`
-	Size         int64  `gorm:"not null" json:"size"`
-	URL          string `gorm:"size:1024;not null" json:"url"`
+type NextID struct {
+	Group int `json:"group"`
+	Item  int `json:"item"`
+	File  int `json:"file"`
 }

@@ -6,13 +6,11 @@ import Fab from '@mui/material/Fab'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 
-import { VisitMode } from '@/constants/auth'
 import { PanelStateNetworkModeEnum } from '@/constants/panel'
 import { t } from '@/locales'
 
 interface Props {
   canManage: boolean
-  visitMode: VisitMode | null
   networkMode: PanelStateNetworkModeEnum | null
   showNetworkToggle?: boolean
   onOpenSettings: () => void
@@ -22,7 +20,6 @@ interface Props {
 
 export function HomeFloatingActions({
   canManage,
-  visitMode,
   networkMode,
   showNetworkToggle,
   onOpenSettings,
@@ -38,7 +35,7 @@ export function HomeFloatingActions({
           </Fab>
         </Tooltip>
       )}
-      {!canManage && visitMode === VisitMode.VISIT_MODE_PUBLIC && (
+      {!canManage && (
         <Tooltip title="登录">
           <Fab size="small" onClick={onLogin}>
             <LoginIcon />

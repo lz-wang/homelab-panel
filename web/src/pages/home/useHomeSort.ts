@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-import { saveSort } from '@/api/panel/itemIcon'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
-import type { SortItemRequest } from '@/types/common'
+import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
 
 import type { DragState, ItemGroup } from './types'
@@ -49,13 +48,9 @@ export function useHomeSort({
     if (!canManage || !group.id || !group.items)
       return
 
-    const sortItems: SortItemRequest[] = group.items.reduce<SortItemRequest[]>((result, item, index) => {
-      if (item.id)
-        result.push({ id: item.id, sort: index + 1 })
-
-      return result
-    }, [])
-    const res = await saveSort({ itemIconGroupId: group.id, sortItems })
+    const reordered = group.items.map((item, index) => ({ ...item, sort: index + 1 }))
+    const others = items.flatMap(g => (g.id === group.id ? [] : (g.items ?? []).map((it, index) => ({ ...it, sort: index + 1 }))))
+    const res = await usePanelStore.getState().replaceItems([...others, ...reordered])
 
     if (res.code === 0) {
       notify.success(t('common.saveSuccess'))

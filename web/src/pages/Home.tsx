@@ -6,7 +6,6 @@ import { AppStarter } from '@/components/apps/AppStarter'
 import { BatchAddItemsDialog } from '@/components/common/BatchAddItemsDialog'
 import { EditItemDialog } from '@/components/common/EditItemDialog'
 import { IframeDialog } from '@/components/common/IframeDialog'
-import { VisitMode } from '@/constants/auth'
 import { useAuthStore } from '@/store/auth'
 import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
@@ -24,13 +23,13 @@ import type { ItemGroup } from './home/types'
 export default function Home() {
   const navigate = useNavigate()
   const authStore = useAuthStore()
-  const { panelConfig, networkMode, panelDataVersion, setNetworkMode, updatePanelConfigByCloud } = usePanelStore()
+  const { panelConfig, networkMode, panelDataVersion, setNetworkMode, load: loadPanel } = usePanelStore()
   const { items, setItems, loadList } = useHomeData()
   const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [batchAddGroupId, setBatchAddGroupId] = useState<number | undefined>()
   const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
-  const canManage = authStore.visitMode === VisitMode.VISIT_MODE_LOGIN && authStore.isLoggedIn()
+  const canManage = Boolean(authStore.token) && authStore.isAdmin
 
   const {
     iframe,
@@ -68,8 +67,8 @@ export default function Home() {
   })
 
   useEffect(() => {
-    updatePanelConfigByCloud()
-  }, [updatePanelConfigByCloud])
+    loadPanel()
+  }, [loadPanel])
 
   useEffect(() => {
     loadList()
@@ -177,7 +176,6 @@ export default function Home() {
 
       <HomeFloatingActions
         canManage={canManage}
-        visitMode={authStore.visitMode}
         networkMode={networkMode}
         showNetworkToggle={panelConfig.netModeChangeButtonShow}
         onOpenSettings={() => setSettingsOpen(true)}

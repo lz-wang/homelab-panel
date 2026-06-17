@@ -3,7 +3,6 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { VisitMode } from '@/constants/auth'
 import { useAuthStore } from '@/store/auth'
 
 interface Props {
@@ -14,8 +13,7 @@ export function AuthBootstrap({ children }: Props) {
   const location = useLocation()
   const navigate = useNavigate()
   const initialized = useAuthStore(s => s.initialized)
-  const visitMode = useAuthStore(s => s.visitMode)
-  const isLoggedIn = useAuthStore(s => s.isLoggedIn)
+  const isAdmin = useAuthStore(s => s.isAdmin)
   const bootstrapAuth = useAuthStore(s => s.bootstrapAuth)
 
   useEffect(() => {
@@ -26,14 +24,10 @@ export function AuthBootstrap({ children }: Props) {
     if (!initialized)
       return
 
-    if (location.pathname === '/login' && isLoggedIn()) {
+    // 已登录用户在 /login 页则跳回首页；未登录用户允许留在任意页（始终公开）
+    if (location.pathname === '/login' && isAdmin)
       navigate('/', { replace: true })
-      return
-    }
-
-    if (location.pathname !== '/login' && !isLoggedIn() && visitMode === VisitMode.VISIT_MODE_LOGIN)
-      navigate('/login', { replace: true })
-  }, [initialized, isLoggedIn, location.pathname, navigate, visitMode])
+  }, [initialized, isAdmin, location.pathname, navigate])
 
   if (!initialized) {
     return (
