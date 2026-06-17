@@ -15,8 +15,6 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
-import { API_SUCCESS_CODE } from '@/api/apiResult'
-import { setUserConfig } from '@/api/panel/userConfig'
 import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import { useApiAction } from '@/hooks/useApiAction'
@@ -56,16 +54,15 @@ export function StylePanel() {
   }
 
   async function handleSave() {
-    const res = await run(
-      () => setUserConfig({ panel: form }),
+    await run(
+      async () => {
+        return await setPanelConfig(form)
+      },
       {
         successMessage: t('common.saveSuccess'),
         errorMessage: response => `${t('common.saveFail')}:${response.msg}`,
       },
     )
-
-    if (res?.code === API_SUCCESS_CODE)
-      setPanelConfig(form)
   }
 
   return (

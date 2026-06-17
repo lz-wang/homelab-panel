@@ -1,6 +1,6 @@
 import type { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/constants/panel'
 
-import type { InfoBase, SortItemRequest } from './common'
+import type { InfoBase } from './common'
 
 export interface ItemInfo extends InfoBase {
   icon: ItemIcon | null
@@ -54,23 +54,6 @@ export interface PanelState {
   leftSiderCollapsed: boolean
   networkMode: PanelStateNetworkModeEnum | null
   panelConfig: PanelConfig
-}
-
-export interface UserConfig {
-  panel: PanelConfig
-  searchEngine?: unknown
-}
-
-export interface PublicHomeResponse {
-  setting: unknown
-  config: UserConfig
-  groups: ItemIconGroup[]
-  items: ItemInfo[]
-}
-
-export interface ItemIconSortRequest {
-  sortItems: SortItemRequest[]
-  itemIconGroupId: number
 }
 
 export interface SiteFaviconRequest {

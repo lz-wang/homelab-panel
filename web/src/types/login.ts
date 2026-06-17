@@ -1,11 +1,4 @@
-import type { UserInfo } from './user'
-
-export interface LoginRequest {
-  username: string
-  password: string
-}
-
-export interface LoginResponse extends UserInfo {
+export interface LoginResponse {
   token: string
   expiresAt?: string
 }

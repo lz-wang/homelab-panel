@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 import { type ApiResponse, API_SUCCESS_CODE } from '@/api/apiResult'
-import { type FrontendPanel, toBackendPanel } from '@/api/adapters'
+import { type FrontendPanel } from '@/api/adapters'
 import { getPanel, savePanel, type PanelDocument } from '@/api/panel'
 import background1 from '@/assets/background-1.jpg'
 import background2 from '@/assets/background-2.jpg'

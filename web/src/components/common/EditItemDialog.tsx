@@ -14,11 +14,12 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
-import { edit, getSiteFavicon } from '@/api/panel/itemIcon'
+import { getSiteFaviconStub } from '@/api/stubs'
 import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { ItemIcon } from '@/components/common/ItemIcon'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
+import { usePanelStore } from '@/store/panel'
 import type { ItemIcon as ItemIconType, ItemInfo } from '@/types/panel'
 import { isValidUrl, normalizeUrl } from '@/utils/url'
 
@@ -48,6 +49,7 @@ const defaultItem: ItemInfo = {
 
 export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }: Props) {
   const notify = useNotify()
+  const upsertItem = usePanelStore(s => s.upsertItem)
   const [form, setForm] = useState<ItemInfo>(defaultItem)
   const [saving, setSaving] = useState(false)
   const [fetchingFavicon, setFetchingFavicon] = useState(false)
@@ -125,7 +127,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     setSaving(true)
 
     try {
-      const res = await edit({
+      const res = await upsertItem({
         ...form,
         url: normalizeUrl(form.url),
         lanUrl: normalizeUrl(form.lanUrl),
@@ -154,7 +156,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     setFetchingFavicon(true)
 
     try {
-      const res = await getSiteFavicon({ url: form.url })
+      const res = await getSiteFaviconStub({ url: form.url })
 
       if (res.code === 0 && res.data.iconUrl) {
         patchIcon({ itemType: 2, src: res.data.iconUrl })

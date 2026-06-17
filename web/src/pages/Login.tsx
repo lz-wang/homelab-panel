@@ -1,5 +1,4 @@
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -12,30 +11,24 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { API_SUCCESS_CODE } from '@/api/apiResult'
-import { login } from '@/api/auth'
-import { VisitMode } from '@/constants/auth'
+import { login } from '@/api/admin'
 import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
 import { useAuthStore } from '@/store/auth'
-import type { LoginRequest } from '@/types/login'
 
 export default function Login() {
   const navigate = useNavigate()
   const setToken = useAuthStore(s => s.setToken)
-  const setUserInfo = useAuthStore(s => s.setUserInfo)
-  const setVisitMode = useAuthStore(s => s.setVisitMode)
+  const setAdmin = useAuthStore(s => s.setAdmin)
   const setInitialized = useAuthStore(s => s.setInitialized)
-  const [form, setForm] = useState<LoginRequest>({
-    username: '',
-    password: '',
-  })
+  const [password, setPassword] = useState('')
   const { loading, run } = useApiAction()
 
   async function handleSubmit() {
     const res = await run(
-      () => login(form),
+      () => login(password),
       {
-        successMessage: response => `Hi ${response.data.name ?? response.data.username ?? ''},${t('login.welcomeMessage')}`,
+        successMessage: () => t('login.welcomeMessage'),
       },
     )
 
@@ -43,8 +36,7 @@ export default function Login() {
       return
 
     setToken(res.data.token)
-    setUserInfo(res.data)
-    setVisitMode(VisitMode.VISIT_MODE_LOGIN)
+    setAdmin(true)
     setInitialized(true)
     navigate('/')
   }
@@ -68,26 +60,12 @@ export default function Login() {
               {t('common.appName')}
             </Typography>
             <TextField
-              value={form.username}
-              onChange={event => setForm({ ...form, username: event.target.value })}
-              placeholder={t('login.usernamePlaceholder')}
-              fullWidth
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AccountCircleOutlinedIcon />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <TextField
-              value={form.password}
-              onChange={event => setForm({ ...form, password: event.target.value })}
+              value={password}
+              onChange={event => setPassword(event.target.value)}
               placeholder={t('login.passwordPlaceholder')}
               type="password"
               fullWidth
+              autoFocus
               onKeyDown={(event) => {
                 if (event.key === 'Enter')
                   handleSubmit()

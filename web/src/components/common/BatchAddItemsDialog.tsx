@@ -7,9 +7,9 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import { useEffect, useState } from 'react'
 
-import { addMultiple } from '@/api/panel/itemIcon'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
+import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
 import { normalizeUrl, titleFromUrl } from '@/utils/url'
 
@@ -22,6 +22,7 @@ interface Props {
 
 export function BatchAddItemsDialog({ open, itemIconGroupId, onClose, onSaved }: Props) {
   const notify = useNotify()
+  const addItems = usePanelStore(s => s.addItems)
   const [value, setValue] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -74,7 +75,7 @@ export function BatchAddItemsDialog({ open, itemIconGroupId, onClose, onSaved }:
     setSaving(true)
 
     try {
-      const res = await addMultiple(items)
+      const res = await addItems(items)
 
       if (res.code === 0) {
         notify.success(t('common.saveSuccess'))

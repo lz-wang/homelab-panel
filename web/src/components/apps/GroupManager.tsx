@@ -19,11 +19,10 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
-import { deletes, edit, getList, saveSort } from '@/api/panel/itemIconGroup'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
-import type { SortItemRequest } from '@/types/common'
+import { usePanelStore } from '@/store/panel'
 import type { ItemIconGroup } from '@/types/panel'
 
 function move<T>(list: T[], index: number, direction: -1 | 1) {
@@ -43,32 +42,19 @@ function move<T>(list: T[], index: number, direction: -1 | 1) {
 export function GroupManager() {
   const notify = useNotify()
   const confirm = useConfirm()
-  const [groups, setGroups] = useState<ItemIconGroup[]>([])
-  const [loading, setLoading] = useState(false)
+  const storeGroups = usePanelStore(s => s.groups)
+  const upsertGroup = usePanelStore(s => s.upsertGroup)
+  const deleteGroups = usePanelStore(s => s.deleteGroups)
+  const replaceGroups = usePanelStore(s => s.replaceGroups)
+  const [groups, setGroups] = useState<ItemIconGroup[]>(storeGroups)
   const [savingSort, setSavingSort] = useState(false)
   const [editing, setEditing] = useState<ItemIconGroup | null>(null)
   const [title, setTitle] = useState('')
   const [savingGroup, setSavingGroup] = useState(false)
 
-  async function loadGroups() {
-    setLoading(true)
-
-    try {
-      const res = await getList()
-
-      if (res.code === 0)
-        setGroups(res.data.list)
-      else
-        notify.error(res.msg)
-    }
-    finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    loadGroups()
-  }, [])
+    setGroups(storeGroups)
+  }, [storeGroups])
 
   function openEdit(group?: ItemIconGroup) {
     setEditing(group ?? {})
@@ -84,7 +70,7 @@ export function GroupManager() {
     setSavingGroup(true)
 
     try {
-      const res = await edit({
+      const res = await upsertGroup({
         ...editing,
         title: title.trim(),
       })
@@ -92,7 +78,6 @@ export function GroupManager() {
       if (res.code === 0) {
         notify.success(t('common.saveSuccess'))
         setEditing(null)
-        loadGroups()
       }
       else {
         notify.error(`${t('common.saveFail')}:${res.msg}`)
@@ -117,29 +102,20 @@ export function GroupManager() {
     if (!ok)
       return
 
-    const res = await deletes([group.id])
+    const res = await deleteGroups([group.id])
 
-    if (res.code === 0) {
+    if (res.code === 0)
       notify.success(t('common.deleteSuccess'))
-      loadGroups()
-    }
-    else {
+    else
       notify.error(`${t('common.deleteFail')}:${res.msg}`)
-    }
   }
 
   async function handleSaveSort() {
-    const sortItems = groups.reduce<SortItemRequest[]>((result, group, index) => {
-      if (group.id)
-        result.push({ id: group.id, sort: index + 1 })
-
-      return result
-    }, [])
-
     setSavingSort(true)
 
     try {
-      const res = await saveSort(sortItems)
+      const ordered = groups.map((group, index) => ({ ...group, sort: index + 1 }))
+      const res = await replaceGroups(ordered)
 
       if (res.code === 0)
         notify.success(t('common.saveSuccess'))
@@ -207,7 +183,7 @@ export function GroupManager() {
         ))}
       </List>
 
-      {!loading && groups.length === 0 && (
+      {groups.length === 0 && (
         <Typography color="text.secondary">暂无分组</Typography>
       )}
 

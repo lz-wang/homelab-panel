@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
-import { deletes } from '@/api/panel/itemIcon'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { PanelStateNetworkModeEnum } from '@/constants/panel'
 import { t } from '@/locales'
+import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
 
 import type { ItemGroup } from './types'
@@ -83,11 +83,11 @@ export function useHomeActions({
     if (!ok)
       return
 
-    const res = await deletes([item.id])
+    const res = await usePanelStore.getState().deleteItems([item.id])
 
     if (res.code === 0) {
       notify.success(t('common.deleteSuccess'))
-      loadList()
+      await loadList()
     }
     else {
       notify.error(`${t('common.deleteFail')}:${res.msg}`)

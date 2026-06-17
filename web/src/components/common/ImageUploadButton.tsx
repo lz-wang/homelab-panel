@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import { useRef, useState } from 'react'
 
-import { uploadImg } from '@/api/system/file'
+import { uploadImg } from '@/api/files'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { FilePickerDialog } from '@/features/files/FilePickerDialog'
 import { t } from '@/locales'

@@ -6,9 +6,6 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useRef, useState } from 'react'
 
-import { getListByGroupId, addMultiple } from '@/api/panel/itemIcon'
-import { edit as editGroup, getList as getGroupList } from '@/api/panel/itemIconGroup'
-import { getUserConfig, setUserConfig } from '@/api/panel/userConfig'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
@@ -35,41 +32,28 @@ type FrontendBackupResult = { data: HomelabPanelExportV1 } | { data?: never, err
 export function ImportExportPanel() {
   const notify = useNotify()
   const confirm = useConfirm()
-  const updatePanelConfigByCloud = usePanelStore(s => s.updatePanelConfigByCloud)
-  const markPanelDataChanged = usePanelStore(s => s.markPanelDataChanged)
+  const load = usePanelStore(s => s.load)
+  const panelConfig = usePanelStore(s => s.panelConfig)
+  const groups = usePanelStore(s => s.groups)
+  const items = usePanelStore(s => s.items)
+  const setPanelConfig = usePanelStore(s => s.setPanelConfig)
+  const upsertGroup = usePanelStore(s => s.upsertGroup)
+  const addItems = usePanelStore(s => s.addItems)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
 
-  async function buildFrontendBackup(): Promise<FrontendBackupResult> {
-    const [configRes, groupRes] = await Promise.all([getUserConfig(), getGroupList()])
-
-    if (configRes.code !== 0)
-      return { error: configRes.msg }
-
-    if (groupRes.code !== 0)
-      return { error: groupRes.msg }
-
-    const groups = await Promise.all(
-      groupRes.data.list.map(async (group) => {
-        if (!group.id)
-          return { group, items: [] }
-
-        const itemRes = await getListByGroupId(group.id)
-        return {
-          group,
-          items: itemRes.code === 0 ? itemRes.data.list : [],
-        }
-      }),
-    )
-
+  function buildFrontendBackup(): FrontendBackupResult {
     return {
       data: {
         version: 1,
         exportedAt: new Date().toISOString(),
-        panel: configRes.data.panel,
-        groups,
-      } satisfies HomelabPanelExportV1,
+        panel: panelConfig,
+        groups: groups.map((group) => {
+          const groupItems = items.filter(item => item.itemIconGroupId === group.id)
+          return { group, items: groupItems }
+        }),
+      },
     }
   }
 
@@ -77,7 +61,7 @@ export function ImportExportPanel() {
     setExporting(true)
 
     try {
-      const fallback = await buildFrontendBackup()
+      const fallback = buildFrontendBackup()
 
       if ('error' in fallback) {
         notify.error(`导出失败:${fallback.error}`)
@@ -106,7 +90,7 @@ export function ImportExportPanel() {
     setImporting(true)
 
     try {
-      const configRes = await setUserConfig({ panel: data.panel })
+      const configRes = await setPanelConfig(data.panel)
 
       if (configRes.code !== 0) {
         notify.error(`导入面板配置失败:${configRes.msg}`)
@@ -114,22 +98,24 @@ export function ImportExportPanel() {
       }
 
       for (const entry of data.groups) {
-        const groupRes = await editGroup(cleanGroup(entry.group))
+        const groupRes = await upsertGroup(cleanGroup(entry.group))
 
         if (groupRes.code !== 0) {
           notify.error(`导入分组失败:${groupRes.msg}`)
           return
         }
 
-        const groupId = groupRes.data.id
+        // 新增分组在响应末尾；取最新 group id
+        const latest = usePanelStore.getState().groups.at(-1)
+        const groupId = latest?.id
 
         if (!groupId)
           continue
 
-        const items = entry.items.map(item => cleanItem(item, groupId))
+        const entryItems = entry.items.map(item => cleanItem(item, groupId))
 
-        if (items.length) {
-          const itemRes = await addMultiple(items)
+        if (entryItems.length) {
+          const itemRes = await addItems(entryItems)
 
           if (itemRes.code !== 0) {
             notify.error(`导入图标失败:${itemRes.msg}`)
@@ -138,8 +124,7 @@ export function ImportExportPanel() {
         }
       }
 
-      await updatePanelConfigByCloud()
-      markPanelDataChanged()
+      await load()
       notify.success('导入成功')
     }
     finally {
