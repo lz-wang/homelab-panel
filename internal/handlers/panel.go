@@ -67,6 +67,9 @@ func (h *Handler) UpdatePanel(c *gin.Context) {
 	}
 
 	snap := h.Store.Snapshot()
+	// 注意：新 id 基于 snap.NextID 在锁外分配，随后在 Store.Save 闭包内推进 NextID。
+	// 本服务为单管理员模型（无并发 PUT /panel），该窗口可接受；若未来支持并发写入，
+	// 需将 id 分配移入 Store.Save 闭包（基于 d.NextID 实时分配）。
 	normalized, err := normalizePanel(req, snap, snap.NextID)
 	if err != nil {
 		if errors.Is(err, errItemGroupDangling) {
