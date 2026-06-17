@@ -1,0 +1,226 @@
+package handlers
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"time"
+
+	"homelab-panel/internal/data"
+
+	"github.com/gin-gonic/gin"
+)
+
+type panelRequest struct {
+	SiteName     string          `json:"siteName"`
+	Config       json.RawMessage `json:"config"`
+	SearchEngine json.RawMessage `json:"searchEngine"`
+	Groups       []groupInput    `json:"groups"`
+	Items        []itemInput     `json:"items"`
+}
+
+type groupInput struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	Icon string `json:"icon"`
+	Sort int    `json:"sort"`
+}
+
+type itemInput struct {
+	ID          int            `json:"id"`
+	GroupID     int            `json:"groupId"`
+	Title       string         `json:"title"`
+	URL         string         `json:"url"`
+	LANURL      string         `json:"lanUrl"`
+	Description string         `json:"description"`
+	Icon        *data.ItemIcon `json:"icon"`
+	OpenMethod  string         `json:"openMethod"`
+	Sort        int            `json:"sort"`
+}
+
+var validOpenMethods = map[string]bool{"current": true, "new_tab": true, "iframe": true}
+
+var (
+	errGroupNameRequired = errors.New("group name is required")
+	errItemTitleRequired = errors.New("item title is required")
+	errItemURLRequired   = errors.New("item url is required")
+	errItemGroupDangling = errors.New("item references unknown group")
+	errOpenMethodInvalid = errors.New("invalid openMethod")
+)
+
+func (h *Handler) GetPanel(c *gin.Context) {
+	snap := h.Store.Snapshot()
+	writeJSON(c, http.StatusOK, panelView(snap.Panel))
+}
+
+func (h *Handler) UpdatePanel(c *gin.Context) {
+	var req panelRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		writeError(c, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if len(req.Config) == 0 {
+		req.Config = json.RawMessage("{}")
+	}
+	if len(req.SearchEngine) == 0 {
+		req.SearchEngine = json.RawMessage("{}")
+	}
+
+	snap := h.Store.Snapshot()
+	normalized, err := normalizePanel(req, snap, snap.NextID)
+	if err != nil {
+		if errors.Is(err, errItemGroupDangling) {
+			writeError(c, http.StatusConflict, err.Error())
+			return
+		}
+		writeError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	maxGroup, maxItem := maxExistingIDs(normalized)
+	err = h.Store.Save(func(d *data.StoreData) error {
+		d.Panel = normalized
+		if maxGroup >= d.NextID.Group {
+			d.NextID.Group = maxGroup + 1
+		}
+		if maxItem >= d.NextID.Item {
+			d.NextID.Item = maxItem + 1
+		}
+		return nil
+	})
+	if err != nil {
+		writeError(c, http.StatusInternalServerError, "save panel failed")
+		return
+	}
+	writeJSON(c, http.StatusOK, panelView(normalized))
+}
+
+func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (data.Panel, error) {
+	now := time.Now()
+
+	existingGroupByID := make(map[int]data.Group, len(snap.Panel.Groups))
+	for _, g := range snap.Panel.Groups {
+		existingGroupByID[g.ID] = g
+	}
+	existingItemByID := make(map[int]data.Item, len(snap.Panel.Items))
+	for _, it := range snap.Panel.Items {
+		existingItemByID[it.ID] = it
+	}
+
+	groups := make([]data.Group, 0, len(req.Groups))
+	groupIDSet := make(map[int]bool, len(req.Groups))
+	nextGroupID := nextID.Group
+	for idx, g := range req.Groups {
+		if g.Name == "" {
+			return data.Panel{}, errGroupNameRequired
+		}
+		id := g.ID
+		created := now
+		if prev, ok := existingGroupByID[id]; ok && id != 0 {
+			created = prev.CreatedAt
+		} else {
+			id = nextGroupID
+			nextGroupID++
+		}
+		groupIDSet[id] = true
+		sort := g.Sort
+		if sort == 0 {
+			sort = idx + 1
+		}
+		groups = append(groups, data.Group{
+			ID:        id,
+			Name:      g.Name,
+			Icon:      g.Icon,
+			Sort:      sort,
+			CreatedAt: created,
+			UpdatedAt: now,
+		})
+	}
+
+	items := make([]data.Item, 0, len(req.Items))
+	nextItemID := nextID.Item
+	for idx, it := range req.Items {
+		if it.Title == "" {
+			return data.Panel{}, errItemTitleRequired
+		}
+		if it.URL == "" {
+			return data.Panel{}, errItemURLRequired
+		}
+		if it.OpenMethod != "" && !validOpenMethods[it.OpenMethod] {
+			return data.Panel{}, errOpenMethodInvalid
+		}
+		openMethod := it.OpenMethod
+		if openMethod == "" {
+			openMethod = "new_tab"
+		}
+		if !groupIDSet[it.GroupID] {
+			return data.Panel{}, errItemGroupDangling
+		}
+		id := it.ID
+		created := now
+		if prev, ok := existingItemByID[id]; ok && id != 0 {
+			created = prev.CreatedAt
+		} else {
+			id = nextItemID
+			nextItemID++
+		}
+		sort := it.Sort
+		if sort == 0 {
+			sort = idx + 1
+		}
+		items = append(items, data.Item{
+			ID:          id,
+			GroupID:     it.GroupID,
+			Title:       it.Title,
+			URL:         it.URL,
+			LANURL:      it.LANURL,
+			Description: it.Description,
+			Icon:        it.Icon,
+			OpenMethod:  openMethod,
+			Sort:        sort,
+			CreatedAt:   created,
+			UpdatedAt:   now,
+		})
+	}
+
+	return data.Panel{
+		SiteName:     req.SiteName,
+		Config:       req.Config,
+		SearchEngine: req.SearchEngine,
+		Groups:       groups,
+		Items:        items,
+	}, nil
+}
+
+func maxExistingIDs(p data.Panel) (int, int) {
+	maxGroup, maxItem := 0, 0
+	for _, g := range p.Groups {
+		if g.ID > maxGroup {
+			maxGroup = g.ID
+		}
+	}
+	for _, it := range p.Items {
+		if it.ID > maxItem {
+			maxItem = it.ID
+		}
+	}
+	return maxGroup, maxItem
+}
+
+func panelView(p data.Panel) gin.H {
+	config := p.Config
+	if len(config) == 0 {
+		config = json.RawMessage("{}")
+	}
+	search := p.SearchEngine
+	if len(search) == 0 {
+		search = json.RawMessage("{}")
+	}
+	return gin.H{
+		"siteName":     p.SiteName,
+		"config":       config,
+		"searchEngine": search,
+		"groups":       p.Groups,
+		"items":        p.Items,
+	}
+}
