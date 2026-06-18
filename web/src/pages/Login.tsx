@@ -49,7 +49,7 @@ export default function Login() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: '#f2f6ff',
+        bgcolor: 'background.default',
         p: 2,
       }}
     >

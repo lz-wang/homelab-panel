@@ -9,6 +9,19 @@
 	<meta name="viewport"
 		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover" />
 	<title>Homelab Panel</title>
+<script>
+	// 首屏背景跟随已存储的颜色模式（key 与 main.tsx 的 modeStorageKey 一致），
+	// 避免 loading 屏与最终 MUI 模式不一致的闪烁。
+	(function () {
+		try {
+			var mode = localStorage.getItem('homelab-color-mode') || 'system';
+			var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+			if (mode === 'dark' || (mode === 'system' && prefersDark)) {
+				document.documentElement.style.backgroundColor = '#121212';
+			}
+		} catch (e) {}
+	})();
+</script>
 </head>
 
 <body>
@@ -64,11 +77,6 @@
 				}
 			}
 
-			@media (prefers-color-scheme: dark) {
-				body {
-					background: #121212;
-				}
-			}
 		</style>
 		<div class="loading-wrap">
 			<div class="balls">
