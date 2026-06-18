@@ -16,7 +16,6 @@ describe('export format utilities', () => {
       id: 10,
       title: 'NAS',
       url: 'https://nas.local',
-      lanUrl: '',
       description: 'storage',
       openMethod: 2,
       sort: 5,
@@ -25,7 +24,6 @@ describe('export format utilities', () => {
     }, 9)).toEqual({
       title: 'NAS',
       url: 'https://nas.local',
-      lanUrl: '',
       description: 'storage',
       openMethod: 2,
       sort: 5,

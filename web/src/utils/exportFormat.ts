@@ -23,7 +23,6 @@ export function cleanItem(item: ItemInfo, itemIconGroupId: number): ItemInfo {
     icon: item.icon,
     title: item.title,
     url: item.url,
-    lanUrl: item.lanUrl,
     description: item.description,
     openMethod: item.openMethod,
     sort: item.sort,

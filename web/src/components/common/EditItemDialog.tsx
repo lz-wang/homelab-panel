@@ -72,7 +72,6 @@ const defaultItem: ItemInfo = {
   icon: defaultIcon,
   title: '',
   url: '',
-  lanUrl: '',
   description: '',
   openMethod: 2,
 }
@@ -120,16 +119,11 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
       return '标题不能为空'
 
     const url = normalizeUrl(form.url)
-    const lanUrl = normalizeUrl(form.lanUrl)
-
     if (!url)
-      return '互联网地址不能为空'
+      return '链接不能为空'
 
     if (!isValidUrl(url))
-      return '互联网地址无效'
-
-    if (lanUrl && !isValidUrl(lanUrl))
-      return '局域网地址无效'
+      return '链接无效'
 
     if (!form.itemIconGroupId)
       return '必须选择分组'
@@ -164,7 +158,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
         },
         openMethod: 2,
         url: normalizeUrl(form.url),
-        lanUrl: normalizeUrl(form.lanUrl),
       })
 
       if (res.code === 0) {
@@ -219,10 +212,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
               </Box>
             </Box>
 
-            <Typography variant="caption" color="text.secondary">
-              预览效果接近面板中的横向卡片样式。
-            </Typography>
-
             <TextField
               label="标题"
               value={form.title}
@@ -235,7 +224,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
               value={form.description ?? ''}
               onChange={event => setForm({ ...form, description: event.target.value })}
               fullWidth
-              helperText="可选，会在面板标题下方以淡色显示"
             />
 
             <Stack spacing={1}>
@@ -245,7 +233,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                   value={form.icon?.text ?? ''}
                   onChange={event => patchIcon({ itemType: 3, text: event.target.value, src: '' })}
                   fullWidth
-                  helperText="例如 mdi:application-outline"
                   required
                 />
                 <IconButton
@@ -259,9 +246,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                   <OpenInNewIcon />
                 </IconButton>
               </Stack>
-              <Typography variant="caption" color="text.secondary">
-                点击右侧外链可前往 Iconify 图标库自助选择图标。
-              </Typography>
             </Stack>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -302,24 +286,15 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                 >
                   {selectedBackgroundColorUpper}
                 </Button>
-                <Typography variant="caption" color="text.secondary">
-                  点击选择 Material Design 全量色阶，默认 #2196F3。
-                </Typography>
               </Stack>
             </Stack>
 
             <TextField
-              label="互联网地址"
+              label="链接"
               value={form.url}
               onChange={event => setForm({ ...form, url: event.target.value })}
               fullWidth
               required
-            />
-            <TextField
-              label="局域网地址"
-              value={form.lanUrl ?? ''}
-              onChange={event => setForm({ ...form, lanUrl: event.target.value })}
-              fullWidth
             />
           </Stack>
         </DialogContent>

@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
-import { PanelStateNetworkModeEnum } from '@/constants/panel'
 import { t } from '@/locales'
 import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
@@ -13,14 +12,10 @@ export function useHomeActions({
   canManage,
   items,
   loadList,
-  networkMode,
-  setNetworkMode,
 }: {
   canManage: boolean
   items: ItemGroup[]
   loadList: () => Promise<void>
-  networkMode: PanelStateNetworkModeEnum | null
-  setNetworkMode: (mode: PanelStateNetworkModeEnum) => void
 }) {
   const notify = useNotify()
   const confirm = useConfirm()
@@ -30,9 +25,6 @@ export function useHomeActions({
   const [creatingFirstGroup, setCreatingFirstGroup] = useState(false)
 
   function getItemUrl(item: ItemInfo) {
-    if (networkMode === PanelStateNetworkModeEnum.lan && item.lanUrl)
-      return item.lanUrl
-
     return item.url
   }
 
@@ -72,15 +64,6 @@ export function useHomeActions({
     else {
       notify.error(`${t('common.deleteFail')}:${res.msg}`)
     }
-  }
-
-  function handleChangeNetwork(mode: PanelStateNetworkModeEnum) {
-    setNetworkMode(mode)
-    notify.success(
-      mode === PanelStateNetworkModeEnum.lan
-        ? t('panelHome.changeToLanModelSuccess')
-        : t('panelHome.changeToWanModelSuccess'),
-    )
   }
 
   function handleEditItem(item: ItemInfo) {
@@ -159,7 +142,6 @@ export function useHomeActions({
     openPage,
     handleItemClick,
     handleDelete,
-    handleChangeNetwork,
     handleEditItem,
     handleAddItem,
     handleAddFirstItem,

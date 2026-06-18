@@ -136,7 +136,6 @@ describe('panel store', () => {
       itemIconGroupId: groupId,
       title: 'Example',
       url: 'https://example.com/',
-      lanUrl: '',
       description: '',
       openMethod: 2,
       icon: {

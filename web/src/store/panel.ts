@@ -8,7 +8,7 @@ import background1 from '@/assets/background-1.jpg'
 import background2 from '@/assets/background-2.jpg'
 import background3 from '@/assets/background-3.jpg'
 import background4 from '@/assets/background-4.jpg'
-import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/constants/panel'
+import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
 
 const defaultFooterHtml = '<div style="display:flex;justify-content:center;color:#cbd5e1;margin-top:100px">Powered By <a href="https://github.com/hslr-s/homelab-panel" target="_blank" style="margin-left:5px">Homelab Panel</a></div>'
@@ -40,7 +40,6 @@ export function defaultPanelConfig(): PanelConfig {
     maxWidthUnit: 'px',
     marginX: 5,
     footerHtml: defaultFooterHtml,
-    netModeChangeButtonShow: true,
   }
 }
 
@@ -53,11 +52,9 @@ interface PanelStore {
 
   rightSiderCollapsed: boolean
   leftSiderCollapsed: boolean
-  networkMode: PanelStateNetworkModeEnum
   panelDataVersion: number
 
   load: () => Promise<void>
-  setNetworkMode: (mode: PanelStateNetworkModeEnum) => void
   setPanelConfig: (config: PanelConfig) => ApiResponse | Promise<ApiResponse>
   resetPanelConfig: () => void
 
@@ -92,7 +89,6 @@ export const usePanelStore = create<PanelStore>()(
 
       rightSiderCollapsed: false,
       leftSiderCollapsed: false,
-      networkMode: PanelStateNetworkModeEnum.wan,
       panelDataVersion: 0,
 
       load: async () => {
@@ -109,7 +105,6 @@ export const usePanelStore = create<PanelStore>()(
         }
       },
 
-      setNetworkMode: networkMode => set({ networkMode }),
       setPanelConfig: (panelConfig) => {
         set({ panelConfig: { ...defaultPanelConfig(), ...panelConfig } })
         return persistPanel(get, set, { panelConfig })
@@ -159,7 +154,6 @@ export const usePanelStore = create<PanelStore>()(
       partialize: state => ({
         rightSiderCollapsed: state.rightSiderCollapsed,
         leftSiderCollapsed: state.leftSiderCollapsed,
-        networkMode: state.networkMode,
         panelConfig: state.panelConfig,
       }),
     },

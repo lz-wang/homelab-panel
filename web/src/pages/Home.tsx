@@ -25,7 +25,7 @@ import type { ItemGroup } from './home/types'
 export default function Home() {
   const navigate = useNavigate()
   const authStore = useAuthStore()
-  const { panelConfig, networkMode, panelDataVersion, setNetworkMode, load: loadPanel } = usePanelStore()
+  const { panelConfig, panelDataVersion, load: loadPanel } = usePanelStore()
   const { items, setItems, loadList } = useHomeData()
   const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -40,7 +40,6 @@ export default function Home() {
     creatingFirstGroup,
     handleItemClick,
     handleDelete,
-    handleChangeNetwork,
     handleEditItem,
     handleAddItem,
     handleAddFirstItem,
@@ -48,8 +47,6 @@ export default function Home() {
     canManage,
     items,
     loadList,
-    networkMode,
-    setNetworkMode,
   })
 
   const {
@@ -202,11 +199,8 @@ export default function Home() {
 
       <HomeFloatingActions
         canManage={canManage}
-        networkMode={networkMode}
-        showNetworkToggle={panelConfig.netModeChangeButtonShow}
         onOpenSettings={() => setSettingsOpen(true)}
         onLogin={() => navigate('/login')}
-        onChangeNetwork={handleChangeNetwork}
       />
 
       <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />

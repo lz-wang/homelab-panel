@@ -23,13 +23,5 @@
     "passwordPlaceholder": "请输入密码",
     "usernamePlaceholder": "请输入用户名",
     "welcomeMessage": "欢迎回来"
-  },
-  "panelHome": {
-    "changeToLanModel": "切换到局域网模式",
-    "changeToLanModelSuccess": "已切换到局域网模式",
-    "changeToWanModel": "切换到互联网模式",
-    "changeToWanModelSuccess": "已切换到互联网模式",
-    "openLanUrl": "打开局域网地址",
-    "openWanUrl": "打开互联网地址"
   }
 }

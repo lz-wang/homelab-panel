@@ -20,7 +20,6 @@ export interface PanelItemWire {
   groupId: number
   title: string
   url: string
-  lanUrl?: string
   description?: string
   icon: ItemIcon | null
   openMethod: string
@@ -46,7 +45,6 @@ export function toFrontendItem(w: PanelItemWire): ItemInfo {
     icon: w.icon ?? null,
     title: w.title ?? '',
     url: w.url ?? '',
-    lanUrl: w.lanUrl ?? '',
     description: w.description ?? '',
     openMethod: toFrontendOpenMethod(w.openMethod),
     sort: w.sort,
@@ -60,7 +58,6 @@ export function toBackendItem(it: ItemInfo): PanelItemWire {
     groupId: it.itemIconGroupId ?? 0,
     title: it.title,
     url: it.url,
-    lanUrl: it.lanUrl ?? '',
     description: it.description ?? '',
     icon: it.icon ?? null,
     openMethod: toBackendOpenMethod(it.openMethod),

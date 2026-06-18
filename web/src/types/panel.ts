@@ -1,4 +1,4 @@
-import type { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/constants/panel'
+import type { PanelPanelConfigStyleEnum } from '@/constants/panel'
 
 import type { InfoBase } from './common'
 
@@ -7,7 +7,6 @@ export interface ItemInfo extends InfoBase {
   title: string
   url: string
   sort?: number
-  lanUrl?: string
   description?: string
   openMethod: number
   itemIconGroupId?: number
@@ -47,13 +46,11 @@ export interface PanelConfig {
   maxWidthUnit: string
   marginX?: number
   footerHtml?: string
-  netModeChangeButtonShow?: boolean
 }
 
 export interface PanelState {
   rightSiderCollapsed: boolean
   leftSiderCollapsed: boolean
-  networkMode: PanelStateNetworkModeEnum | null
   panelConfig: PanelConfig
 }
 
