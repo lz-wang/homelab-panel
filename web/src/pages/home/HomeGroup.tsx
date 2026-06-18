@@ -1,5 +1,4 @@
 import AddIcon from '@mui/icons-material/Add'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import CancelIcon from '@mui/icons-material/Cancel'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import SaveIcon from '@mui/icons-material/Save'
@@ -25,7 +24,6 @@ interface Props {
   isSearchActive: boolean
   panelConfig: PanelConfig
   onAddItem: (itemIconGroupId?: number) => void
-  onBatchAdd: (itemIconGroupId?: number) => void
   onToggleSort: (groupIndex: number, sortStatus: boolean) => void
   onSaveSort: (group: ItemGroup) => void
   onCancelSort: (group: ItemGroup) => void
@@ -43,7 +41,6 @@ export function HomeGroup({
   isSearchActive,
   panelConfig,
   onAddItem,
-  onBatchAdd,
   onToggleSort,
   onSaveSort,
   onCancelSort,
@@ -72,11 +69,6 @@ export function HomeGroup({
             <Tooltip title={t('common.add')}>
               <Fab size="small" color="default" onClick={() => onAddItem(group.id)}>
                 <AddIcon fontSize="small" />
-              </Fab>
-            </Tooltip>
-            <Tooltip title="批量添加">
-              <Fab size="small" color="default" onClick={() => onBatchAdd(group.id)}>
-                <PlaylistAddIcon fontSize="small" />
               </Fab>
             </Tooltip>
             {!isSearchActive && (

@@ -95,9 +95,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     if (lanUrl && !isValidUrl(lanUrl))
       return '局域网地址无效'
 
-    if (![1, 2, 3].includes(form.openMethod))
-      return '打开方式无效'
-
     if (!form.itemIconGroupId)
       return '必须选择分组'
 
@@ -129,6 +126,8 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     try {
       const res = await upsertItem({
         ...form,
+        description: '',
+        openMethod: 2,
         url: normalizeUrl(form.url),
         lanUrl: normalizeUrl(form.lanUrl),
       })
@@ -281,26 +280,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
             onChange={event => setForm({ ...form, lanUrl: event.target.value })}
             fullWidth
           />
-          <TextField
-            label="描述"
-            value={form.description ?? ''}
-            onChange={event => setForm({ ...form, description: event.target.value })}
-            fullWidth
-            multiline
-            minRows={2}
-          />
-          <TextField
-            label="打开方式"
-            select
-            value={form.openMethod}
-            onChange={event => setForm({ ...form, openMethod: Number(event.target.value) })}
-            fullWidth
-            helperText={form.openMethod === 3 ? '部分站点可能因 X-Frame-Options 无法嵌入 iframe。' : undefined}
-          >
-            <MenuItem value={1}>当前窗口</MenuItem>
-            <MenuItem value={2}>新窗口</MenuItem>
-            <MenuItem value={3}>iframe 弹窗</MenuItem>
-          </TextField>
         </Stack>
       </DialogContent>
       <DialogActions>

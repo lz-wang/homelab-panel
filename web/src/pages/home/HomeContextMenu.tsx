@@ -21,7 +21,7 @@ interface Props {
   networkMode: PanelStateNetworkModeEnum | null
   onClose: () => void
   getItemUrl: (item: ItemInfo) => string
-  openPage: (openMethod: number, url: string, title?: string) => void
+  openPage: (url: string) => void
   onEdit: (item: ItemInfo) => void
   onDelete: (item: ItemInfo) => void
 }
@@ -46,7 +46,7 @@ export function HomeContextMenu({
       <MenuItem
         onClick={() => {
           if (contextMenu?.item)
-            window.open(getItemUrl(contextMenu.item))
+            openPage(getItemUrl(contextMenu.item))
           onClose()
         }}
       >
@@ -57,7 +57,7 @@ export function HomeContextMenu({
         <MenuItem
           onClick={() => {
             if (contextMenu.item)
-              openPage(contextMenu.item.openMethod, contextMenu.item.lanUrl as string, contextMenu.item.title)
+              openPage(contextMenu.item.lanUrl as string)
             onClose()
           }}
         >
@@ -69,7 +69,7 @@ export function HomeContextMenu({
         <MenuItem
           onClick={() => {
             if (contextMenu.item)
-              openPage(contextMenu.item.openMethod, contextMenu.item.url, contextMenu.item.title)
+              openPage(contextMenu.item.url)
             onClose()
           }}
         >

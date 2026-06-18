@@ -7,9 +7,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { AppStarter } from '@/components/apps/AppStarter'
-import { BatchAddItemsDialog } from '@/components/common/BatchAddItemsDialog'
 import { EditItemDialog } from '@/components/common/EditItemDialog'
-import { IframeDialog } from '@/components/common/IframeDialog'
 import { useAuthStore } from '@/store/auth'
 import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
@@ -31,13 +29,10 @@ export default function Home() {
   const { items, setItems, loadList } = useHomeData()
   const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [batchAddGroupId, setBatchAddGroupId] = useState<number | undefined>()
   const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
   const canManage = Boolean(authStore.token) && authStore.isAdmin
 
   const {
-    iframe,
-    setIframe,
     editItemOpen,
     setEditItemOpen,
     editItem,
@@ -181,7 +176,6 @@ export default function Home() {
                   isSearchActive={isSearchActive}
                   panelConfig={panelConfig}
                   onAddItem={handleAddItem}
-                  onBatchAdd={setBatchAddGroupId}
                   onToggleSort={setGroupSortStatus}
                   onSaveSort={handleSaveSort}
                   onCancelSort={handleCancelSort}
@@ -220,24 +214,12 @@ export default function Home() {
         onChangeNetwork={handleChangeNetwork}
       />
 
-      <IframeDialog
-        open={iframe.open}
-        title={iframe.title}
-        src={iframe.src}
-        onClose={() => setIframe({ open: false, src: '', title: '' })}
-      />
       <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <EditItemDialog
         open={editItemOpen}
         item={editItem}
         itemIconGroupId={addItemIconGroupId}
         onClose={() => setEditItemOpen(false)}
-        onSaved={loadList}
-      />
-      <BatchAddItemsDialog
-        open={Boolean(batchAddGroupId)}
-        itemIconGroupId={batchAddGroupId}
-        onClose={() => setBatchAddGroupId(undefined)}
         onSaved={loadList}
       />
     </Box>

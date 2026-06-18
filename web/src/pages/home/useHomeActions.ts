@@ -28,11 +28,6 @@ export function useHomeActions({
   const [editItem, setEditItem] = useState<ItemInfo | null>(null)
   const [addItemIconGroupId, setAddItemIconGroupId] = useState<number | undefined>()
   const [creatingFirstGroup, setCreatingFirstGroup] = useState(false)
-  const [iframe, setIframe] = useState({
-    open: false,
-    src: '',
-    title: '',
-  })
 
   function getItemUrl(item: ItemInfo) {
     if (networkMode === PanelStateNetworkModeEnum.lan && item.lanUrl)
@@ -41,24 +36,8 @@ export function useHomeActions({
     return item.url
   }
 
-  function openPage(openMethod: number, url: string, title?: string) {
-    if (openMethod === 1) {
-      window.location.href = url
-      return
-    }
-
-    if (openMethod === 2) {
-      window.open(url)
-      return
-    }
-
-    if (openMethod === 3) {
-      setIframe({
-        open: true,
-        src: url,
-        title: title || url,
-      })
-    }
+  function openPage(url: string) {
+    window.open(url)
   }
 
   function handleItemClick(groupIndex: number, item: ItemInfo) {
@@ -67,7 +46,7 @@ export function useHomeActions({
     if (group?.sortStatus)
       return
 
-    openPage(item.openMethod, getItemUrl(item), item.title)
+    openPage(getItemUrl(item))
   }
 
   async function handleDelete(item: ItemInfo) {
@@ -171,8 +150,6 @@ export function useHomeActions({
   }
 
   return {
-    iframe,
-    setIframe,
     editItemOpen,
     setEditItemOpen,
     editItem,
