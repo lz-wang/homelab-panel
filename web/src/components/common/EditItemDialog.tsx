@@ -249,45 +249,48 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
               </Typography>
             </Stack>
 
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">字体颜色</Typography>
-              <Stack direction="row" spacing={1}>
-                {iconTextColors.map(color => (
-                  <Button
-                    key={color.value}
-                    variant={selectedIconColor === color.value ? 'contained' : 'outlined'}
-                    onClick={() => patchIcon({ color: color.value })}
-                    sx={{ color: selectedIconColor === color.value ? undefined : color.value }}
-                  >
-                    {color.label}
-                  </Button>
-                ))}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="subtitle2">字体颜色</Typography>
+                <Stack direction="row" spacing={1}>
+                  {iconTextColors.map(color => (
+                    <Button
+                      key={color.value}
+                      variant={selectedIconColor === color.value ? 'contained' : 'outlined'}
+                      onClick={() => patchIcon({ color: color.value })}
+                      sx={{ color: selectedIconColor === color.value ? undefined : color.value }}
+                    >
+                      {color.label}
+                    </Button>
+                  ))}
+                </Stack>
               </Stack>
-            </Stack>
 
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">背景颜色</Typography>
-              <Button
-                variant="outlined"
-                onClick={() => setBackgroundDialogOpen(true)}
-                startIcon={(
-                  <Box
-                    sx={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: '50%',
-                      bgcolor: selectedBackgroundColor,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  />
-                )}
-              >
-                {selectedBackgroundColorUpper}
-              </Button>
-              <Typography variant="caption" color="text.secondary">
-                点击选择 Material Design 全量色阶，默认 #2196F3。
-              </Typography>
+              <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="subtitle2">背景颜色</Typography>
+                <Button
+                  variant="outlined"
+                  onClick={() => setBackgroundDialogOpen(true)}
+                  startIcon={(
+                    <Box
+                      sx={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: '50%',
+                        bgcolor: selectedBackgroundColor,
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    />
+                  )}
+                  sx={{ justifyContent: 'center' }}
+                >
+                  {selectedBackgroundColorUpper}
+                </Button>
+                <Typography variant="caption" color="text.secondary">
+                  点击选择 Material Design 全量色阶，默认 #2196F3。
+                </Typography>
+              </Stack>
             </Stack>
 
             <TextField
