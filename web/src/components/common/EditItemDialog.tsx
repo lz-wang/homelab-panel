@@ -117,7 +117,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
   function validateForm() {
     if (!form.title.trim())
-      return '名称不能为空'
+      return '标题不能为空'
 
     const url = normalizeUrl(form.url)
     const lanUrl = normalizeUrl(form.lanUrl)
@@ -153,7 +153,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     try {
       const res = await upsertItem({
         ...form,
-        description: '',
+        description: form.description?.trim() ?? '',
         icon: {
           ...defaultIcon,
           ...form.icon,
@@ -185,6 +185,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
   const selectedBackgroundColorUpper = selectedBackgroundColor.toUpperCase()
   const selectedIconColor = form.icon?.color ?? defaultIconColor
   const previewTitle = form.title.trim() || '应用标题'
+  const previewSubtitle = form.description?.trim()
 
   return (
     <>
@@ -206,9 +207,16 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
               }}
             >
               <IconifyIcon icon={form.icon?.text} size={40} />
-              <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
-                {previewTitle}
-              </Typography>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
+                  {previewTitle}
+                </Typography>
+                {previewSubtitle && (
+                  <Typography variant="body2" noWrap sx={{ opacity: 0.72 }}>
+                    {previewSubtitle}
+                  </Typography>
+                )}
+              </Box>
             </Box>
 
             <Typography variant="caption" color="text.secondary">
@@ -216,11 +224,18 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
             </Typography>
 
             <TextField
-              label="名称"
+              label="标题"
               value={form.title}
               onChange={event => setForm({ ...form, title: event.target.value })}
               fullWidth
               required
+            />
+            <TextField
+              label="副标题"
+              value={form.description ?? ''}
+              onChange={event => setForm({ ...form, description: event.target.value })}
+              fullWidth
+              helperText="可选，会在面板标题下方以淡色显示"
             />
 
             <Stack spacing={1}>

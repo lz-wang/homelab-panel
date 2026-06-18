@@ -48,12 +48,13 @@ export function AppIcon({
             <Typography noWrap sx={{ fontWeight: 600 }}>
               {item.title}
             </Typography>
-            {!hideDescription && (
+            {!hideDescription && item.description && (
               <Typography
                 variant="caption"
                 sx={{
                   display: '-webkit-box',
                   overflow: 'hidden',
+                  opacity: 0.72,
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
                 }}
@@ -86,17 +87,26 @@ export function AppIcon({
         <ItemIcon itemIcon={item.icon} />
       </Box>
       {!hideTitle && (
-        <Typography
-          variant="body2"
-          sx={{
-            mt: 0.25,
-            color: itemColor,
-            textShadow: '2px 2px 5px #000',
-            overflowWrap: 'anywhere',
-          }}
-        >
-          {item.title}
-        </Typography>
+        <Box sx={{ mt: 0.25, color: itemColor, textShadow: '2px 2px 5px #000' }}>
+          <Typography
+            variant="body2"
+            sx={{ overflowWrap: 'anywhere' }}
+          >
+            {item.title}
+          </Typography>
+          {!hideDescription && item.description && (
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'block',
+                opacity: 0.72,
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {item.description}
+            </Typography>
+          )}
+        </Box>
       )}
     </Box>
   )
