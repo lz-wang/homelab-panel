@@ -51,10 +51,10 @@
 
 - 在根组件首子元素插入：
   ```tsx
-  <InitColorSchemeScript attribute="data" defaultMode="system" modeStorageKey="homelab-color-mode" />
+  <InitColorSchemeScript attribute="data-mui-color-scheme" defaultMode="system" modeStorageKey="homelab-color-mode" />
   ```
-  位于 `<React.StrictMode>` 内、`<ThemeProvider>` 之前，确保在 React 渲染主体前同步设置 `data-mui-color-scheme`。
-- `<ThemeProvider theme={theme}>` 与 `<CssBaseline />` 保持不变。
+  位于 `<React.StrictMode>` 内、`<ThemeProvider>` 之前，确保在 React 渲染主体前同步设置颜色方案属性（MUI `'data'` 选择器模式下实际渲染为 `data-light` / `data-dark`）。
+- `<ThemeProvider theme={theme} defaultMode="system" modeStorageKey="homelab-color-mode">`（增加 `defaultMode`/`modeStorageKey` props，与 `InitColorSchemeScript` 一致；`<CssBaseline />` 保留）。MUI 9.1.1 中 `defaultMode`/`modeStorageKey` 是 `ThemeProvider` 与 `InitColorSchemeScript` 的 props，**不**属于 `createTheme({ cssVariables })`。
 - `InitColorSchemeScript` 从 `@mui/material/InitColorSchemeScript` 导入。
 
 ### 3. 颜色模式选择器 — `web/src/components/apps/ColorModeSelector.tsx`（新文件）
@@ -75,7 +75,7 @@
 
 设置面板选择模式 → `useColorScheme().setMode(mode)` → MUI 写入 localStorage（`homelab-color-mode`）并更新 `<html data-mui-color-scheme>` → CSS 变量切换 → 全局 UI 立即变色。
 
-首屏：`InitColorSchemeScript` 在 React 渲染前读取 localStorage（无值时取系统 `prefers-color-scheme`），同步设置 `data-mui-color-scheme`，消除从亮到暗的闪烁。
+首屏：`InitColorSchemeScript` 在 React 渲染前读取 localStorage（无值时取系统 `prefers-color-scheme`），同步设置颜色方案属性（`data-light` / `data-dark`），消除从亮到暗的闪烁。
 
 `system` 模式 + 系统主题变化：MUI 内置 `matchMedia` 监听器自动切换，无需额外代码。
 
@@ -110,10 +110,10 @@
 - 新：`web/src/components/apps/ColorModeSelector.tsx`
 - 新（测试）：`web/src/components/apps/ColorModeSelector.test.tsx`
 
-## 实现注意事项（API 细节待核实）
+## 实现注意事项（已核实）
 
-以下细节在实现时按 MUI 9.1.1 文档最终确认，不影响整体设计：
+以下细节已在实现与浏览器端到端验证中确认：
 
-- `defaultMode` 与 `modeStorageKey` 的确切配置位置（`createTheme` 的 `cssVariables` 选项内，或 `InitColorSchemeScript` props）。设计上二者值固定：`defaultMode='system'`、`modeStorageKey='homelab-color-mode'`、`attribute='data'`，需保证 `colorSchemeSelector` 与 `attribute` 一致。
-- `InitColorSchemeScript` 在纯 Vite CSR（非 SSR）中的放置方式 —— 作为根组件首子元素渲染即可在客户端首次挂载时同步执行。
-- `useColorScheme()` 返回值结构（`mode`、`setMode`、`systemMode`）在 MUI 9 的确切签名。
+- `defaultMode`/`modeStorageKey` 配置位置**已核实**（MUI 9.1.1）：它们是 `<ThemeProvider>` 与 `<InitColorSchemeScript>` 的 props，**不**属于 `createTheme({ cssVariables })`（后者只接受 `colorSchemeSelector`/`cssVarPrefix` 等）。`createTheme` 用 `cssVariables: { colorSchemeSelector: 'data' }`；该 `'data'` 模式实际生成 `[data-light]`/`[data-dark]` CSS 选择器并设同名 DOM 属性（`InitColorSchemeScript` 的 `attribute` 默认 `'data-mui-color-scheme'`，在此模式下被协调为 `data-{scheme}`）。已通过浏览器验证：三态切换、localStorage 持久化与首屏防闪烁均正常。
+- `InitColorSchemeScript` 在纯 Vite CSR 中的放置方式（作为根组件首子元素）已验证可行，客户端首次挂载时同步执行，首屏无闪烁。
+- `useColorScheme()` 返回 `{ mode, setMode, systemMode }`（`mode` 可能为 `null`，组件用 `if (!mode) return null` 防御），已在 `ColorModeSelector` 中使用并通过单测覆盖。
