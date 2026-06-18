@@ -35,7 +35,7 @@ export function AppIcon({
   hideDescription,
   hideTitle,
 }: Props) {
-  const background = item.icon?.backgroundColor || '#2a2a2a6b'
+  const background = item.icon?.backgroundColor || '#FFFFFF'
   const computedTextColor = iconTextColor === '#ffffff'
     ? readableTextColor(background)
     : iconTextColor

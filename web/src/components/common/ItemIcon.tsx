@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
-  const backgroundColor = forceBackground ?? itemIcon?.backgroundColor ?? '#2a2a2a6b'
+  const backgroundColor = forceBackground ?? itemIcon?.backgroundColor ?? '#FFFFFF'
 
   if (!itemIcon) {
     return (

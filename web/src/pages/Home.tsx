@@ -38,8 +38,6 @@ export default function Home() {
     editItem,
     addItemIconGroupId,
     creatingFirstGroup,
-    getItemUrl,
-    openPage,
     handleItemClick,
     handleDelete,
     handleChangeNetwork,
@@ -197,10 +195,7 @@ export default function Home() {
       <HomeContextMenu
         contextMenu={contextMenu}
         canManage={canManage}
-        networkMode={networkMode}
         onClose={() => setContextMenu(null)}
-        getItemUrl={getItemUrl}
-        openPage={openPage}
         onEdit={handleEditItem}
         onDelete={handleDelete}
       />
