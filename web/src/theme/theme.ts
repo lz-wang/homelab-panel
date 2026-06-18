@@ -1,13 +1,16 @@
 import { createTheme } from '@mui/material/styles'
 
 export const theme = createTheme({
+  cssVariables: {
+    colorSchemeSelector: 'data',
+  },
+  colorSchemes: {
+    light: true,
+    dark: true,
+  },
   palette: {
-    mode: 'light',
     primary: {
       main: '#1976d2',
-    },
-    background: {
-      default: '#121212',
     },
   },
   shape: {
