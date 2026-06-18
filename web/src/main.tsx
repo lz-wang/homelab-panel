@@ -5,6 +5,7 @@ import '@fontsource/roboto/700.css'
 import './global.css'
 
 import CssBaseline from '@mui/material/CssBaseline'
+import InitColorSchemeScript from '@mui/material/InitColorSchemeScript'
 import { ThemeProvider } from '@mui/material/styles'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -16,7 +17,8 @@ import { theme } from './theme/theme'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
+    <InitColorSchemeScript attribute="data-mui-color-scheme" defaultMode="system" modeStorageKey="homelab-color-mode" />
+    <ThemeProvider theme={theme} defaultMode="system" modeStorageKey="homelab-color-mode">
       <CssBaseline />
       <NotifyProvider>
         <ConfirmProvider>
