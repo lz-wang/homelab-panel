@@ -23,6 +23,7 @@ export interface ItemIcon {
   itemType: number
   src?: string
   text?: string
+  color?: string
   backgroundColor?: string
 }
 

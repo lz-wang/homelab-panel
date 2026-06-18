@@ -12,7 +12,8 @@ interface Props {
 }
 
 export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
-  const backgroundColor = forceBackground ?? itemIcon?.backgroundColor ?? '#FFFFFF'
+  const backgroundColor = forceBackground ?? itemIcon?.backgroundColor ?? '#2196F3'
+  const color = itemIcon?.color ?? '#FFFFFF'
 
   if (!itemIcon) {
     return (
@@ -28,7 +29,7 @@ export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
 
   if (itemIcon.itemType === 1) {
     return (
-      <Avatar sx={{ width: size, height: size, bgcolor: backgroundColor }}>
+      <Avatar sx={{ width: size, height: size, bgcolor: backgroundColor, color }}>
         {itemIcon.text}
       </Avatar>
     )
@@ -52,7 +53,7 @@ export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
 
   if (itemIcon.itemType === 3) {
     return (
-      <Avatar sx={{ width: size, height: size, bgcolor: backgroundColor }}>
+      <Avatar sx={{ width: size, height: size, bgcolor: backgroundColor, color }}>
         <IconifyIcon icon={itemIcon.text} size={Math.round(size * 0.5)} />
       </Avatar>
     )

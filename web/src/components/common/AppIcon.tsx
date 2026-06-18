@@ -14,31 +14,14 @@ interface Props {
   hideTitle: boolean
 }
 
-function readableTextColor(color: string) {
-  const hex = color.replace(/^#/, '')
-
-  if (hex.length !== 6)
-    return 'white'
-
-  const r = Number.parseInt(hex.substring(0, 2), 16)
-  const g = Number.parseInt(hex.substring(2, 4), 16)
-  const b = Number.parseInt(hex.substring(4, 6), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-
-  return luminance > 0.5 ? 'black' : 'white'
-}
-
 export function AppIcon({
   item,
   style,
-  iconTextColor,
   hideDescription,
   hideTitle,
 }: Props) {
-  const background = item.icon?.backgroundColor || '#FFFFFF'
-  const computedTextColor = iconTextColor === '#ffffff'
-    ? readableTextColor(background)
-    : iconTextColor
+  const background = item.icon?.backgroundColor || '#2196F3'
+  const itemColor = item.icon?.color || '#FFFFFF'
 
   if (style === PanelPanelConfigStyleEnum.info) {
     return (
@@ -60,7 +43,7 @@ export function AppIcon({
         <Box sx={{ width: 70, height: 70, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <ItemIcon itemIcon={item.icon} forceBackground="transparent" size={50} />
         </Box>
-        <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center', color: computedTextColor, pr: 1 }}>
+        <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center', color: itemColor, pr: 1 }}>
           <Box sx={{ minWidth: 0 }}>
             <Typography noWrap sx={{ fontWeight: 600 }}>
               {item.title}
@@ -107,7 +90,7 @@ export function AppIcon({
           variant="body2"
           sx={{
             mt: 0.25,
-            color: iconTextColor,
+            color: itemColor,
             textShadow: '2px 2px 5px #000',
             overflowWrap: 'anywhere',
           }}

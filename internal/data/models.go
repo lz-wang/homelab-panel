@@ -56,6 +56,7 @@ type ItemIcon struct {
 	ItemType        int    `json:"itemType"`
 	Src             string `json:"src,omitempty"`
 	Text            string `json:"text,omitempty"`
+	Color           string `json:"color,omitempty"`
 	BackgroundColor string `json:"backgroundColor,omitempty"`
 }
 
