@@ -1,12 +1,18 @@
 package main
 
 import (
-	"homelab-panel/internal/app"
+	"embed"
+	"io/fs"
 	"log"
 	"os"
 
+	"homelab-panel/internal/app"
+
 	"github.com/urfave/cli/v2"
 )
+
+//go:embed web/dist/*
+var webFS embed.FS
 
 var version = "dev"
 
@@ -49,11 +55,16 @@ func main() {
 }
 
 func runServe(c *cli.Context) error {
+	staticFS, err := fs.Sub(webFS, "web/dist")
+	if err != nil {
+		return err
+	}
+
 	cfg := app.Config{
 		Port:    c.String("port"),
 		DataDir: c.String("dir"),
 		Version: version,
-		WebFS:   os.DirFS("web/dist"),
+		WebFS:   staticFS,
 	}
 	return app.Run(c.Context, cfg)
 }

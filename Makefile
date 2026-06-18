@@ -2,7 +2,7 @@ APP := homelab-panel
 VERSION := v$(shell date +%Y%m%d)-$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 LDFLAGS := -ldflags "-s -w -X main.version=$(VERSION)"
 GOENV ?= CGO_ENABLED=0
-GO_MAIN := ./cmd/homelab-panel
+GO_MAIN := .
 
 WEB_DIR := web
 WEB_DIST := $(WEB_DIR)/dist
@@ -34,12 +34,12 @@ build: web
 	$(GOENV) go build -o $(BIN) $(LDFLAGS) $(GO_MAIN)
 
 swag:
-	@if command -v swag >/dev/null 2>&1; then swag init -g cmd/homelab-panel/main.go -o docs; else echo "swag not installed; skipping"; fi
+	@if command -v swag >/dev/null 2>&1; then swag init -g main.go -o docs; else echo "swag not installed; skipping"; fi
 
 all: web swag build
 
 fmt:
-	gofmt -w cmd docs internal
+	gofmt -w main.go docs internal
 	cd $(WEB_DIR) && npm run lint:fix
 
 check: web
