@@ -1,4 +1,8 @@
+import AddIcon from '@mui/icons-material/Add'
 import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -38,6 +42,7 @@ export default function Home() {
     setEditItemOpen,
     editItem,
     addItemIconGroupId,
+    creatingFirstGroup,
     getItemUrl,
     openPage,
     handleItemClick,
@@ -45,6 +50,7 @@ export default function Home() {
     handleChangeNetwork,
     handleEditItem,
     handleAddItem,
+    handleAddFirstItem,
   } = useHomeActions({
     canManage,
     items,
@@ -131,6 +137,37 @@ export default function Home() {
           <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
 
           <Box sx={{ mx: `${panelConfig.marginX ?? 5}px` }}>
+            {canManage && !isSearchActive && items.length === 0 && (
+              <Paper
+                elevation={0}
+                sx={{
+                  mt: 6,
+                  p: 4,
+                  border: '1px dashed rgba(255,255,255,0.35)',
+                  borderRadius: 3,
+                  bgcolor: 'rgba(15,23,42,0.45)',
+                  color: 'white',
+                  textAlign: 'center',
+                  backdropFilter: 'blur(12px)',
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                  还没有应用
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1, mb: 3, color: 'rgba(255,255,255,0.72)' }}>
+                  添加第一个应用时会自动创建默认分组，之后可以在设置中调整分组。
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  loading={creatingFirstGroup}
+                  onClick={handleAddFirstItem}
+                >
+                  添加第一个应用
+                </Button>
+              </Paper>
+            )}
+
             {filteredItems.map((group, groupIndex) => {
               const sourceGroupIndex = getSourceGroupIndex(group, groupIndex)
 

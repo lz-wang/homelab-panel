@@ -27,6 +27,7 @@ export function useHomeActions({
   const [editItemOpen, setEditItemOpen] = useState(false)
   const [editItem, setEditItem] = useState<ItemInfo | null>(null)
   const [addItemIconGroupId, setAddItemIconGroupId] = useState<number | undefined>()
+  const [creatingFirstGroup, setCreatingFirstGroup] = useState(false)
   const [iframe, setIframe] = useState({
     open: false,
     src: '',
@@ -121,6 +122,54 @@ export function useHomeActions({
     setEditItemOpen(true)
   }
 
+  async function handleAddFirstItem() {
+    if (!canManage || creatingFirstGroup)
+      return
+
+    const existingGroupId = items.find(group => group.id)?.id
+      ?? usePanelStore.getState().groups.find(group => group.id)?.id
+
+    if (existingGroupId) {
+      handleAddItem(existingGroupId)
+      return
+    }
+
+    const existingGroupIds = new Set(
+      usePanelStore.getState().groups
+        .map(group => group.id)
+        .filter((id): id is number => Boolean(id)),
+    )
+
+    setCreatingFirstGroup(true)
+
+    try {
+      const res = await usePanelStore.getState().upsertGroup({
+        title: '默认分组',
+        sort: 1,
+      })
+
+      if (res.code !== 0) {
+        notify.error(`${t('common.saveFail')}:${res.msg}`)
+        return
+      }
+
+      const groups = usePanelStore.getState().groups
+      const groupId = groups.find(group => group.id && !existingGroupIds.has(group.id))?.id
+        ?? groups[groups.length - 1]?.id
+
+      if (!groupId) {
+        notify.error('创建默认分组失败')
+        return
+      }
+
+      await loadList()
+      handleAddItem(groupId)
+    }
+    finally {
+      setCreatingFirstGroup(false)
+    }
+  }
+
   return {
     iframe,
     setIframe,
@@ -128,6 +177,7 @@ export function useHomeActions({
     setEditItemOpen,
     editItem,
     addItemIconGroupId,
+    creatingFirstGroup,
     getItemUrl,
     openPage,
     handleItemClick,
@@ -135,5 +185,6 @@ export function useHomeActions({
     handleChangeNetwork,
     handleEditItem,
     handleAddItem,
+    handleAddFirstItem,
   }
 }
