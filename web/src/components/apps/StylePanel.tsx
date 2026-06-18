@@ -3,6 +3,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonBase from '@mui/material/ButtonBase'
+import Divider from '@mui/material/Divider'
 import FormControl from '@mui/material/FormControl'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import InputLabel from '@mui/material/InputLabel'
@@ -15,6 +16,7 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 
+import { ColorModeSelector } from '@/components/apps/ColorModeSelector'
 import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import { useApiAction } from '@/hooks/useApiAction'
@@ -67,6 +69,14 @@ export function StylePanel() {
 
   return (
     <Stack spacing={3}>
+      <Box>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>颜色模式</Typography>
+        <ColorModeSelector />
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          本地设备偏好，立即生效，不影响其他访客。
+        </Typography>
+      </Box>
+      <Divider />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
         <TextField
           label="面板标题"
