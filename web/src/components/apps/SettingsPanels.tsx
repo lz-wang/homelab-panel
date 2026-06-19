@@ -311,13 +311,7 @@ export function PageSettingsPanel() {
             <Divider />
 
             <Section title="面板显示">
-                <Box
-                    sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                        gap: 1,
-                    }}
-                >
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     <BoolField
                         checked={form.clockShow ?? true}
                         label="显示时钟"
