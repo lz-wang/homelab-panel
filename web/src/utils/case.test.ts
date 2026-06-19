@@ -3,9 +3,9 @@ import { keysToCamel, keysToSnake } from './case'
 
 describe('keysToSnake', () => {
     it('converts top-level camelCase keys', () => {
-        expect(keysToSnake({ siteName: 'x', maxWidth: 100 })).toEqual({
+        expect(keysToSnake({ siteName: 'x', marginTop: 3 })).toEqual({
             site_name: 'x',
-            max_width: 100,
+            margin_top: 3,
         })
     })
 
@@ -36,9 +36,9 @@ describe('keysToSnake', () => {
 
 describe('keysToCamel', () => {
     it('converts snake_case keys back to camelCase', () => {
-        expect(keysToCamel({ site_name: 'x', max_width: 100 })).toEqual({
+        expect(keysToCamel({ site_name: 'x', margin_top: 3 })).toEqual({
             siteName: 'x',
-            maxWidth: 100,
+            marginTop: 3,
         })
     })
 

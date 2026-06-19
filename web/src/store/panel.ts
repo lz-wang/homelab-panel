@@ -10,6 +10,12 @@ import background3 from '@/assets/background-3.jpg'
 import background4 from '@/assets/background-4.jpg'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
 
+const marginLimits = {
+    marginTop: { min: 0, max: 30 },
+    marginBottom: { min: 0, max: 30 },
+    marginX: { min: 0, max: 20 },
+}
+
 export const builtinBackgrounds = [
     { label: '背景 1', src: background1 },
     { label: '背景 2', src: background2 },
@@ -28,12 +34,21 @@ export function defaultPanelConfig(): PanelConfig {
         clockShow: true,
         clockShowSecond: false,
         searchBoxShow: false,
-        marginBottom: 10,
-        marginTop: 10,
-        maxWidth: 100,
+        marginBottom: 2,
+        marginTop: 3,
         marginX: 5,
         footerShow: true,
     }
+}
+
+function clampPercent(
+    value: number | undefined,
+    fallback: number | undefined,
+    limits: { min: number; max: number },
+) {
+    if (typeof value !== 'number' || Number.isNaN(value)) return fallback
+
+    return Math.min(limits.max, Math.max(limits.min, value))
 }
 
 export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
@@ -51,10 +66,13 @@ export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
         clockShowSecond: config.clockShowSecond ?? defaults.clockShowSecond,
         clockColor: config.clockColor ?? defaults.clockColor,
         searchBoxShow: config.searchBoxShow ?? defaults.searchBoxShow,
-        marginTop: config.marginTop ?? defaults.marginTop,
-        marginBottom: config.marginBottom ?? defaults.marginBottom,
-        maxWidth: config.maxWidth ?? defaults.maxWidth,
-        marginX: config.marginX ?? defaults.marginX,
+        marginTop: clampPercent(config.marginTop, defaults.marginTop, marginLimits.marginTop),
+        marginBottom: clampPercent(
+            config.marginBottom,
+            defaults.marginBottom,
+            marginLimits.marginBottom,
+        ),
+        marginX: clampPercent(config.marginX, defaults.marginX, marginLimits.marginX),
         footerShow: config.footerShow ?? defaults.footerShow,
     }
 }

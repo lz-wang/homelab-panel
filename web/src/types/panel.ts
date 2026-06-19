@@ -37,7 +37,6 @@ export interface PanelConfig {
     searchBoxShow?: boolean
     marginTop?: number
     marginBottom?: number
-    maxWidth?: number
     marginX?: number
     footerShow?: boolean
 }

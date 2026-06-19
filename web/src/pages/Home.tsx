@@ -119,9 +119,8 @@ export default function Home() {
                     sx={{
                         p: 2,
                         mx: 'auto',
-                        mt: `${panelConfig.marginTop ?? 10}%`,
-                        mb: `${panelConfig.marginBottom ?? 10}%`,
-                        maxWidth: `${panelConfig.maxWidth ?? 100}%`,
+                        mt: `${panelConfig.marginTop ?? 3}%`,
+                        mb: `${panelConfig.marginBottom ?? 2}%`,
                     }}
                 >
                     <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />

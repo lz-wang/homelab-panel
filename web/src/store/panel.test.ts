@@ -11,7 +11,7 @@ const apiMock = vi.hoisted(() => {
     } = {
         panel: {
             siteName: 'Homelab Panel',
-            config: { maxWidth: 100 },
+            config: {},
             searchEngine: {},
             groups: [],
             items: [],
@@ -100,7 +100,7 @@ describe('panel store', () => {
 
         apiMock.state.panel = {
             siteName: 'Homelab Panel',
-            config: { maxWidth: 100 },
+            config: {},
             searchEngine: {},
             groups: [],
             items: [],

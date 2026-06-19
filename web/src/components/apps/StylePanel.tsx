@@ -54,13 +54,27 @@ function percentValue(value: number | undefined, fallback: number) {
     return value
 }
 
+function marginInputProps(min: number, max: number) {
+    return {
+        slotProps: {
+            htmlInput: {
+                min,
+                max,
+                step: 1,
+            },
+        },
+    }
+}
+
 function normalizeForm(config: PanelConfig): PanelConfig {
     const defaults = defaultPanelConfig()
 
     return {
         ...defaults,
         ...config,
-        maxWidth: percentValue(config.maxWidth, defaults.maxWidth ?? 100),
+        marginTop: percentValue(config.marginTop, defaults.marginTop ?? 3),
+        marginBottom: percentValue(config.marginBottom, defaults.marginBottom ?? 2),
+        marginX: percentValue(config.marginX, defaults.marginX ?? 5),
     }
 }
 
@@ -192,35 +206,31 @@ export function StylePanel() {
                         display: 'grid',
                         gridTemplateColumns: {
                             xs: '1fr',
-                            sm: 'repeat(2, minmax(0, 1fr))',
-                            md: 'repeat(4, minmax(0, 1fr))',
+                            sm: 'repeat(3, minmax(0, 1fr))',
                         },
                         gap: 2,
                     }}
                 >
                     <TextField
-                        label="最大宽度 (%)"
-                        type="number"
-                        value={form.maxWidth ?? 100}
-                        onChange={(event) => patch({ maxWidth: Number(event.target.value) })}
-                    />
-                    <TextField
                         label="顶部边距 (%)"
                         type="number"
-                        value={form.marginTop ?? 10}
+                        value={form.marginTop ?? 3}
                         onChange={(event) => patch({ marginTop: Number(event.target.value) })}
+                        {...marginInputProps(0, 30)}
                     />
                     <TextField
                         label="底部边距 (%)"
                         type="number"
-                        value={form.marginBottom ?? 10}
+                        value={form.marginBottom ?? 2}
                         onChange={(event) => patch({ marginBottom: Number(event.target.value) })}
+                        {...marginInputProps(0, 30)}
                     />
                     <TextField
                         label="横向边距 (%)"
                         type="number"
                         value={form.marginX ?? 5}
                         onChange={(event) => patch({ marginX: Number(event.target.value) })}
+                        {...marginInputProps(0, 20)}
                     />
                 </Box>
             </Section>
