@@ -40,6 +40,7 @@ export function HomeContextMenu({
             anchorPosition={
                 contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined
             }
+            slotProps={{ paper: { sx: { borderRadius: 2 } } }}
         >
             {canManage && (
                 <MenuItem

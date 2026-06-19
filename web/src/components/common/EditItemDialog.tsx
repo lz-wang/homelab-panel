@@ -280,6 +280,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                         sx: {
                             width: { xs: 'calc(100% - 32px)', sm: 760 },
                             maxWidth: 'calc(100% - 32px)',
+                            borderRadius: 2,
                         },
                     },
                 }}

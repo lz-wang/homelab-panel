@@ -74,7 +74,15 @@ export function AppStarter({ open, onClose }: Props) {
             onClose={onClose}
             maxWidth="md"
             fullWidth
-            slotProps={{ paper: { sx: { height: { sm: '80vh' }, maxHeight: { sm: '80vh' } } } }}
+            slotProps={{
+                paper: {
+                    sx: {
+                        height: { sm: '80vh' },
+                        maxHeight: { sm: '80vh' },
+                        borderRadius: 2,
+                    },
+                },
+            }}
         >
             <DialogTitle>设置</DialogTitle>
             <Stack
