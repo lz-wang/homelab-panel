@@ -61,7 +61,7 @@ export function HomeGroup({
       }}
     >
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
-        <Typography color="white" variant="h6" sx={{ fontWeight: 800, textShadow: '2px 2px 50px #000' }}>
+        <Typography variant="h6" sx={{ color: '#fff', fontWeight: 800, textShadow: '2px 2px 50px #000' }}>
           {group.title}
         </Typography>
         {canManage && (

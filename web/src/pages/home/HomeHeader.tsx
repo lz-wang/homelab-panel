@@ -15,10 +15,10 @@ export function HomeHeader({ panelConfig, onSearch }: Props) {
   return (
     <>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Typography variant="h3" color="white" sx={{ fontWeight: 700, textShadow: '2px 2px 50px #000' }}>
+        <Typography variant="h3" sx={{ color: '#fff', fontWeight: 700, textShadow: '2px 2px 50px #000' }}>
           {panelConfig.logoText}
         </Typography>
-        <Typography color="white">|</Typography>
+        <Typography sx={{ color: '#fff' }}>|</Typography>
         <Clock hideSecond={!panelConfig.clockShowSecond} />
       </Stack>
 

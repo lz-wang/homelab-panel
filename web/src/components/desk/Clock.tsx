@@ -12,7 +12,7 @@ export function Clock({ hideSecond }: { hideSecond?: boolean }) {
   }, [])
 
   return (
-    <Typography variant="h4" color="white" sx={{ fontWeight: 700, textShadow: '2px 2px 50px #000' }}>
+    <Typography variant="h4" sx={{ color: '#fff', fontWeight: 700, textShadow: '2px 2px 50px #000' }}>
       {now.format(hideSecond ? 'HH:mm' : 'HH:mm:ss')}
     </Typography>
   )
