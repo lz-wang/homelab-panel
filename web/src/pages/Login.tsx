@@ -37,6 +37,10 @@ export default function Login() {
         navigate('/')
     }
 
+    function handleBrowseOnly() {
+        navigate('/')
+    }
+
     return (
         <Box
             sx={{
@@ -75,23 +79,14 @@ export default function Login() {
                                 },
                             }}
                         />
-                        <Button fullWidth loading={loading} onClick={handleSubmit}>
-                            {t('login.loginButton')}
-                        </Button>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ textAlign: 'center' }}
-                        >
-                            Powered By{' '}
-                            <a
-                                href="https://github.com/lz-wang/homelab-panel"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                Homelab Panel
-                            </a>
-                        </Typography>
+                        <Stack direction="row" spacing={2}>
+                            <Button sx={{ flex: 1 }} loading={loading} onClick={handleSubmit}>
+                                {t('login.loginButton')}
+                            </Button>
+                            <Button sx={{ flex: 1 }} color="success" onClick={handleBrowseOnly}>
+                                {t('login.browseOnlyButton')}
+                            </Button>
+                        </Stack>
                     </Stack>
                 </CardContent>
             </Card>

@@ -6,6 +6,14 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(process.cwd(), 'src'),
+            // MUI 9 的 internal/Transition.mjs 裸导入目录
+            // `react-transition-group/TransitionGroupContext`（该子包仅声明 main/module、无 exports），
+            // Node ESM（vitest）不支持目录导入；显式指向 ESM 文件以修复解析。
+            // 构建侧 Vite resolver 本就支持，指向同一文件，行为不变。
+            'react-transition-group/TransitionGroupContext': path.resolve(
+                process.cwd(),
+                'node_modules/react-transition-group/esm/TransitionGroupContext.js',
+            ),
         },
     },
     plugins: [react()],
@@ -48,5 +56,14 @@ export default defineConfig({
     test: {
         environment: 'jsdom',
         setupFiles: './src/test/setup.ts',
+        server: {
+            deps: {
+                // @mui/material 默认被外部化到 Node 原生 ESM，其内部 bare-import
+                // `react-transition-group/TransitionGroupContext`（目录形式，子包仅声明 main/module、
+                // 无 exports）会触发 ERR_UNSUPPORTED_DIR_IMPORT。inline @mui 让其走 Vite resolver，
+                // 配合上方 resolve.alias 把该目录导入显式指向 ESM 文件。
+                inline: [/@mui\//],
+            },
+        },
     },
 })

@@ -20,6 +20,7 @@
   },
   "login": {
     "loginButton": "登录",
+    "browseOnlyButton": "仅浏览",
     "passwordPlaceholder": "请输入密码",
     "usernamePlaceholder": "请输入用户名",
     "welcomeMessage": "欢迎回来"
