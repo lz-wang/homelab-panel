@@ -1,4 +1,7 @@
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import DeleteIcon from '@mui/icons-material/Delete'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
@@ -10,12 +13,13 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import { usePanelStore } from '@/store/panel'
-import type { ItemIcon as ItemIconType, ItemInfo } from '@/types/panel'
+import type { ItemIcon as ItemIconType, ItemIconGroup, ItemInfo } from '@/types/panel'
 import { isValidUrl, normalizeUrl } from '@/utils/url'
 
 import { IconifyIcon } from './IconifyIcon'
@@ -413,11 +417,22 @@ const defaultItem: ItemInfo = {
     openMethod: 2,
 }
 
+type GroupOption = ItemIconGroup & { inputValue?: string }
+
+const filterGroups = createFilterOptions<GroupOption>()
+
 export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }: Props) {
     const notify = useNotify()
+    const confirm = useConfirm()
     const upsertItem = usePanelStore((s) => s.upsertItem)
+    const upsertGroup = usePanelStore((s) => s.upsertGroup)
+    const deleteItems = usePanelStore((s) => s.deleteItems)
+    const groups = usePanelStore((s) => s.groups)
     const [form, setForm] = useState<ItemInfo>(defaultItem)
     const [saving, setSaving] = useState(false)
+    const [copying, setCopying] = useState(false)
+    const [deleting, setDeleting] = useState(false)
+    const [creatingGroup, setCreatingGroup] = useState(false)
     const [backgroundDialogOpen, setBackgroundDialogOpen] = useState(false)
 
     useEffect(() => {
@@ -503,6 +518,103 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
         }
     }
 
+    async function handleCopy() {
+        if (!item?.id) return
+
+        setCopying(true)
+
+        try {
+            const res = await upsertItem({
+                ...item,
+                id: undefined,
+                title: `${item.title?.trim() || '应用'} 副本`,
+            })
+
+            if (res.code === 0) {
+                notify.success('已复制该应用')
+                onSaved()
+                onClose()
+            } else {
+                notify.error(`${t('common.saveFail')}:${res.msg}`)
+            }
+        } finally {
+            setCopying(false)
+        }
+    }
+
+    async function handleDelete() {
+        if (!item?.id) return
+
+        const ok = await confirm({
+            title: t('common.delete'),
+            content: t('common.deleteConfirmByName', { name: item.title?.trim() || '该项' }),
+            confirmText: t('common.delete'),
+            cancelText: t('common.cancel'),
+        })
+
+        if (!ok) return
+
+        setDeleting(true)
+
+        try {
+            const res = await deleteItems([item.id])
+
+            if (res.code === 0) {
+                notify.success(t('common.deleteSuccess'))
+                onSaved()
+                onClose()
+            } else {
+                notify.error(`${t('common.deleteFail')}:${res.msg}`)
+            }
+        } finally {
+            setDeleting(false)
+        }
+    }
+
+    async function handleGroupChange(newValue: GroupOption | null) {
+        if (!newValue) {
+            setForm((prev) => ({ ...prev, itemIconGroupId: undefined }))
+            return
+        }
+
+        if (newValue.inputValue) {
+            const name = newValue.inputValue
+            const beforeIds = new Set(usePanelStore.getState().groups.map((g) => g.id))
+
+            setCreatingGroup(true)
+
+            try {
+                const res = await upsertGroup({ title: name })
+
+                if (res.code === 0) {
+                    const created = usePanelStore
+                        .getState()
+                        .groups.find((g) => g.id && !beforeIds.has(g.id))
+
+                    if (created?.id) {
+                        setForm((prev) => ({ ...prev, itemIconGroupId: created.id }))
+                        notify.success(`已创建分组「${name}」`)
+                    }
+                } else {
+                    notify.error(`${t('common.saveFail')}:${res.msg}`)
+                }
+            } finally {
+                setCreatingGroup(false)
+            }
+
+            return
+        }
+
+        if (newValue.id) {
+            setForm((prev) => ({ ...prev, itemIconGroupId: newValue.id }))
+        }
+    }
+
+    const selectedGroup = useMemo<GroupOption | null>(
+        () => groups.find((g) => g.id === form.itemIconGroupId) ?? null,
+        [groups, form.itemIconGroupId],
+    )
+
     const selectedBackgroundColor = form.icon?.backgroundColor ?? defaultIconBackgroundColor
     const selectedBackgroundColorUpper = selectedBackgroundColor.toUpperCase()
     const selectedIconColor = form.icon?.color ?? defaultIconColor
@@ -511,7 +623,12 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
     return (
         <>
-            <Dialog open={open} onClose={saving ? undefined : onClose} maxWidth="sm" fullWidth>
+            <Dialog
+                open={open}
+                onClose={copying || deleting || saving ? undefined : onClose}
+                maxWidth="sm"
+                fullWidth
+            >
                 <DialogTitle>{item ? t('common.edit') : t('common.add')}</DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} sx={{ pt: 1 }}>
@@ -651,13 +768,72 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                             fullWidth
                             required
                         />
+
+                        <Autocomplete<GroupOption>
+                            fullWidth
+                            value={selectedGroup}
+                            onChange={(_, newValue) => handleGroupChange(newValue)}
+                            filterOptions={(options, params) => {
+                                const filtered = filterGroups(options, params)
+                                const value = params.inputValue.trim()
+                                if (
+                                    value &&
+                                    !options.some((option) => option.title?.trim() === value)
+                                ) {
+                                    filtered.push({ inputValue: value, title: `创建「${value}」` })
+                                }
+                                return filtered
+                            }}
+                            options={groups}
+                            loading={creatingGroup}
+                            disabled={creatingGroup}
+                            selectOnFocus
+                            clearOnBlur
+                            handleHomeEndKeys
+                            noOptionsText="输入分组名称可创建新分组"
+                            getOptionLabel={(option) => option.title ?? ''}
+                            isOptionEqualToValue={(option, value) =>
+                                Boolean(option.id && option.id === value.id)
+                            }
+                            renderInput={(params) => (
+                                <TextField {...params} label="分组" required />
+                            )}
+                        />
                     </Stack>
                 </DialogContent>
                 <DialogActions>
-                    <Button variant="text" disabled={saving} onClick={onClose}>
+                    {item?.id && (
+                        <Stack direction="row" spacing={1} sx={{ mr: 'auto' }}>
+                            <Button
+                                variant="text"
+                                color="primary"
+                                startIcon={<ContentCopyIcon />}
+                                loading={copying}
+                                disabled={saving || deleting}
+                                onClick={handleCopy}
+                            >
+                                复制
+                            </Button>
+                            <Button
+                                variant="text"
+                                color="error"
+                                startIcon={<DeleteIcon />}
+                                loading={deleting}
+                                disabled={saving || copying}
+                                onClick={handleDelete}
+                            >
+                                {t('common.delete')}
+                            </Button>
+                        </Stack>
+                    )}
+                    <Button
+                        variant="text"
+                        disabled={saving || copying || deleting}
+                        onClick={onClose}
+                    >
                         {t('common.cancel')}
                     </Button>
-                    <Button loading={saving} onClick={handleSave}>
+                    <Button loading={saving} disabled={copying || deleting} onClick={handleSave}>
                         {t('common.confirm')}
                     </Button>
                 </DialogActions>
