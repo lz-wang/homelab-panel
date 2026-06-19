@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const dataVersion = 1
+const dataVersion = 2
 
 var ErrInvalidPassword = errors.New("invalid password")
 
