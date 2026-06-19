@@ -73,6 +73,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     const upsertGroup = usePanelStore((s) => s.upsertGroup)
     const deleteItems = usePanelStore((s) => s.deleteItems)
     const groups = usePanelStore((s) => s.groups)
+    const panelConfig = usePanelStore((s) => s.panelConfig)
     const [form, setForm] = useState<ItemInfo>(defaultItem)
     const [saving, setSaving] = useState(false)
     const [copying, setCopying] = useState(false)
@@ -89,7 +90,10 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
             ...item,
             icon: {
                 ...defaultIcon,
-                backgroundColor: itemIcon?.backgroundColor ?? defaultIcon.backgroundColor,
+                backgroundColor:
+                    itemIcon?.backgroundColor ??
+                    panelConfig.appCardDefaultColor ??
+                    defaultIcon.backgroundColor,
                 color: itemIcon?.color ?? defaultIcon.color,
                 text: itemIcon?.itemType === 3 ? itemIcon.text : defaultIcon.text,
                 itemType: 3,
@@ -97,7 +101,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
             },
             itemIconGroupId: item?.itemIconGroupId ?? itemIconGroupId,
         })
-    }, [item, itemIconGroupId, open])
+    }, [item, itemIconGroupId, open, panelConfig.appCardDefaultColor])
 
     function patchIcon(partial: Partial<ItemIconType>) {
         setForm((prev) => ({

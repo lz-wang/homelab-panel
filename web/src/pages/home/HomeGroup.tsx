@@ -108,6 +108,13 @@ export function HomeGroup({
                         <AppIcon
                             item={item}
                             hideDescription={panelConfig.iconTextInfoHideDescription ?? false}
+                            borderRadius={panelConfig.appCardRadius ?? 16}
+                            aspectRatio={
+                                panelConfig.appCardAspectRatio === 'auto'
+                                    ? undefined
+                                    : panelConfig.appCardAspectRatio
+                            }
+                            defaultBackgroundColor={panelConfig.appCardDefaultColor ?? '#2196F3'}
                         />
                     </Box>
                 ))}

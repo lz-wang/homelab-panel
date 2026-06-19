@@ -8,19 +8,29 @@ import { ItemIcon } from './ItemIcon'
 interface Props {
     item: ItemInfo
     hideDescription: boolean
+    borderRadius?: number
+    aspectRatio?: string
+    defaultBackgroundColor?: string
 }
 
-export function AppIcon({ item, hideDescription }: Props) {
-    const background = item.icon?.backgroundColor || '#2196F3'
+export function AppIcon({
+    item,
+    hideDescription,
+    borderRadius = 16,
+    aspectRatio,
+    defaultBackgroundColor = '#2196F3',
+}: Props) {
+    const background = item.icon?.backgroundColor || defaultBackgroundColor
     const itemColor = item.icon?.color || '#FFFFFF'
 
     return (
         <Box
             sx={{
                 width: '100%',
-                minHeight: 70,
+                minHeight: aspectRatio ? undefined : 70,
+                aspectRatio,
                 display: 'flex',
-                borderRadius: 2,
+                borderRadius: `${borderRadius}px`,
                 overflow: 'hidden',
                 bgcolor: background,
                 cursor: 'pointer',
@@ -33,7 +43,7 @@ export function AppIcon({ item, hideDescription }: Props) {
             <Box
                 sx={{
                     width: 70,
-                    height: 70,
+                    minHeight: 70,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

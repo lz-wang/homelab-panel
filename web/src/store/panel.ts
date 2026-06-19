@@ -16,6 +16,10 @@ const marginLimits = {
     marginX: { min: 0, max: 20 },
 }
 
+const appCardRadiusLimits = { min: 0, max: 32 }
+const appCardAspectRatios = new Set(['auto', '16 / 9', '2 / 1', '5 / 2', '3 / 1'])
+const defaultAppCardColor = '#2196F3'
+
 export const builtinBackgrounds = [
     { label: '背景 1', src: background1 },
     { label: '背景 2', src: background2 },
@@ -38,6 +42,9 @@ export function defaultPanelConfig(): PanelConfig {
         marginTop: 3,
         marginX: 5,
         footerShow: true,
+        appCardRadius: 16,
+        appCardAspectRatio: 'auto',
+        appCardDefaultColor: defaultAppCardColor,
     }
 }
 
@@ -49,6 +56,28 @@ function clampPercent(
     if (typeof value !== 'number' || Number.isNaN(value)) return fallback
 
     return Math.min(limits.max, Math.max(limits.min, value))
+}
+
+function clampNumber(
+    value: number | undefined,
+    fallback: number | undefined,
+    limits: { min: number; max: number },
+) {
+    if (typeof value !== 'number' || Number.isNaN(value)) return fallback
+
+    return Math.min(limits.max, Math.max(limits.min, value))
+}
+
+function sanitizeAspectRatio(value: string | undefined, fallback: string | undefined) {
+    if (!value || !appCardAspectRatios.has(value)) return fallback
+
+    return value
+}
+
+function sanitizeHexColor(value: string | undefined, fallback: string | undefined) {
+    if (!value || !/^#[0-9a-fA-F]{6}$/.test(value)) return fallback
+
+    return value.toUpperCase()
 }
 
 export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
@@ -74,6 +103,19 @@ export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
         ),
         marginX: clampPercent(config.marginX, defaults.marginX, marginLimits.marginX),
         footerShow: config.footerShow ?? defaults.footerShow,
+        appCardRadius: clampNumber(
+            config.appCardRadius,
+            defaults.appCardRadius,
+            appCardRadiusLimits,
+        ),
+        appCardAspectRatio: sanitizeAspectRatio(
+            config.appCardAspectRatio,
+            defaults.appCardAspectRatio,
+        ),
+        appCardDefaultColor: sanitizeHexColor(
+            config.appCardDefaultColor,
+            defaults.appCardDefaultColor,
+        ),
     }
 }
 
