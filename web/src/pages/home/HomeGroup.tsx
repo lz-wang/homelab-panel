@@ -4,7 +4,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import SaveIcon from '@mui/icons-material/Save'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Fab from '@mui/material/Fab'
+import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
@@ -14,6 +14,18 @@ import { t } from '@/locales'
 import type { PanelConfig, ItemInfo } from '@/types/panel'
 
 import type { ItemGroup } from './types'
+
+const groupTitleColor = '#fff'
+
+const groupActionIconSx = {
+    color: groupTitleColor,
+    p: 0.5,
+    bgcolor: 'transparent',
+    '&:hover': {
+        bgcolor: 'transparent',
+        opacity: 0.8,
+    },
+}
 
 interface Props {
     group: ItemGroup
@@ -60,28 +72,36 @@ export function HomeGroup({
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
                 <Typography
                     variant="h6"
-                    sx={{ color: '#fff', fontWeight: 800, textShadow: '2px 2px 50px #000' }}
+                    sx={{
+                        color: groupTitleColor,
+                        fontWeight: 800,
+                        textShadow: '2px 2px 50px #000',
+                    }}
                 >
                     {group.title}
                 </Typography>
                 {canManage && (
                     <Stack direction="row" spacing={0.5}>
                         <Tooltip title={t('common.add')}>
-                            <Fab size="small" color="default" onClick={() => onAddItem(group.id)}>
+                            <IconButton
+                                size="small"
+                                sx={groupActionIconSx}
+                                onClick={() => onAddItem(group.id)}
+                            >
                                 <AddIcon fontSize="small" />
-                            </Fab>
+                            </IconButton>
                         </Tooltip>
                         {!isSearchActive && (
                             <Tooltip title={t('common.sort')}>
-                                <Fab
+                                <IconButton
                                     size="small"
-                                    color="default"
+                                    sx={groupActionIconSx}
                                     onClick={() =>
                                         onToggleSort(sourceGroupIndex, !group.sortStatus)
                                     }
                                 >
                                     <DragIndicatorIcon fontSize="small" />
-                                </Fab>
+                                </IconButton>
                             </Tooltip>
                         )}
                     </Stack>

@@ -43,6 +43,7 @@ export default function Home() {
         creatingFirstGroup,
         handleItemClick,
         handleDelete,
+        handleCopyItem,
         handleEditItem,
         handleAddItem,
         handleAddFirstItem,
@@ -240,6 +241,7 @@ export default function Home() {
                 canManage={canManage}
                 onClose={() => setContextMenu(null)}
                 onEdit={handleEditItem}
+                onCopy={handleCopyItem}
                 onDelete={handleDelete}
             />
 

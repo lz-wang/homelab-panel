@@ -1,4 +1,7 @@
-import DeleteIcon from '@mui/icons-material/Delete'
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined'
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
+import ListItemIcon from '@mui/material/ListItemIcon'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 
@@ -16,10 +19,18 @@ interface Props {
     canManage: boolean
     onClose: () => void
     onEdit: (item: ItemInfo) => void
+    onCopy: (item: ItemInfo) => void
     onDelete: (item: ItemInfo) => void
 }
 
-export function HomeContextMenu({ contextMenu, canManage, onClose, onEdit, onDelete }: Props) {
+export function HomeContextMenu({
+    contextMenu,
+    canManage,
+    onClose,
+    onEdit,
+    onCopy,
+    onDelete,
+}: Props) {
     return (
         <Menu
             open={Boolean(contextMenu)}
@@ -36,7 +47,23 @@ export function HomeContextMenu({ contextMenu, canManage, onClose, onEdit, onDel
                         onClose()
                     }}
                 >
+                    <ListItemIcon>
+                        <EditOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
                     {t('common.edit')}
+                </MenuItem>
+            )}
+            {canManage && (
+                <MenuItem
+                    onClick={() => {
+                        if (contextMenu?.item) onCopy(contextMenu.item)
+                        onClose()
+                    }}
+                >
+                    <ListItemIcon>
+                        <ContentCopyOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
+                    复制
                 </MenuItem>
             )}
             {canManage && (
@@ -46,7 +73,9 @@ export function HomeContextMenu({ contextMenu, canManage, onClose, onEdit, onDel
                         onClose()
                     }}
                 >
-                    <DeleteIcon fontSize="small" style={{ marginRight: 8 }} />
+                    <ListItemIcon>
+                        <DeleteOutlinedIcon fontSize="small" />
+                    </ListItemIcon>
                     {t('common.delete')}
                 </MenuItem>
             )}

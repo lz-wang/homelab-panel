@@ -62,6 +62,23 @@ export function useHomeActions({
         }
     }
 
+    async function handleCopyItem(item: ItemInfo) {
+        if (!canManage || !item.id) return
+
+        const res = await usePanelStore.getState().upsertItem({
+            ...item,
+            id: undefined,
+            title: `${item.title?.trim() || '应用'} 副本`,
+        })
+
+        if (res.code === 0) {
+            notify.success('已复制该应用')
+            await loadList()
+        } else {
+            notify.error(`${t('common.saveFail')}:${res.msg}`)
+        }
+    }
+
     function handleEditItem(item: ItemInfo) {
         if (!canManage) return
 
@@ -137,6 +154,7 @@ export function useHomeActions({
         openPage,
         handleItemClick,
         handleDelete,
+        handleCopyItem,
         handleEditItem,
         handleAddItem,
         handleAddFirstItem,

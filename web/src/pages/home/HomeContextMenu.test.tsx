@@ -37,26 +37,30 @@ describe('HomeContextMenu', () => {
                 canManage={false}
                 onClose={vi.fn()}
                 onEdit={vi.fn()}
+                onCopy={vi.fn()}
                 onDelete={vi.fn()}
             />,
         )
 
         expect(screen.queryByText('编辑')).not.toBeInTheDocument()
+        expect(screen.queryByText('复制')).not.toBeInTheDocument()
         expect(screen.queryByText('删除')).not.toBeInTheDocument()
     })
 
-    it('可管理时展示编辑和删除菜单项', () => {
+    it('可管理时展示编辑、复制和删除菜单项', () => {
         render(
             <HomeContextMenu
                 contextMenu={contextMenu}
                 canManage
                 onClose={vi.fn()}
                 onEdit={vi.fn()}
+                onCopy={vi.fn()}
                 onDelete={vi.fn()}
             />,
         )
 
         expect(screen.getByText('编辑')).toBeInTheDocument()
+        expect(screen.getByText('复制')).toBeInTheDocument()
         expect(screen.getByText('删除')).toBeInTheDocument()
     })
 })
