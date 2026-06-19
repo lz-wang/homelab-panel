@@ -1,13 +1,30 @@
 import SearchIcon from '@mui/icons-material/Search'
 import InputAdornment from '@mui/material/InputAdornment'
 import TextField from '@mui/material/TextField'
-import { useState } from 'react'
+import Typography from '@mui/material/Typography'
+import { useEffect, useRef, useState } from 'react'
+
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
 
 export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void }) {
     const [value, setValue] = useState('')
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        const handler = (event: KeyboardEvent) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault()
+                inputRef.current?.focus()
+                inputRef.current?.select()
+            }
+        }
+        window.addEventListener('keydown', handler)
+        return () => window.removeEventListener('keydown', handler)
+    }, [])
 
     return (
         <TextField
+            inputRef={inputRef}
             value={value}
             onChange={(event) => {
                 setValue(event.target.value)
@@ -15,7 +32,7 @@ export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void })
             }}
             fullWidth
             size="small"
-            placeholder="Search"
+            placeholder="搜索"
             slotProps={{
                 input: {
                     startAdornment: (
@@ -23,8 +40,18 @@ export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void })
                             <SearchIcon />
                         </InputAdornment>
                     ),
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <Typography
+                                variant="caption"
+                                sx={{ color: 'text.disabled', userSelect: 'none' }}
+                            >
+                                {isMac ? '⌘K' : 'Ctrl K'}
+                            </Typography>
+                        </InputAdornment>
+                    ),
                     sx: {
-                        bgcolor: 'rgba(255,255,255,0.86)',
+                        bgcolor: 'background.paper',
                         borderRadius: 2,
                     },
                 },
