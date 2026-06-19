@@ -30,61 +30,126 @@
 		<style>
 			.loading-wrap {
 				display: flex;
+				flex-direction: column;
 				justify-content: center;
 				align-items: center;
 				height: 100vh;
+				gap: 20px;
+				color: #1976d2;
 			}
 
-			.balls {
-				width: 4em;
-				display: flex;
-				flex-flow: row nowrap;
-				align-items: center;
-				justify-content: space-between;
+			.material-loader {
+				position: relative;
+				width: 64px;
+				height: 64px;
 			}
 
-			.balls div {
-				width: 0.8em;
-				height: 0.8em;
+			.material-loader::before {
+				position: absolute;
+				inset: 2px;
+				border: 1px solid currentColor;
 				border-radius: 50%;
-				background-color: #4b9e5f;
+				content: "";
+				opacity: 0.12;
 			}
 
-			.balls div:nth-of-type(1) {
-				transform: translateX(-100%);
-				animation: left-swing 0.5s ease-in alternate infinite;
+			.material-loader__svg {
+				display: block;
+				width: 100%;
+				height: 100%;
+				animation: material-loader-rotate 1.4s linear infinite;
 			}
 
-			.balls div:nth-of-type(3) {
-				transform: translateX(-95%);
-				animation: right-swing 0.5s ease-out alternate infinite;
+			.material-loader__circle {
+				fill: none;
+				stroke: currentColor;
+				stroke-width: 4;
+				stroke-linecap: round;
+				stroke-dasharray: 90, 150;
+				stroke-dashoffset: 0;
+				transform-origin: center;
+				animation:
+					material-loader-dash 1.4s ease-in-out infinite,
+					material-loader-color 5.6s ease-in-out infinite;
 			}
 
-			@keyframes left-swing {
+			.loading-text {
+				margin: 0;
+				color: rgba(0, 0, 0, 0.62);
+				font-size: 0.875rem;
+				font-weight: 500;
+				letter-spacing: 0.08em;
+				line-height: 1.43;
+				text-transform: uppercase;
+			}
 
-				50%,
-				100% {
-					transform: translateX(95%);
+			@media (prefers-color-scheme: dark) {
+				.loading-wrap {
+					color: #90caf9;
+				}
+
+				.loading-text {
+					color: rgba(255, 255, 255, 0.7);
 				}
 			}
 
-			@keyframes right-swing {
+			@media (prefers-reduced-motion: reduce) {
+				.material-loader__svg,
+				.material-loader__circle {
+					animation-duration: 2.4s;
+				}
+			}
+
+			@keyframes material-loader-rotate {
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+
+			@keyframes material-loader-dash {
+				0% {
+					stroke-dasharray: 1, 150;
+					stroke-dashoffset: 0;
+				}
+
 				50% {
-					transform: translateX(-95%);
+					stroke-dasharray: 90, 150;
+					stroke-dashoffset: -35;
 				}
 
 				100% {
-					transform: translateX(100%);
+					stroke-dasharray: 90, 150;
+					stroke-dashoffset: -124;
+				}
+			}
+
+			@keyframes material-loader-color {
+				0%,
+				100% {
+					stroke: #1976d2;
+				}
+
+				25% {
+					stroke: #009688;
+				}
+
+				50% {
+					stroke: #4caf50;
+				}
+
+				75% {
+					stroke: #ff9800;
 				}
 			}
 
 		</style>
 		<div class="loading-wrap">
-			<div class="balls">
-				<div></div>
-				<div></div>
-				<div></div>
+			<div class="material-loader" role="status" aria-label="正在加载">
+				<svg class="material-loader__svg" viewBox="0 0 50 50" aria-hidden="true">
+					<circle class="material-loader__circle" cx="25" cy="25" r="20"></circle>
+				</svg>
 			</div>
+			<p class="loading-text">Loading</p>
 		</div>
 	</div>
 	<script type="module" src="/src/main.tsx"></script>
