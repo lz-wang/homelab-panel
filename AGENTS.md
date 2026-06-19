@@ -100,6 +100,18 @@ Do not proactively run full browser/E2E validation unless the user asks for it o
 
 - Keep the embedded frontend asset path intact: build output is expected under `web/dist`.
 
+## MCP server
+
+The panel exposes an MCP (Model Context Protocol) endpoint at `/api/v1/mcp` (Streamable HTTP) so agents like Codex / Claude Code can read and mutate the panel.
+
+- Packages:
+  - `internal/mcpserver`: server assembly (`server.go`), bearer-token auth + scope injection (`auth.go`, `context.go`), token gen/hash (`token.go`), rate limiting (`ratelimit.go`), tool DTOs (`types.go`), read/write tools (`tools_read.go`, `tools_write.go`), and DTO→panel conversion (`convert.go`).
+  - `internal/panel`: `Service` is the single business seam the tools depend on (`service.go`, `types.go`, `validate.go`). MCP DTOs never touch `data.*` models directly.
+- Auth is **independent of the admin JWT**: a bearer token issued from the settings page (`POST /api/v1/mcp/token`). Only the sha256 hash + a display prefix are stored; plaintext is returned once. Disabled MCP or an unknown token → 401/403.
+- Scope (`read_only` / `read_write`) is injected into the request context by `AuthMiddleware`. The SDK propagates `req.Context()` into tool handlers, so `requireWriteScope` and per-tool rate limiting work. Write tools return a tool error (`IsError`) when called with `read_only`.
+- Rate limits (in-memory, per token+IP): overall 60/min, write tools 10/min, search 20/min. A 1 MiB body cap and an Origin check (empty/same-origin allowed, else 403) guard the route.
+- Audit + access logs go through the **single global logger** (`internal/logging`), not a separate JSONL sink. Write tools log one `mcp tool call:` INFO line; the `requestLogger()` middleware records the request line.
+
 ## Logging conventions
 
 Application logs are plain-text single-line **English** (not JSON), produced by a single **global logger** in `internal/logging` (a zap console encoder wrapped as a sugared logger).

@@ -14,7 +14,7 @@ help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Targets:"
-	@echo "  web            Build Vue frontend"
+	@echo "  web            Build React frontend"
 	@echo "  build          Build Go backend binary"
 	@echo "  all            Build frontend and backend"
 	@echo "  fmt            Format frontend and backend code"
