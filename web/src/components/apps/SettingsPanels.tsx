@@ -78,7 +78,7 @@ function normalizeForm(config: PanelConfig): PanelConfig {
     }
 }
 
-export function StylePanel() {
+function useSettingsForm() {
     const panelConfig = usePanelStore((s) => s.panelConfig)
     const setPanelConfig = usePanelStore((s) => s.setPanelConfig)
     const [form, setForm] = useState<PanelConfig>(() => normalizeForm(panelConfig))
@@ -93,16 +93,27 @@ export function StylePanel() {
     }
 
     async function handleSave() {
-        await run(
-            async () => {
-                return await setPanelConfig(form)
-            },
-            {
-                successMessage: t('common.saveSuccess'),
-                errorMessage: (response) => `${t('common.saveFail')}:${response.msg}`,
-            },
-        )
+        await run(async () => setPanelConfig(form), {
+            successMessage: t('common.saveSuccess'),
+            errorMessage: (response) => `${t('common.saveFail')}:${response.msg}`,
+        })
     }
+
+    return { form, patch, handleSave, saving }
+}
+
+function SettingsSaveButton({ saving, onSave }: { saving: boolean; onSave: () => void }) {
+    return (
+        <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
+            <Button startIcon={<SaveIcon />} loading={saving} onClick={onSave}>
+                {t('common.save')}
+            </Button>
+        </Stack>
+    )
+}
+
+export function PageSettingsPanel() {
+    const { form, patch, handleSave, saving } = useSettingsForm()
 
     return (
         <Stack spacing={3}>
@@ -268,21 +279,24 @@ export function StylePanel() {
                 </Box>
             </Section>
 
-            <Divider />
+            <SettingsSaveButton saving={saving} onSave={handleSave} />
+        </Stack>
+    )
+}
 
+export function AppSettingsPanel() {
+    const { form, patch, handleSave, saving } = useSettingsForm()
+
+    return (
+        <Stack spacing={3}>
             <Section title="应用显示">
                 <BoolField
                     checked={form.iconTextInfoHideDescription ?? false}
-                    label="隐藏应用副标题"
+                    label="隐藏描述"
                     onChange={(checked) => patch({ iconTextInfoHideDescription: checked })}
                 />
             </Section>
-
-            <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
-                <Button startIcon={<SaveIcon />} loading={saving} onClick={handleSave}>
-                    {t('common.save')}
-                </Button>
-            </Stack>
+            <SettingsSaveButton saving={saving} onSave={handleSave} />
         </Stack>
     )
 }
