@@ -1,4 +1,5 @@
 import DarkModeIcon from '@mui/icons-material/DarkMode'
+import LightModeIcon from '@mui/icons-material/LightMode'
 import LoginIcon from '@mui/icons-material/Login'
 import LogoutIcon from '@mui/icons-material/Logout'
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
@@ -36,9 +37,7 @@ function floatingIconButtonSx(theme: Theme) {
             color: isDark ? '#FFFFFF' : theme.palette.text.primary,
             backgroundColor: isDark ? 'rgba(30,41,59,0.94)' : 'rgba(255,255,255,0.96)',
             borderColor: isDark ? 'rgba(255,255,255,0.32)' : 'rgba(15,23,42,0.24)',
-            boxShadow: isDark
-                ? '0 14px 34px rgba(0,0,0,0.55)'
-                : '0 14px 34px rgba(15,23,42,0.28)',
+            boxShadow: isDark ? '0 14px 34px rgba(0,0,0,0.55)' : '0 14px 34px rgba(15,23,42,0.28)',
         },
     }
 }
@@ -128,11 +127,11 @@ export function HomeFloatingActions({
                         placement="left"
                     >
                         <IconButton className="hover-action" size="small" onClick={cycleColorMode}>
-                            {currentMode === 'dark' ? (
-                                <DarkModeIcon fontSize="small" />
-                            ) : (
+                            {currentMode === 'system' && (
                                 <SettingsBrightnessIcon fontSize="small" />
                             )}
+                            {currentMode === 'light' && <LightModeIcon fontSize="small" />}
+                            {currentMode === 'dark' && <DarkModeIcon fontSize="small" />}
                         </IconButton>
                     </Tooltip>
                     <Tooltip title="登出" placement="left">
@@ -141,10 +140,7 @@ export function HomeFloatingActions({
                         </IconButton>
                     </Tooltip>
                     <Tooltip title="操作" placement="left">
-                        <IconButton
-                            size="small"
-                            sx={floatingIconButtonSx}
-                        >
+                        <IconButton size="small" sx={floatingIconButtonSx}>
                             <MoreVertIcon />
                         </IconButton>
                     </Tooltip>
