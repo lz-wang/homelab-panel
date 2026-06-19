@@ -29,6 +29,12 @@ func (s *Server) registerRoutes() {
 	protected.GET("/files", h.ListFiles)
 	protected.DELETE("/files/:id", h.DeleteFile)
 
+	protected.GET("/mcp/settings", h.GetMCPSettings)
+	protected.PUT("/mcp/settings", h.UpdateMCPSettings)
+	protected.POST("/mcp/token", h.GenerateMCPToken)
+	protected.POST("/mcp/token/reset", h.ResetMCPToken)
+	protected.DELETE("/mcp/token", h.DeleteMCPToken)
+
 	s.router.GET("/uploads/*filepath", h.Upload)
 	s.router.NoRoute(h.Static)
 }
