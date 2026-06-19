@@ -635,7 +635,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                 <DialogTitle>{item ? t('common.edit') : t('common.add')}</DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} sx={{ pt: 1 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', pb: 5 }}>
                             <Box
                                 sx={{
                                     width: { xs: '100%', sm: 220 },
@@ -676,7 +676,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                                 sx={{ flex: 1 }}
                             />
                             <TextField
-                                label="副标题"
+                                label="描述"
                                 value={form.description ?? ''}
                                 onChange={(event) =>
                                     setForm({ ...form, description: event.target.value })
