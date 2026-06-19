@@ -108,6 +108,28 @@ func TestUpdatePassword(t *testing.T) {
 	}
 }
 
+func TestResetPassword(t *testing.T) {
+	dir := t.TempDir()
+	store, initial, _ := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+
+	// reset 不需要旧密码即可生效
+	if err := store.ResetPassword("brand-new"); err != nil {
+		t.Fatalf("reset: %v", err)
+	}
+	if !store.CheckPassword("brand-new") {
+		t.Fatal("reset password should verify")
+	}
+	if store.CheckPassword(initial) {
+		t.Fatal("old password should no longer verify after reset")
+	}
+
+	// reset 应持久化到磁盘
+	reopened, _, _ := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+	if !reopened.CheckPassword("brand-new") {
+		t.Fatal("reset password should be persisted to disk")
+	}
+}
+
 func TestOpenResetsIncompatibleVersion(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "homelab-panel.json")

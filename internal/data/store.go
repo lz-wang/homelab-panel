@@ -180,6 +180,20 @@ func (s *Store) UpdatePassword(oldPassword, newPassword string) error {
 	})
 }
 
+// ResetPassword 将管理员密码直接重设为 newPassword，不校验当前密码。
+// 仅供 CLI reset-password 子命令在遗忘密码时恢复访问使用。
+func (s *Store) ResetPassword(newPassword string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+	return s.Save(func(d *StoreData) error {
+		d.Admin.PasswordHash = string(hash)
+		d.Admin.UpdatedAt = time.Now()
+		return nil
+	})
+}
+
 func deepCopy(d StoreData) StoreData {
 	raw, err := json.Marshal(d)
 	if err != nil {
