@@ -14,8 +14,8 @@ type sessionRequest struct {
 }
 
 type passwordRequest struct {
-	OldPassword string `json:"oldPassword"`
-	NewPassword string `json:"newPassword"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }
 
 func (h *Handler) CreateAdminSession(c *gin.Context) {
@@ -33,7 +33,7 @@ func (h *Handler) CreateAdminSession(c *gin.Context) {
 		writeError(c, http.StatusInternalServerError, "create session failed")
 		return
 	}
-	writeJSON(c, http.StatusCreated, gin.H{"token": token, "expiresAt": expires})
+	writeJSON(c, http.StatusCreated, gin.H{"token": token, "expires_at": expires})
 }
 
 func (h *Handler) DeleteAdminSession(c *gin.Context) {

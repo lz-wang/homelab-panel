@@ -12,9 +12,9 @@ import (
 )
 
 type panelRequest struct {
-	SiteName     string          `json:"siteName"`
+	SiteName     string          `json:"site_name"`
 	Config       json.RawMessage `json:"config"`
-	SearchEngine json.RawMessage `json:"searchEngine"`
+	SearchEngine json.RawMessage `json:"search_engine"`
 	Groups       []groupInput    `json:"groups"`
 	Items        []itemInput     `json:"items"`
 }
@@ -28,13 +28,13 @@ type groupInput struct {
 
 type itemInput struct {
 	ID          int            `json:"id"`
-	GroupID     int            `json:"groupId"`
+	GroupID     int            `json:"group_id"`
 	Title       string         `json:"title"`
 	URL         string         `json:"url"`
-	LANURL      string         `json:"lanUrl"`
+	LANURL      string         `json:"lan_url"`
 	Description string         `json:"description"`
 	Icon        *data.ItemIcon `json:"icon"`
-	OpenMethod  string         `json:"openMethod"`
+	OpenMethod  string         `json:"open_method"`
 	Sort        int            `json:"sort"`
 }
 
@@ -220,10 +220,10 @@ func panelView(p data.Panel) gin.H {
 		search = json.RawMessage("{}")
 	}
 	return gin.H{
-		"siteName":     p.SiteName,
-		"config":       config,
-		"searchEngine": search,
-		"groups":       p.Groups,
-		"items":        p.Items,
+		"site_name":     p.SiteName,
+		"config":        config,
+		"search_engine": search,
+		"groups":        p.Groups,
+		"items":         p.Items,
 	}
 }
