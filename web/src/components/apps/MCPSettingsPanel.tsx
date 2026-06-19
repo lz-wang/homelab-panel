@@ -46,6 +46,42 @@ function formatTime(value?: string) {
     return date.toLocaleString('zh-CN', { hour12: false })
 }
 
+// 客户端配置模板。token 不写入配置，统一由环境变量 HOMELAB_PANEL_MCP_TOKEN 提供。
+function codexConfig(endpoint: string) {
+    return [
+        '[mcp_servers.homelab_panel]',
+        `url = "${endpoint}"`,
+        'bearer_token_env_var = "HOMELAB_PANEL_MCP_TOKEN"',
+        'enabled = true',
+        'default_tools_approval_mode = "prompt"',
+        'tool_timeout_sec = 30',
+    ].join('\n')
+}
+
+function claudeCodeCommand(endpoint: string) {
+    return [
+        'claude mcp add --transport http homelab-panel \\',
+        `  ${endpoint} \\`,
+        '  --header "Authorization: Bearer $HOMELAB_PANEL_MCP_TOKEN"',
+    ].join('\n')
+}
+
+function mcpJsonConfig(endpoint: string) {
+    return JSON.stringify(
+        {
+            mcpServers: {
+                'homelab-panel': {
+                    type: 'http',
+                    url: endpoint,
+                    headers: { Authorization: 'Bearer ${HOMELAB_PANEL_MCP_TOKEN}' },
+                },
+            },
+        },
+        null,
+        2,
+    )
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <Stack spacing={1.5}>
@@ -253,6 +289,8 @@ export function MCPSettingsPanel() {
                 )}
             </Section>
 
+            <ClientConfigs endpoint={endpoint} onCopy={copyText} />
+
             <TokenRevealDialog
                 open={tokenDialog !== null}
                 token={tokenDialog?.token ?? ''}
@@ -325,5 +363,70 @@ function TokenRevealDialog({
                 </Button>
             </DialogActions>
         </Dialog>
+    )
+}
+
+function ConfigBlock({
+    label,
+    value,
+    onCopy,
+}: {
+    label: string
+    value: string
+    onCopy: (text: string) => void
+}) {
+    return (
+        <Stack spacing={1}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {label}
+            </Typography>
+            <TextField
+                value={value}
+                fullWidth
+                multiline
+                minRows={3}
+                size="small"
+                slotProps={{
+                    input: { readOnly: true, sx: { fontFamily: 'monospace', fontSize: 12 } },
+                }}
+            />
+            <Button size="small" startIcon={<ContentCopyIcon />} onClick={() => onCopy(value)}>
+                复制配置
+            </Button>
+        </Stack>
+    )
+}
+
+function ClientConfigs({ endpoint, onCopy }: { endpoint: string; onCopy: (text: string) => void }) {
+    const envHint = 'export HOMELAB_PANEL_MCP_TOKEN="<粘贴你的 token>"'
+    const blocks = [
+        { label: 'Codex（~/.codex/config.toml）', value: codexConfig(endpoint) },
+        { label: 'Claude Code CLI', value: claudeCodeCommand(endpoint) },
+        { label: '.mcp.json', value: mcpJsonConfig(endpoint) },
+    ]
+
+    return (
+        <Section title="客户端配置">
+            <Typography variant="body2" color="text.secondary">
+                先在终端设置环境变量，再按所用客户端复制对应配置。token
+                仅通过环境变量传递，不写入配置文件。
+            </Typography>
+            <TextField
+                value={envHint}
+                fullWidth
+                size="small"
+                slotProps={{
+                    input: { readOnly: true, sx: { fontFamily: 'monospace', fontSize: 12 } },
+                }}
+            />
+            {blocks.map((block) => (
+                <ConfigBlock
+                    key={block.label}
+                    label={block.label}
+                    value={block.value}
+                    onCopy={onCopy}
+                />
+            ))}
+        </Section>
     )
 }
