@@ -1,0 +1,219 @@
+name: Test, Build and Notify
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Build version (e.g. v20260619-abcdef0)"
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    # Node 24 based official actions require runner v2.327.1 or later.
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get version
+        id: version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            COMMIT=$(git rev-parse --short HEAD)
+            DATE=$(TZ=Asia/Shanghai date +%Y%m%d)
+            VERSION="v${DATE}-${COMMIT}"
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build frontend
+        working-directory: web
+        run: |
+          npm ci --prefer-offline --no-audit
+          npm run lint
+          npm run build
+
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist-${{ github.sha }}
+          path: web/dist
+          if-no-files-found: error
+          retention-days: 1
+
+  test:
+    # Node 24 based official actions require runner v2.327.1 or later.
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restore frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist-${{ github.sha }}
+          path: web/dist
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Run frontend tests
+        working-directory: web
+        run: npm run test
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "go.mod"
+
+      - name: Run Go checks
+        run: |
+          go vet ./...
+          go test -v ./...
+
+  build:
+    # Node 24 based official actions require runner v2.327.1 or later.
+    runs-on: ubuntu-latest
+    needs: [prepare, test]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            suffix: ""
+          - goos: linux
+            goarch: arm64
+            suffix: ""
+          - goos: darwin
+            goarch: amd64
+            suffix: ""
+          - goos: darwin
+            goarch: arm64
+            suffix: ""
+          - goos: windows
+            goarch: amd64
+            suffix: ".exe"
+          - goos: windows
+            goarch: arm64
+            suffix: ".exe"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restore frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist-${{ github.sha }}
+          path: web/dist
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: "go.mod"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          output="homelab-panel-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}"
+          CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o "${output}" .
+          sha256sum "${output}" > "${output}.sha256"
+
+      - name: Upload to WebDAV
+        uses: bxb100/action-upload-webdav@v1
+        with:
+          webdav_address: ${{ secrets.WEBDAV_SERVER }}
+          webdav_username: ${{ secrets.WEBDAV_USERNAME }}
+          webdav_password: ${{ secrets.WEBDAV_PASSWORD }}
+          webdav_upload_path: "/Shares/github/${{ github.repository }}/${{ matrix.goos }}/${{ matrix.goarch }}"
+          files: |
+            homelab-panel-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
+            homelab-panel-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}.sha256
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: homelab-panel-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            homelab-panel-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
+            homelab-panel-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}.sha256
+          if-no-files-found: error
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [prepare, test, build]
+    if: always()
+    steps:
+      - name: Notify via Pushover
+        env:
+          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
+          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [ -z "${PUSHOVER_TOKEN}" ] || [ -z "${PUSHOVER_USER}" ]; then
+            echo "Pushover secrets are not configured; skipping notification."
+            exit 0
+          fi
+
+          TEST_RESULT="${{ needs.test.result }}"
+          BUILD_RESULT="${{ needs.build.result }}"
+          if [ "${TEST_RESULT}" = "success" ] && [ "${BUILD_RESULT}" = "success" ]; then
+            PRIORITY="0"
+            TITLE="Homelab Panel 构建成功"
+          else
+            PRIORITY="1"
+            TITLE="Homelab Panel 构建失败"
+          fi
+
+          MESSAGE=$(cat <<EOF
+          <b>Homelab Panel 构建通知</b>
+          <u>测试结果</u>: ${TEST_RESULT}
+          <u>构建结果</u>: ${BUILD_RESULT}
+          <u>版本</u>: <font color="#0000ff">${{ needs.prepare.outputs.version }}</font>
+          <u>分支</u>: <i>${{ github.ref_name }}</i>
+          <u>触发人</u>: <i>${{ github.actor }}</i>
+          <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看运行详情</a>
+          <u>提交内容</u>:
+          ${HEAD_COMMIT_MESSAGE:-workflow_dispatch}
+          EOF
+          )
+
+          curl -fsS https://api.pushover.net/1/messages.json \
+            --data-urlencode "token=${PUSHOVER_TOKEN}" \
+            --data-urlencode "user=${PUSHOVER_USER}" \
+            --data-urlencode "title=${TITLE}" \
+            --data-urlencode "priority=${PRIORITY}" \
+            --data-urlencode "html=1" \
+            --data-urlencode "message=${MESSAGE}"
