@@ -8,7 +8,7 @@ WEB_DIR := web
 WEB_DIST := $(WEB_DIR)/dist
 BIN := $(APP)
 
-.PHONY: help web build swag all fmt check test clean serve
+.PHONY: help web build all fmt check test clean serve
 
 help:
 	@echo "Usage: make <target>"
@@ -16,8 +16,7 @@ help:
 	@echo "Targets:"
 	@echo "  web            Build Vue frontend"
 	@echo "  build          Build Go backend binary"
-	@echo "  swag           Generate Swagger docs"
-	@echo "  all            Build frontend, docs, and backend"
+	@echo "  all            Build frontend and backend"
 	@echo "  fmt            Format frontend and backend code"
 	@echo "  check          Run static checks"
 	@echo "  test           Run tests"
@@ -33,13 +32,10 @@ web:
 build: web
 	$(GOENV) go build -o $(BIN) $(LDFLAGS) $(GO_MAIN)
 
-swag:
-	@if command -v swag >/dev/null 2>&1; then swag init -g main.go -o docs; else echo "swag not installed; skipping"; fi
-
-all: web swag build
+all: web build
 
 fmt:
-	gofmt -w main.go docs internal
+	gofmt -w main.go internal
 	cd $(WEB_DIR) && npm run lint:fix
 
 check: web
