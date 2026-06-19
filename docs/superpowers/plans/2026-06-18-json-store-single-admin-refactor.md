@@ -2025,7 +2025,7 @@ import background4 from '@/assets/background-4.jpg'
 import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/constants/panel'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
 
-const defaultFooterHtml = '<div style="display:flex;justify-content:center;color:#cbd5e1;margin-top:100px">Powered By <a href="https://github.com/hslr-s/homelab-panel" target="_blank" style="margin-left:5px">Homelab Panel</a></div>'
+const defaultFooterHtml = '<div style="display:flex;justify-content:center;color:#cbd5e1;margin-top:100px">Powered By <a href="https://github.com/lz-wang/homelab-panel" target="_blank" style="margin-left:5px">Homelab Panel</a></div>'
 
 export const builtinBackgrounds = [
   { label: '背景 1', src: background1 },
@@ -3263,7 +3263,7 @@ export default function Login() {
             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
               Powered By
               {' '}
-              <a href="https://github.com/hslr-s/homelab-panel" target="_blank" rel="noreferrer">Homelab Panel</a>
+              <a href="https://github.com/lz-wang/homelab-panel" target="_blank" rel="noreferrer">Homelab Panel</a>
             </Typography>
           </Stack>
         </CardContent>

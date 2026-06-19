@@ -12,7 +12,7 @@ import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
 
 const defaultFooterHtml =
-    '<div style="display:flex;justify-content:center;color:#cbd5e1;margin-top:100px">Powered By <a href="https://github.com/hslr-s/homelab-panel" target="_blank" style="margin-left:5px">Homelab Panel</a></div>'
+    '<div style="display:flex;justify-content:center;color:#cbd5e1;margin-top:100px">Powered By <a href="https://github.com/lz-wang/homelab-panel" target="_blank" style="margin-left:5px">Homelab Panel</a></div>'
 
 export const builtinBackgrounds = [
     { label: '背景 1', src: background1 },

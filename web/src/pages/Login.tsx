@@ -85,7 +85,7 @@ export default function Login() {
                         >
                             Powered By{' '}
                             <a
-                                href="https://github.com/hslr-s/homelab-panel"
+                                href="https://github.com/lz-wang/homelab-panel"
                                 target="_blank"
                                 rel="noreferrer"
                             >
