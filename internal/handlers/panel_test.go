@@ -125,7 +125,8 @@ func TestNormalizeRejectsInvalidOpenMethod(t *testing.T) {
 func TestUpdatePanelStatusCodes(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	store := mustStore(t)
-	h := NewHandler(Deps{Store: store, DataDir: t.TempDir()})
+	logger, _ := zap.NewDevelopment()
+	h := NewHandler(Deps{Store: store, Logger: logger, DataDir: t.TempDir()})
 	r := gin.New()
 	r.PUT("/api/v1/panel", h.RequireAdmin(), h.UpdatePanel)
 

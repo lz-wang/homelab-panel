@@ -100,6 +100,29 @@ Do not proactively run full browser/E2E validation unless the user asks for it o
 
 - Keep the embedded frontend asset path intact: build output is expected under `web/dist`.
 
+## Logging conventions
+
+Application logs are plain-text single-line **English** (not JSON), built by `internal/logging.NewLogger()` (a zap console encoder). `main.go` and `internal/app` share the same configuration.
+
+Format:
+
+```
+2026-06-19 21:24:26 INFO   starting server on :3002
+2026-06-19 21:24:26 INFO   127.0.0.1 GET /api/v1/panel 200 3ms
+```
+
+- Timestamp: `2006-01-02 15:04:05`
+- Level: uppercase, fixed 6-char left-aligned width (`INFO  `/`WARN  `/`ERROR `/`DEBUG `/`FATAL `) so the message column lines up
+- Writes to **stderr**; user-facing program output (first-run password banner, CLI reset notice) goes to stdout — the two are kept separate
+- Caller and stacktrace are disabled so every entry stays a single line
+
+When adding log calls:
+
+- **Use plain-text messages** — do not pass structured fields like `zap.String`/`zap.Int`. With no fields the console encoder emits only `time level message\n`; bake context into the message itself (e.g. `"admin login from " + ip` or `fmt.Sprintf`).
+- **API request logs** are recorded centrally by the `requestLogger` middleware in `internal/app/middleware.go`, registered only on the `/api/v1` group, as `<IP> <METHOD> <PATH> <STATUS> <LATENCY>` with level by status (2xx→INFO / 4xx→WARN / 5xx→ERROR). Do not duplicate access logging inside handlers.
+- **Operation logs**: state changes (login/logout/password change/panel update/upload/file delete/first-run password generation/CLI password reset, etc.) must log one INFO line; client-side failures (wrong password, unauthorized access) log WARN; server-side 500 failures log ERROR with `err` folded into the message. Request-scoped operations should include the source IP (`c.ClientIP()`).
+- Prefer the injected logger (`s.logger` / `h.Logger` / the store's `logger` field); do not construct `zap.NewProduction()`/`zap.NewDevelopment()` inside packages (tests excepted).
+
 ## Change discipline
 
 - Preserve user changes in the working tree. Check `git status --short` before broad edits.

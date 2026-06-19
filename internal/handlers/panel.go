@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -92,9 +93,12 @@ func (h *Handler) UpdatePanel(c *gin.Context) {
 		return nil
 	})
 	if err != nil {
+		h.Logger.Error("save panel failed: " + err.Error())
 		writeError(c, http.StatusInternalServerError, "save panel failed")
 		return
 	}
+	h.Logger.Info(fmt.Sprintf("panel updated: %d groups, %d items from %s",
+		len(normalized.Groups), len(normalized.Items), c.ClientIP()))
 	writeJSON(c, http.StatusOK, panelView(normalized))
 }
 

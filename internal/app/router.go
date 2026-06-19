@@ -12,6 +12,7 @@ func (s *Server) registerRoutes() {
 	})
 
 	api := s.router.Group("/api/v1")
+	api.Use(requestLogger(s.logger))
 	api.GET("/health", h.Health)
 	api.GET("/about", h.About)
 

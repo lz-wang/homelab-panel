@@ -11,6 +11,7 @@ func (h *Handler) RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := bearerToken(c.GetHeader("Authorization"))
 		if !h.tokens.Valid(token) {
+			h.Logger.Warn("unauthorized admin request to " + c.Request.URL.Path + " from " + c.ClientIP())
 			writeError(c, http.StatusUnauthorized, "invalid or missing admin token")
 			c.Abort()
 			return

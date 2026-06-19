@@ -77,7 +77,7 @@ func TestCreateAdminSessionResponseUsesSnakeCase(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	h := NewHandler(Deps{Store: store, DataDir: t.TempDir()})
+	h := NewHandler(Deps{Store: store, Logger: logger, DataDir: t.TempDir()})
 	r := gin.New()
 	r.POST("/api/v1/admin/session", h.CreateAdminSession)
 

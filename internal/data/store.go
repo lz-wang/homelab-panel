@@ -41,10 +41,8 @@ func Open(path string, logger *zap.Logger) (*Store, string, error) {
 			if err := os.Rename(path, backup); err != nil {
 				return nil, "", fmt.Errorf("backup incompatible store file: %w", err)
 			}
-			logger.Warn("incompatible store version, resetting",
-				zap.Int("old_version", s.data.Version),
-				zap.Int("current_version", dataVersion),
-				zap.String("backup", backup))
+			logger.Warn(fmt.Sprintf("incompatible store version %d, resetting to %d, backup=%s",
+				s.data.Version, dataVersion, backup))
 			password, err := s.init()
 			if err != nil {
 				return nil, "", err

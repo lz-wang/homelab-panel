@@ -11,9 +11,9 @@ import (
 
 	"homelab-panel/internal/app"
 	"homelab-panel/internal/data"
+	"homelab-panel/internal/logging"
 
 	"github.com/urfave/cli/v2"
-	"go.uber.org/zap"
 	"golang.org/x/term"
 )
 
@@ -104,10 +104,7 @@ func runResetPassword(c *cli.Context) error {
 		dataDir = "./data"
 	}
 
-	logger, err := zap.NewProduction()
-	if err != nil {
-		return fmt.Errorf("create logger: %w", err)
-	}
+	logger := logging.NewLogger()
 	defer func() { _ = logger.Sync() }()
 
 	// store 路径与 app.New 保持一致：<dataDir>/homelab-panel.json
@@ -119,7 +116,7 @@ func runResetPassword(c *cli.Context) error {
 	if createdPassword != "" {
 		// Open 返回非空密码说明数据文件原本不存在（或版本不兼容被重置），
 		// 提示用户确认 --dir 指向正确的目录，避免在错误目录下误建空存储。
-		fmt.Fprintln(os.Stderr, "注意：数据文件不存在或已重置，已创建新的存储。请确认 --dir 指向正确的数据目录。")
+		fmt.Fprintln(os.Stderr, "Note: the data file did not exist or was reset; a new store has been created. Make sure --dir points to the correct data directory.")
 	}
 
 	newPassword, err := readNewPassword(c.String("password"))
@@ -129,7 +126,8 @@ func runResetPassword(c *cli.Context) error {
 	if err := store.ResetPassword(newPassword); err != nil {
 		return fmt.Errorf("reset password: %w", err)
 	}
-	fmt.Println("管理员密码已重置。")
+	logger.Info("admin password reset via CLI")
+	fmt.Println("Admin password reset.")
 	return nil
 }
 
@@ -140,24 +138,24 @@ const minPasswordLength = 6
 func readNewPassword(prefilled string) (string, error) {
 	if prefilled != "" {
 		if len(prefilled) < minPasswordLength {
-			return "", fmt.Errorf("密码至少需要 %d 个字符", minPasswordLength)
+			return "", fmt.Errorf("password must be at least %d characters", minPasswordLength)
 		}
 		return prefilled, nil
 	}
 
 	fd := int(os.Stdin.Fd())
 	if !term.IsTerminal(fd) {
-		return "", errors.New("非交互式环境：请使用 --password 参数指定新密码")
+		return "", errors.New("non-interactive environment: provide the new password via --password")
 	}
 
-	fmt.Print("请输入新密码（至少 6 个字符）：")
+	fmt.Print("Enter new password (at least 6 characters): ")
 	pw, err := term.ReadPassword(fd)
 	fmt.Println()
 	if err != nil {
 		return "", fmt.Errorf("read password: %w", err)
 	}
 
-	fmt.Print("请再次输入新密码：")
+	fmt.Print("Confirm new password: ")
 	confirm, err := term.ReadPassword(fd)
 	fmt.Println()
 	if err != nil {
@@ -165,10 +163,10 @@ func readNewPassword(prefilled string) (string, error) {
 	}
 
 	if string(pw) != string(confirm) {
-		return "", errors.New("两次输入的密码不一致")
+		return "", errors.New("passwords do not match")
 	}
 	if len(pw) < minPasswordLength {
-		return "", fmt.Errorf("密码至少需要 %d 个字符", minPasswordLength)
+		return "", fmt.Errorf("password must be at least %d characters", minPasswordLength)
 	}
 	return string(pw), nil
 }

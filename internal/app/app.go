@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"homelab-panel/internal/data"
+	"homelab-panel/internal/logging"
 	"os"
 	"path/filepath"
 
@@ -21,10 +22,7 @@ type App struct {
 func New(config Config) (*App, error) {
 	gin.SetMode(gin.ReleaseMode)
 
-	logger, err := zap.NewProduction()
-	if err != nil {
-		return nil, fmt.Errorf("create logger: %w", err)
-	}
+	logger := logging.NewLogger()
 
 	dataDir := config.dataDir()
 	if err := os.MkdirAll(filepath.Join(dataDir, "uploads"), 0o755); err != nil {
@@ -39,10 +37,11 @@ func New(config Config) (*App, error) {
 		return nil, fmt.Errorf("ensure auth secret: %w", err)
 	}
 	if password != "" {
+		logger.Info("admin password generated on first run")
 		fmt.Println("========================================")
-		fmt.Println("首次启动：已生成管理员密码（仅显示一次）")
-		fmt.Printf("密码：%s\n", password)
-		fmt.Println("请妥善保存，登录后可在设置中修改。")
+		fmt.Println("First run: an admin password has been generated (shown only once)")
+		fmt.Printf("Password: %s\n", password)
+		fmt.Println("Keep it safe. You can change it in Settings after signing in.")
 		fmt.Println("========================================")
 	}
 

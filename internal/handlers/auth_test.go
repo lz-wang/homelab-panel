@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // newAuthHandler 返回已就绪的 handler 与已知管理员密码（便于测试登录）。
@@ -22,7 +23,8 @@ func newAuthHandler(t *testing.T) (*Handler, string) {
 	if err := store.ResetPassword(password); err != nil {
 		t.Fatalf("reset password: %v", err)
 	}
-	h := NewHandler(Deps{Store: store, DataDir: t.TempDir()})
+	logger, _ := zap.NewDevelopment()
+	h := NewHandler(Deps{Store: store, Logger: logger, DataDir: t.TempDir()})
 	return h, password
 }
 
