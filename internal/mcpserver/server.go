@@ -30,6 +30,8 @@ func NewServer(panelSvc *panel.Service, opts ServerOptions) *mcp.Server {
 		Version: version,
 	}, nil)
 
+	registerReadTools(s, panelSvc)
+
 	return s
 }
 
