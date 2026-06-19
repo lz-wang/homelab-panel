@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ItemIcon } from '@/types/panel'
 import { toBackendItem, toBackendPanel, toFrontendItem, toFrontendPanel } from './adapters'
 
 describe('toBackendPanel', () => {
@@ -42,5 +43,59 @@ describe('toFrontendItem', () => {
     const fe = toFrontendItem({ group_id: 5, title: 't', url: 'u', icon: null, open_method: 'iframe' })
     expect(fe.itemIconGroupId).toBe(5)
     expect(fe.openMethod).toBe(3)
+  })
+})
+
+// 回归：编辑图标后保存，item_type / background_color 等多词字段必须在 wire 边界双向转换，
+// 否则后端按 snake_case 反序列化会丢失（变 0 / ""），加载渲染时图标消失。
+describe('icon wire casing', () => {
+  const icon: ItemIcon = {
+    itemType: 3,
+    text: 'mdi:home',
+    color: '#FFFFFF',
+    backgroundColor: '#2196F3',
+    src: '',
+  }
+
+  it('toBackendItem emits snake_case icon keys', () => {
+    const wire = toBackendItem({ id: 1, icon, title: 't', url: 'u', openMethod: 2, itemIconGroupId: 1 })
+    expect(wire.icon).toEqual({
+      item_type: 3,
+      text: 'mdi:home',
+      color: '#FFFFFF',
+      background_color: '#2196F3',
+      src: '',
+    })
+  })
+
+  it('toFrontendItem reads snake_case icon keys back to camelCase', () => {
+    // 模拟后端返回的原始 wire 数据（snake_case icon）
+    const fe = toFrontendItem({
+      group_id: 1,
+      title: 't',
+      url: 'u',
+      icon: { item_type: 3, text: 'mdi:home', color: '#FFFFFF', background_color: '#2196F3', src: '' },
+      open_method: 'new_tab',
+    })
+    expect(fe.icon).toEqual({
+      itemType: 3,
+      text: 'mdi:home',
+      color: '#FFFFFF',
+      backgroundColor: '#2196F3',
+      src: '',
+    })
+  })
+
+  it('preserves icon fields across a save round-trip', () => {
+    const wire = toBackendItem({ id: 1, icon, title: 't', url: 'u', openMethod: 2, itemIconGroupId: 1 })
+    const back = toFrontendItem({
+      group_id: 1,
+      title: 't',
+      url: 'u',
+      icon: wire.icon,
+      open_method: 'new_tab',
+    })
+    expect(back.icon?.itemType).toBe(3)
+    expect(back.icon?.backgroundColor).toBe('#2196F3')
   })
 })

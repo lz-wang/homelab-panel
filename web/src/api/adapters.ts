@@ -16,13 +16,21 @@ export interface PanelGroupWire {
   sort?: number
 }
 
+export interface PanelItemIconWire {
+  item_type: number
+  src?: string
+  text?: string
+  color?: string
+  background_color?: string
+}
+
 export interface PanelItemWire {
   id?: number
   group_id: number
   title: string
   url: string
   description?: string
-  icon: ItemIcon | null
+  icon: PanelItemIconWire | null
   open_method: string
   sort?: number
 }
@@ -43,7 +51,7 @@ export function toBackendGroup(g: ItemIconGroup): PanelGroupWire {
 export function toFrontendItem(w: PanelItemWire): ItemInfo {
   return {
     id: w.id,
-    icon: w.icon ?? null,
+    icon: w.icon ? (keysToCamel(w.icon) as ItemIcon) : null,
     title: w.title ?? '',
     url: w.url ?? '',
     description: w.description ?? '',
@@ -60,7 +68,7 @@ export function toBackendItem(it: ItemInfo): PanelItemWire {
     title: it.title,
     url: it.url,
     description: it.description ?? '',
-    icon: it.icon ?? null,
+    icon: it.icon ? (keysToSnake(it.icon) as PanelItemIconWire) : null,
     open_method: toBackendOpenMethod(it.openMethod),
     sort: it.sort,
   }
