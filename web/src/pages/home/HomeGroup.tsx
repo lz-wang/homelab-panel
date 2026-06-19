@@ -10,7 +10,6 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import { AppIcon } from '@/components/common/AppIcon'
-import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import { t } from '@/locales'
 import type { PanelConfig, ItemInfo } from '@/types/panel'
 
@@ -92,10 +91,7 @@ export function HomeGroup({
             <Box
                 sx={{
                     display: 'grid',
-                    gridTemplateColumns:
-                        panelConfig.iconStyle === PanelPanelConfigStyleEnum.info
-                            ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                            : 'repeat(auto-fill, minmax(75px, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                     gap: 2.25,
                 }}
             >
@@ -111,10 +107,7 @@ export function HomeGroup({
                     >
                         <AppIcon
                             item={item}
-                            style={panelConfig.iconStyle ?? PanelPanelConfigStyleEnum.icon}
-                            iconTextColor={panelConfig.iconTextColor ?? '#ffffff'}
                             hideDescription={panelConfig.iconTextInfoHideDescription ?? false}
-                            hideTitle={panelConfig.iconTextIconHideTitle ?? false}
                         />
                     </Box>
                 ))}

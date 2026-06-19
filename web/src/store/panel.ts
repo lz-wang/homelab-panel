@@ -8,11 +8,7 @@ import background1 from '@/assets/background-1.jpg'
 import background2 from '@/assets/background-2.jpg'
 import background3 from '@/assets/background-3.jpg'
 import background4 from '@/assets/background-4.jpg'
-import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
-
-const defaultFooterHtml =
-    '<div style="display:flex;justify-content:center;color:#cbd5e1;margin-top:100px">Powered By <a href="https://github.com/lz-wang/homelab-panel" target="_blank" style="margin-left:5px">Homelab Panel</a></div>'
 
 export const builtinBackgrounds = [
     { label: '背景 1', src: background1 },
@@ -26,21 +22,40 @@ export function defaultPanelConfig(): PanelConfig {
         backgroundImageSrc: background1,
         backgroundBlur: 0,
         backgroundMaskNumber: 0,
-        iconStyle: PanelPanelConfigStyleEnum.icon,
-        iconTextColor: '#ffffff',
         iconTextInfoHideDescription: false,
-        iconTextIconHideTitle: false,
         logoText: 'Homelab Panel',
         logoImageSrc: '',
+        clockShow: true,
         clockShowSecond: false,
         searchBoxShow: false,
-        searchBoxSearchIcon: false,
         marginBottom: 10,
         marginTop: 10,
-        maxWidth: 1200,
-        maxWidthUnit: 'px',
+        maxWidth: 100,
         marginX: 5,
-        footerHtml: defaultFooterHtml,
+        footerShow: true,
+    }
+}
+
+export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
+    const defaults = defaultPanelConfig()
+
+    return {
+        backgroundImageSrc: config.backgroundImageSrc ?? defaults.backgroundImageSrc,
+        backgroundBlur: config.backgroundBlur ?? defaults.backgroundBlur,
+        backgroundMaskNumber: config.backgroundMaskNumber ?? defaults.backgroundMaskNumber,
+        iconTextInfoHideDescription:
+            config.iconTextInfoHideDescription ?? defaults.iconTextInfoHideDescription,
+        logoText: config.logoText ?? defaults.logoText,
+        logoImageSrc: config.logoImageSrc ?? defaults.logoImageSrc,
+        clockShow: config.clockShow ?? defaults.clockShow,
+        clockShowSecond: config.clockShowSecond ?? defaults.clockShowSecond,
+        clockColor: config.clockColor ?? defaults.clockColor,
+        searchBoxShow: config.searchBoxShow ?? defaults.searchBoxShow,
+        marginTop: config.marginTop ?? defaults.marginTop,
+        marginBottom: config.marginBottom ?? defaults.marginBottom,
+        maxWidth: config.maxWidth ?? defaults.maxWidth,
+        marginX: config.marginX ?? defaults.marginX,
+        footerShow: config.footerShow ?? defaults.footerShow,
     }
 }
 
@@ -83,7 +98,7 @@ export const usePanelStore = create<PanelStore>()(
     persist(
         (set, get) => ({
             siteName: 'Homelab Panel',
-            panelConfig: defaultPanelConfig(),
+            panelConfig: sanitizePanelConfig({}),
             searchEngine: {},
             groups: [],
             items: [],
@@ -97,7 +112,7 @@ export const usePanelStore = create<PanelStore>()(
                 if (res.code === 0 && res.data) {
                     set({
                         siteName: res.data.siteName,
-                        panelConfig: { ...defaultPanelConfig(), ...res.data.config },
+                        panelConfig: sanitizePanelConfig(res.data.config),
                         searchEngine: res.data.searchEngine,
                         groups: res.data.groups,
                         items: res.data.items,
@@ -107,10 +122,11 @@ export const usePanelStore = create<PanelStore>()(
             },
 
             setPanelConfig: (panelConfig) => {
-                set({ panelConfig: { ...defaultPanelConfig(), ...panelConfig } })
-                return persistPanel(get, set, { panelConfig })
+                const nextPanelConfig = sanitizePanelConfig(panelConfig)
+                set({ panelConfig: nextPanelConfig })
+                return persistPanel(get, set, { panelConfig: nextPanelConfig })
             },
-            resetPanelConfig: () => set({ panelConfig: defaultPanelConfig() }),
+            resetPanelConfig: () => set({ panelConfig: sanitizePanelConfig({}) }),
 
             replaceGroups: (groups) => persistPanel(get, set, { groups }),
             replaceItems: (items) => persistPanel(get, set, { items }),

@@ -1,5 +1,3 @@
-import type { PanelPanelConfigStyleEnum } from '@/constants/panel'
-
 import type { InfoBase } from './common'
 
 export interface ItemInfo extends InfoBase {
@@ -30,22 +28,18 @@ export interface PanelConfig {
     backgroundImageSrc?: string
     backgroundBlur?: number
     backgroundMaskNumber?: number
-    iconStyle?: PanelPanelConfigStyleEnum
-    iconTextColor?: string
     iconTextInfoHideDescription?: boolean
-    iconTextIconHideTitle?: boolean
     logoText?: string
     logoImageSrc?: string
+    clockShow?: boolean
     clockShowSecond?: boolean
     clockColor?: string
     searchBoxShow?: boolean
-    searchBoxSearchIcon?: boolean
     marginTop?: number
     marginBottom?: number
     maxWidth?: number
-    maxWidthUnit: string
     marginX?: number
-    footerHtml?: string
+    footerShow?: boolean
 }
 
 export interface PanelState {

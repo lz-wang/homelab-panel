@@ -1,24 +1,18 @@
-import SaveIcon from '@mui/icons-material/Save'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import SaveIcon from '@mui/icons-material/Save'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonBase from '@mui/material/ButtonBase'
 import Divider from '@mui/material/Divider'
-import FormControl from '@mui/material/FormControl'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
 import Slider from '@mui/material/Slider'
 import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
-import { ColorModeSelector } from '@/components/apps/ColorModeSelector'
 import { ImageUploadButton } from '@/components/common/ImageUploadButton'
-import { PanelPanelConfigStyleEnum } from '@/constants/panel'
 import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
 import { builtinBackgrounds, defaultPanelConfig, usePanelStore } from '@/store/panel'
@@ -43,14 +37,41 @@ function BoolField({
     )
 }
 
+function Section({ title, children }: { title: string; children: ReactNode }) {
+    return (
+        <Stack spacing={2}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                {title}
+            </Typography>
+            {children}
+        </Stack>
+    )
+}
+
+function percentValue(value: number | undefined, fallback: number) {
+    if (typeof value !== 'number' || Number.isNaN(value)) return fallback
+
+    return value
+}
+
+function normalizeForm(config: PanelConfig): PanelConfig {
+    const defaults = defaultPanelConfig()
+
+    return {
+        ...defaults,
+        ...config,
+        maxWidth: percentValue(config.maxWidth, defaults.maxWidth ?? 100),
+    }
+}
+
 export function StylePanel() {
     const panelConfig = usePanelStore((s) => s.panelConfig)
     const setPanelConfig = usePanelStore((s) => s.setPanelConfig)
-    const [form, setForm] = useState<PanelConfig>({ ...defaultPanelConfig(), ...panelConfig })
+    const [form, setForm] = useState<PanelConfig>(() => normalizeForm(panelConfig))
     const { loading: saving, run } = useApiAction()
 
     useEffect(() => {
-        setForm({ ...defaultPanelConfig(), ...panelConfig })
+        setForm(normalizeForm(panelConfig))
     }, [panelConfig])
 
     function patch(partial: Partial<PanelConfig>) {
@@ -71,209 +92,181 @@ export function StylePanel() {
 
     return (
         <Stack spacing={3}>
-            <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                    颜色模式
-                </Typography>
-                <ColorModeSelector />
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    本地设备偏好，立即生效，不影响其他访客。
-                </Typography>
-            </Box>
-            <Divider />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <Section title="页面布局">
                 <TextField
                     label="面板标题"
                     value={form.logoText ?? ''}
                     onChange={(event) => patch({ logoText: event.target.value })}
                     fullWidth
                 />
-                <FormControl sx={{ minWidth: 160 }}>
-                    <InputLabel>图标样式</InputLabel>
-                    <Select
-                        label="图标样式"
-                        value={form.iconStyle ?? PanelPanelConfigStyleEnum.icon}
-                        onChange={(event) => patch({ iconStyle: Number(event.target.value) })}
+
+                <ImageUploadButton
+                    label="自定义背景"
+                    value={form.backgroundImageSrc ?? ''}
+                    onChange={(value) => patch({ backgroundImageSrc: value })}
+                />
+
+                <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        内置背景
+                    </Typography>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: 'repeat(2, minmax(0, 1fr))',
+                                sm: 'repeat(4, minmax(0, 1fr))',
+                            },
+                            gap: 1,
+                        }}
                     >
-                        <MenuItem value={PanelPanelConfigStyleEnum.icon}>图标</MenuItem>
-                        <MenuItem value={PanelPanelConfigStyleEnum.info}>信息</MenuItem>
-                    </Select>
-                </FormControl>
-            </Stack>
+                        {builtinBackgrounds.map((background) => {
+                            const selected = form.backgroundImageSrc === background.src
 
-            <ImageUploadButton
-                label="背景图 URL"
-                value={form.backgroundImageSrc ?? ''}
-                onChange={(value) => patch({ backgroundImageSrc: value })}
-            />
+                            return (
+                                <ButtonBase
+                                    key={background.src}
+                                    aria-label={background.label}
+                                    onClick={() => patch({ backgroundImageSrc: background.src })}
+                                    sx={{
+                                        position: 'relative',
+                                        aspectRatio: '16 / 9',
+                                        overflow: 'hidden',
+                                        borderRadius: 1,
+                                        border: selected ? '2px solid' : '1px solid',
+                                        borderColor: selected ? 'primary.main' : 'divider',
+                                        background: `url(${background.src}) center / cover no-repeat`,
+                                        boxShadow: selected ? 2 : 0,
+                                    }}
+                                >
+                                    {selected && (
+                                        <CheckCircleIcon
+                                            color="primary"
+                                            sx={{
+                                                position: 'absolute',
+                                                top: 6,
+                                                right: 6,
+                                                bgcolor: 'background.paper',
+                                                borderRadius: '50%',
+                                            }}
+                                        />
+                                    )}
+                                </ButtonBase>
+                            )
+                        })}
+                    </Box>
+                </Box>
 
-            <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    内置背景
-                </Typography>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                    <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                            背景模糊
+                        </Typography>
+                        <Slider
+                            min={0}
+                            max={20}
+                            value={form.backgroundBlur ?? 0}
+                            onChange={(_, value) => patch({ backgroundBlur: value as number })}
+                            valueLabelDisplay="auto"
+                        />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                            背景遮罩
+                        </Typography>
+                        <Slider
+                            min={0}
+                            max={1}
+                            step={0.05}
+                            value={form.backgroundMaskNumber ?? 0}
+                            onChange={(_, value) =>
+                                patch({ backgroundMaskNumber: value as number })
+                            }
+                            valueLabelDisplay="auto"
+                        />
+                    </Box>
+                </Stack>
+
                 <Box
                     sx={{
                         display: 'grid',
                         gridTemplateColumns: {
-                            xs: 'repeat(2, minmax(0, 1fr))',
-                            sm: 'repeat(4, minmax(0, 1fr))',
+                            xs: '1fr',
+                            sm: 'repeat(2, minmax(0, 1fr))',
+                            md: 'repeat(4, minmax(0, 1fr))',
                         },
+                        gap: 2,
+                    }}
+                >
+                    <TextField
+                        label="最大宽度 (%)"
+                        type="number"
+                        value={form.maxWidth ?? 100}
+                        onChange={(event) => patch({ maxWidth: Number(event.target.value) })}
+                    />
+                    <TextField
+                        label="顶部边距 (%)"
+                        type="number"
+                        value={form.marginTop ?? 10}
+                        onChange={(event) => patch({ marginTop: Number(event.target.value) })}
+                    />
+                    <TextField
+                        label="底部边距 (%)"
+                        type="number"
+                        value={form.marginBottom ?? 10}
+                        onChange={(event) => patch({ marginBottom: Number(event.target.value) })}
+                    />
+                    <TextField
+                        label="横向边距 (%)"
+                        type="number"
+                        value={form.marginX ?? 5}
+                        onChange={(event) => patch({ marginX: Number(event.target.value) })}
+                    />
+                </Box>
+            </Section>
+
+            <Divider />
+
+            <Section title="面板显示">
+                <Box
+                    sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
                         gap: 1,
                     }}
                 >
-                    {builtinBackgrounds.map((background) => {
-                        const selected = form.backgroundImageSrc === background.src
-
-                        return (
-                            <ButtonBase
-                                key={background.src}
-                                aria-label={background.label}
-                                onClick={() => patch({ backgroundImageSrc: background.src })}
-                                sx={{
-                                    position: 'relative',
-                                    aspectRatio: '16 / 9',
-                                    overflow: 'hidden',
-                                    borderRadius: 1,
-                                    border: selected ? '2px solid' : '1px solid',
-                                    borderColor: selected ? 'primary.main' : 'divider',
-                                    background: `url(${background.src}) center / cover no-repeat`,
-                                    boxShadow: selected ? 2 : 0,
-                                }}
-                            >
-                                {selected && (
-                                    <CheckCircleIcon
-                                        color="primary"
-                                        sx={{
-                                            position: 'absolute',
-                                            top: 6,
-                                            right: 6,
-                                            bgcolor: 'background.paper',
-                                            borderRadius: '50%',
-                                        }}
-                                    />
-                                )}
-                            </ButtonBase>
-                        )
-                    })}
-                </Box>
-            </Box>
-
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-                <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" color="text.secondary">
-                        背景模糊
-                    </Typography>
-                    <Slider
-                        min={0}
-                        max={20}
-                        value={form.backgroundBlur ?? 0}
-                        onChange={(_, value) => patch({ backgroundBlur: value as number })}
-                        valueLabelDisplay="auto"
+                    <BoolField
+                        checked={form.clockShow ?? true}
+                        label="显示时钟"
+                        onChange={(checked) => patch({ clockShow: checked })}
+                    />
+                    <BoolField
+                        checked={form.clockShowSecond ?? false}
+                        label="时钟显示秒"
+                        onChange={(checked) => patch({ clockShowSecond: checked })}
+                    />
+                    <BoolField
+                        checked={form.searchBoxShow ?? false}
+                        label="显示搜索框"
+                        onChange={(checked) => patch({ searchBoxShow: checked })}
+                    />
+                    <BoolField
+                        checked={form.footerShow ?? true}
+                        label="显示页脚"
+                        onChange={(checked) => patch({ footerShow: checked })}
                     />
                 </Box>
-                <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" color="text.secondary">
-                        背景遮罩
-                    </Typography>
-                    <Slider
-                        min={0}
-                        max={1}
-                        step={0.05}
-                        value={form.backgroundMaskNumber ?? 0}
-                        onChange={(_, value) => patch({ backgroundMaskNumber: value as number })}
-                        valueLabelDisplay="auto"
-                    />
-                </Box>
-            </Stack>
+            </Section>
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                    label="图标文字颜色"
-                    type="color"
-                    value={form.iconTextColor ?? '#ffffff'}
-                    onChange={(event) => patch({ iconTextColor: event.target.value })}
-                    sx={{ width: { xs: '100%', sm: 180 } }}
-                />
-                <TextField
-                    label="最大宽度"
-                    type="number"
-                    value={form.maxWidth ?? 1200}
-                    onChange={(event) => patch({ maxWidth: Number(event.target.value) })}
-                />
-                <FormControl sx={{ minWidth: 120 }}>
-                    <InputLabel>单位</InputLabel>
-                    <Select
-                        label="单位"
-                        value={form.maxWidthUnit ?? 'px'}
-                        onChange={(event) => patch({ maxWidthUnit: event.target.value })}
-                    >
-                        <MenuItem value="px">px</MenuItem>
-                        <MenuItem value="%">%</MenuItem>
-                        <MenuItem value="vw">vw</MenuItem>
-                    </Select>
-                </FormControl>
-            </Stack>
+            <Divider />
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                    label="顶部边距 (%)"
-                    type="number"
-                    value={form.marginTop ?? 10}
-                    onChange={(event) => patch({ marginTop: Number(event.target.value) })}
-                />
-                <TextField
-                    label="底部边距 (%)"
-                    type="number"
-                    value={form.marginBottom ?? 10}
-                    onChange={(event) => patch({ marginBottom: Number(event.target.value) })}
-                />
-                <TextField
-                    label="横向边距 (px)"
-                    type="number"
-                    value={form.marginX ?? 5}
-                    onChange={(event) => patch({ marginX: Number(event.target.value) })}
-                />
-            </Stack>
-
-            <Box
-                sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}
-            >
-                <BoolField
-                    checked={form.clockShowSecond ?? false}
-                    label="时钟显示秒"
-                    onChange={(checked) => patch({ clockShowSecond: checked })}
-                />
-                <BoolField
-                    checked={form.searchBoxShow ?? false}
-                    label="显示搜索框"
-                    onChange={(checked) => patch({ searchBoxShow: checked })}
-                />
-                <BoolField
-                    checked={form.searchBoxSearchIcon ?? false}
-                    label="搜索图标"
-                    onChange={(checked) => patch({ searchBoxSearchIcon: checked })}
-                />
+            <Section title="应用显示">
                 <BoolField
                     checked={form.iconTextInfoHideDescription ?? false}
-                    label="隐藏描述"
+                    label="隐藏应用副标题"
                     onChange={(checked) => patch({ iconTextInfoHideDescription: checked })}
                 />
-                <BoolField
-                    checked={form.iconTextIconHideTitle ?? false}
-                    label="隐藏图标标题"
-                    onChange={(checked) => patch({ iconTextIconHideTitle: checked })}
-                />
-            </Box>
-
-            <TextField
-                label="页脚 HTML（仅可信管理员）"
-                value={form.footerHtml ?? ''}
-                onChange={(event) => patch({ footerHtml: event.target.value })}
-                helperText="页脚内容会作为 HTML 渲染，仅应由可信管理员维护。"
-                fullWidth
-                multiline
-                minRows={3}
-            />
+            </Section>
 
             <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
                 <Button startIcon={<SaveIcon />} loading={saving} onClick={handleSave}>

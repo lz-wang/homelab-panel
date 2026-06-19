@@ -1,16 +1,14 @@
 import { useMemo, useState } from 'react'
 
-import type { PanelConfig } from '@/types/panel'
-
 import type { ItemGroup } from './types'
 
-export function useHomeSearch(items: ItemGroup[], panelConfig: PanelConfig) {
+export function useHomeSearch(items: ItemGroup[]) {
     const [keyword, setKeyword] = useState('')
 
     const filteredItems = useMemo(() => {
         const value = keyword.trim().toLowerCase()
 
-        if (!value || !panelConfig.searchBoxSearchIcon) return items
+        if (!value) return items
 
         return items
             .map((group) => ({
@@ -23,7 +21,7 @@ export function useHomeSearch(items: ItemGroup[], panelConfig: PanelConfig) {
                 ),
             }))
             .filter((group) => group.items && group.items.length > 0)
-    }, [items, keyword, panelConfig.searchBoxSearchIcon])
+    }, [items, keyword])
 
     return {
         keyword,

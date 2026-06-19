@@ -25,8 +25,12 @@ export function HomeHeader({ panelConfig, onSearch }: Props) {
                 >
                     {panelConfig.logoText}
                 </Typography>
-                <Typography sx={{ color: '#fff' }}>|</Typography>
-                <Clock hideSecond={!panelConfig.clockShowSecond} />
+                {panelConfig.clockShow && (
+                    <>
+                        <Typography sx={{ color: '#fff' }}>|</Typography>
+                        <Clock hideSecond={!panelConfig.clockShowSecond} />
+                    </>
+                )}
             </Stack>
 
             {panelConfig.searchBoxShow && (

@@ -1,6 +1,7 @@
 import BackupOutlinedIcon from '@mui/icons-material/BackupOutlined'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
+import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness'
 import Box from '@mui/material/Box'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
@@ -16,8 +17,21 @@ import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
 import { StylePanel } from '@/components/apps/StylePanel'
 import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 
+import { ColorModeSelector } from './ColorModeSelector'
+
 function Style() {
     return <StylePanel />
+}
+
+function ColorMode() {
+    return (
+        <Box>
+            <ColorModeSelector />
+            <Box sx={{ mt: 1, color: 'text.secondary', typography: 'body2' }}>
+                本地设备偏好，立即生效，不影响其他访客。
+            </Box>
+        </Box>
+    )
 }
 
 function Groups() {
@@ -33,7 +47,8 @@ function Files() {
 }
 
 const apps = [
-    { key: 'style', name: '样式设置', icon: <PaletteOutlinedIcon />, component: Style },
+    { key: 'style', name: '全局设置', icon: <PaletteOutlinedIcon />, component: Style },
+    { key: 'colorMode', name: '颜色模式', icon: <SettingsBrightnessIcon />, component: ColorMode },
     { key: 'groups', name: '分组管理', icon: <FolderOutlinedIcon />, component: Groups },
     { key: 'files', name: '文件管理', icon: <FolderOutlinedIcon />, component: Files },
     {

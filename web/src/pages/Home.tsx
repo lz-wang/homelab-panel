@@ -27,7 +27,7 @@ export default function Home() {
     const authStore = useAuthStore()
     const { panelConfig, panelDataVersion, load: loadPanel } = usePanelStore()
     const { items, setItems, loading, loadList } = useHomeData()
-    const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
+    const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
     const canManage = Boolean(authStore.token) && authStore.isAdmin
@@ -121,12 +121,12 @@ export default function Home() {
                         mx: 'auto',
                         mt: `${panelConfig.marginTop ?? 10}%`,
                         mb: `${panelConfig.marginBottom ?? 10}%`,
-                        maxWidth: `${panelConfig.maxWidth ?? 1200}${panelConfig.maxWidthUnit}`,
+                        maxWidth: `${panelConfig.maxWidth ?? 100}%`,
                     }}
                 >
                     <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
 
-                    <Box sx={{ mx: `${panelConfig.marginX ?? 5}px` }}>
+                    <Box sx={{ mx: `${panelConfig.marginX ?? 5}%` }}>
                         {canManage && !loading && !isSearchActive && items.length === 0 && (
                             <Paper
                                 elevation={0}
@@ -187,11 +187,26 @@ export default function Home() {
                         })}
                     </Box>
 
-                    {panelConfig.footerHtml && (
+                    {panelConfig.footerShow && (
                         <Box
-                            sx={{ mt: 5 }}
-                            dangerouslySetInnerHTML={{ __html: panelConfig.footerHtml }}
-                        />
+                            sx={{
+                                mt: 12,
+                                display: 'flex',
+                                justifyContent: 'center',
+                                color: '#cbd5e1',
+                            }}
+                        >
+                            Powered By
+                            <Box
+                                component="a"
+                                href="https://github.com/lz-wang/homelab-panel"
+                                target="_blank"
+                                rel="noreferrer"
+                                sx={{ ml: 0.5, color: 'inherit' }}
+                            >
+                                Homelab Panel
+                            </Box>
+                        </Box>
                     )}
                 </Box>
             </Box>

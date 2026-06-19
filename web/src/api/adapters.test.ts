@@ -6,13 +6,13 @@ describe('toBackendPanel', () => {
     it('emits snake_case wire keys and converts PanelConfig', () => {
         const wire = toBackendPanel({
             siteName: 'Lab',
-            config: { backgroundImageSrc: 'a.png', maxWidthUnit: 'px' },
+            config: { backgroundImageSrc: 'a.png', maxWidth: 100 },
             searchEngine: {},
             groups: [],
             items: [],
         })
         expect(wire.site_name).toBe('Lab')
-        expect(wire.config).toEqual({ background_image_src: 'a.png', max_width_unit: 'px' })
+        expect(wire.config).toEqual({ background_image_src: 'a.png', max_width: 100 })
     })
 })
 

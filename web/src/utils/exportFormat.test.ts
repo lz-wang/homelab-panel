@@ -42,7 +42,7 @@ describe('export format utilities', () => {
             isExportV1({
                 version: 1,
                 exportedAt: '2026-06-13T00:00:00.000Z',
-                panel: { maxWidthUnit: 'px' },
+                panel: { maxWidth: 100 },
                 groups: [{ group: { title: 'Ops' }, items: [] }],
             }),
         ).toBe(true)
