@@ -8,8 +8,11 @@ import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
+import FormControlLabel from '@mui/material/FormControlLabel'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
+import Radio from '@mui/material/Radio'
+import RadioGroup from '@mui/material/RadioGroup'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
@@ -634,35 +637,34 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                     <Stack spacing={2} sx={{ pt: 1 }}>
                         <Box
                             sx={{
-                                width: { xs: '100%', sm: 280 },
-                                height: 90,
+                                width: { xs: '100%', sm: 220 },
+                                maxWidth: 240,
+                                height: 64,
+                                mx: 'auto',
+                                mb: 2,
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: 3,
-                                px: 4,
-                                borderRadius: 4,
+                                gap: 2,
+                                px: 2.5,
+                                borderRadius: 3,
                                 bgcolor: selectedBackgroundColor,
                                 color: selectedIconColor,
                             }}
                         >
-                            <IconifyIcon icon={form.icon?.text} size={40} />
+                            <IconifyIcon icon={form.icon?.text} size={30} />
                             <Box sx={{ minWidth: 0 }}>
-                                <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
+                                <Typography variant="subtitle1" noWrap sx={{ fontWeight: 700 }}>
                                     {previewTitle}
                                 </Typography>
                                 {previewSubtitle && (
-                                    <Typography variant="body2" noWrap sx={{ opacity: 0.72 }}>
+                                    <Typography variant="caption" noWrap sx={{ opacity: 0.72 }}>
                                         {previewSubtitle}
                                     </Typography>
                                 )}
                             </Box>
                         </Box>
 
-                        <Stack
-                            direction={{ xs: 'column', sm: 'row' }}
-                            spacing={1}
-                            sx={{ alignItems: { xs: 'stretch', sm: 'flex-start' } }}
-                        >
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                             <TextField
                                 label="标题"
                                 value={form.title}
@@ -673,6 +675,22 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                                 required
                                 sx={{ flex: 1 }}
                             />
+                            <TextField
+                                label="副标题"
+                                value={form.description ?? ''}
+                                onChange={(event) =>
+                                    setForm({ ...form, description: event.target.value })
+                                }
+                                fullWidth
+                                sx={{ flex: 1 }}
+                            />
+                        </Stack>
+
+                        <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            spacing={1}
+                            sx={{ alignItems: { xs: 'stretch', sm: 'flex-start' } }}
+                        >
                             <TextField
                                 label="图标"
                                 value={form.icon?.text ?? ''}
@@ -701,40 +719,81 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                                     },
                                 }}
                             />
+                            <Autocomplete<GroupOption>
+                                fullWidth
+                                value={selectedGroup}
+                                onChange={(_, newValue) => handleGroupChange(newValue)}
+                                filterOptions={(options, params) => {
+                                    const filtered = filterGroups(options, params)
+                                    const value = params.inputValue.trim()
+                                    if (
+                                        value &&
+                                        !options.some((option) => option.title?.trim() === value)
+                                    ) {
+                                        filtered.push({
+                                            inputValue: value,
+                                            title: `创建「${value}」`,
+                                        })
+                                    }
+                                    return filtered
+                                }}
+                                options={groups}
+                                loading={creatingGroup}
+                                disabled={creatingGroup}
+                                selectOnFocus
+                                clearOnBlur
+                                handleHomeEndKeys
+                                noOptionsText="输入分组名称可创建新分组"
+                                getOptionLabel={(option) => option.title ?? ''}
+                                isOptionEqualToValue={(option, value) =>
+                                    Boolean(option.id && option.id === value.id)
+                                }
+                                renderInput={(params) => (
+                                    <TextField {...params} label="分组" required />
+                                )}
+                                sx={{ flex: 1, minWidth: 0 }}
+                            />
                         </Stack>
-                        <TextField
-                            label="副标题"
-                            value={form.description ?? ''}
-                            onChange={(event) =>
-                                setForm({ ...form, description: event.target.value })
-                            }
-                            fullWidth
-                        />
 
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                             <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
                                 <Typography variant="subtitle2">字体颜色</Typography>
-                                <Stack direction="row" spacing={1}>
+                                <RadioGroup
+                                    row
+                                    value={selectedIconColor}
+                                    onChange={(event) => patchIcon({ color: event.target.value })}
+                                >
                                     {iconTextColors.map((color) => (
-                                        <Button
+                                        <FormControlLabel
                                             key={color.value}
-                                            variant={
-                                                selectedIconColor === color.value
-                                                    ? 'contained'
-                                                    : 'outlined'
+                                            value={color.value}
+                                            control={<Radio size="small" />}
+                                            label={
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 0.75,
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            width: 14,
+                                                            height: 14,
+                                                            borderRadius: '50%',
+                                                            bgcolor: color.value,
+                                                            border: '1px solid',
+                                                            borderColor: 'divider',
+                                                        }}
+                                                    />
+                                                    <Typography variant="body2">
+                                                        {color.label}
+                                                    </Typography>
+                                                </Box>
                                             }
-                                            onClick={() => patchIcon({ color: color.value })}
-                                            sx={{
-                                                color:
-                                                    selectedIconColor === color.value
-                                                        ? undefined
-                                                        : color.value,
-                                            }}
-                                        >
-                                            {color.label}
-                                        </Button>
+                                        />
                                     ))}
-                                </Stack>
+                                </RadioGroup>
                             </Stack>
 
                             <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
@@ -767,37 +826,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                             onChange={(event) => setForm({ ...form, url: event.target.value })}
                             fullWidth
                             required
-                        />
-
-                        <Autocomplete<GroupOption>
-                            fullWidth
-                            value={selectedGroup}
-                            onChange={(_, newValue) => handleGroupChange(newValue)}
-                            filterOptions={(options, params) => {
-                                const filtered = filterGroups(options, params)
-                                const value = params.inputValue.trim()
-                                if (
-                                    value &&
-                                    !options.some((option) => option.title?.trim() === value)
-                                ) {
-                                    filtered.push({ inputValue: value, title: `创建「${value}」` })
-                                }
-                                return filtered
-                            }}
-                            options={groups}
-                            loading={creatingGroup}
-                            disabled={creatingGroup}
-                            selectOnFocus
-                            clearOnBlur
-                            handleHomeEndKeys
-                            noOptionsText="输入分组名称可创建新分组"
-                            getOptionLabel={(option) => option.title ?? ''}
-                            isOptionEqualToValue={(option, value) =>
-                                Boolean(option.id && option.id === value.id)
-                            }
-                            renderInput={(params) => (
-                                <TextField {...params} label="分组" required />
-                            )}
                         />
                     </Stack>
                 </DialogContent>
