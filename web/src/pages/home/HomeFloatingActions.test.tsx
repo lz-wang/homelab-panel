@@ -14,12 +14,17 @@ describe('HomeFloatingActions', () => {
     it('未登录时只显示登录按钮', () => {
         const onLogin = vi.fn()
         const onOpenSettings = vi.fn()
+        const onToggleBrowseMode = vi.fn()
+        const onLogout = vi.fn()
 
         render(
             <HomeFloatingActions
                 canManage={false}
+                browsingAsGuest={false}
                 onLogin={onLogin}
                 onOpenSettings={onOpenSettings}
+                onToggleBrowseMode={onToggleBrowseMode}
+                onLogout={onLogout}
             />,
         )
 
@@ -29,15 +34,30 @@ describe('HomeFloatingActions', () => {
         expect(screen.queryByTitle('设置')).not.toBeInTheDocument()
     })
 
-    it('可管理时只显示设置按钮', () => {
+    it('可管理时显示悬浮操作按钮组', () => {
         const onLogin = vi.fn()
         const onOpenSettings = vi.fn()
+        const onToggleBrowseMode = vi.fn()
+        const onLogout = vi.fn()
 
-        render(<HomeFloatingActions canManage onLogin={onLogin} onOpenSettings={onOpenSettings} />)
+        render(
+            <HomeFloatingActions
+                canManage
+                browsingAsGuest={false}
+                onLogin={onLogin}
+                onOpenSettings={onOpenSettings}
+                onToggleBrowseMode={onToggleBrowseMode}
+                onLogout={onLogout}
+            />,
+        )
 
         fireEvent.click(screen.getByTitle('设置').querySelector('button')!)
+        fireEvent.click(screen.getByTitle('切换到浏览模式').querySelector('button')!)
+        fireEvent.click(screen.getByTitle('登出').querySelector('button')!)
 
         expect(onOpenSettings).toHaveBeenCalledTimes(1)
+        expect(onToggleBrowseMode).toHaveBeenCalledTimes(1)
+        expect(onLogout).toHaveBeenCalledTimes(1)
         expect(screen.queryByTitle('登录')).not.toBeInTheDocument()
     })
 })

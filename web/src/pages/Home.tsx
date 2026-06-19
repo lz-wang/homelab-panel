@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { logout } from '@/api/admin'
 import { AppStarter } from '@/components/apps/AppStarter'
 import { EditItemDialog } from '@/components/common/EditItemDialog'
 import { useAuthStore } from '@/store/auth'
@@ -30,7 +31,9 @@ export default function Home() {
     const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
-    const canManage = Boolean(authStore.token) && authStore.isAdmin
+    const [browsingAsGuest, setBrowsingAsGuest] = useState(false)
+    const loggedInAsAdmin = Boolean(authStore.token) && authStore.isAdmin
+    const canManage = loggedInAsAdmin && !browsingAsGuest
 
     const {
         editItemOpen,
@@ -70,12 +73,21 @@ export default function Home() {
     }, [panelConfig.logoText])
 
     useEffect(() => {
-        if (canManage) return
+        if (loggedInAsAdmin) return
+
+        setBrowsingAsGuest(false)
+        setSettingsOpen(false)
+        setContextMenu(null)
+        setEditItemOpen(false)
+    }, [loggedInAsAdmin, setEditItemOpen])
+
+    useEffect(() => {
+        if (!browsingAsGuest) return
 
         setSettingsOpen(false)
         setContextMenu(null)
         setEditItemOpen(false)
-    }, [canManage, setEditItemOpen])
+    }, [browsingAsGuest, setEditItemOpen])
 
     function getSourceGroupIndex(group: ItemGroup, fallbackIndex: number) {
         if (!group.id) return fallbackIndex
@@ -94,6 +106,19 @@ export default function Home() {
             mouseY: event.clientY,
             item,
         })
+    }
+
+    async function handleLogout() {
+        try {
+            await logout()
+        } finally {
+            authStore.clearToken()
+            setBrowsingAsGuest(false)
+            setSettingsOpen(false)
+            setContextMenu(null)
+            setEditItemOpen(false)
+            navigate('/login')
+        }
     }
 
     return (
@@ -219,12 +244,17 @@ export default function Home() {
             />
 
             <HomeFloatingActions
-                canManage={canManage}
+                canManage={loggedInAsAdmin}
+                browsingAsGuest={browsingAsGuest}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onLogin={() => navigate('/login')}
+                onToggleBrowseMode={() => setBrowsingAsGuest((value) => !value)}
+                onLogout={handleLogout}
             />
 
-            {canManage && <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />}
+            {loggedInAsAdmin && (
+                <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+            )}
             {canManage && (
                 <EditItemDialog
                     open={editItemOpen}
