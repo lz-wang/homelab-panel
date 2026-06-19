@@ -35,6 +35,22 @@ func Open(path string, logger *zap.Logger) (*Store, string, error) {
 		if err := json.Unmarshal(raw, &s.data); err != nil {
 			return nil, "", fmt.Errorf("parse store file: %w", err)
 		}
+		if s.data.Version != dataVersion {
+			// 旧版本格式：备份后重新初始化（重置策略，避免静默数据损坏）
+			backup := fmt.Sprintf("%s.v%d.bak", path, s.data.Version)
+			if err := os.Rename(path, backup); err != nil {
+				return nil, "", fmt.Errorf("backup incompatible store file: %w", err)
+			}
+			logger.Warn("incompatible store version, resetting",
+				zap.Int("old_version", s.data.Version),
+				zap.Int("current_version", dataVersion),
+				zap.String("backup", backup))
+			password, err := s.init()
+			if err != nil {
+				return nil, "", err
+			}
+			return s, password, nil
+		}
 		if s.data.Files == nil {
 			s.data.Files = []File{}
 		}

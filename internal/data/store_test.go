@@ -1,6 +1,7 @@
 package data
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -104,6 +105,62 @@ func TestUpdatePassword(t *testing.T) {
 	}
 	if !store.CheckPassword("newpass") {
 		t.Fatal("new password should verify")
+	}
+}
+
+func TestOpenResetsIncompatibleVersion(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "homelab-panel.json")
+
+	// 模拟旧版本（v1）的数据文件：version=1 即可触发重置
+	if err := os.WriteFile(path, []byte(`{"version":1}`), 0o600); err != nil {
+		t.Fatalf("write old file: %v", err)
+	}
+
+	store, password, err := Open(path, newTestLogger(t))
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	// 版本不匹配应触发重置：返回新密码、Version 升级到 dataVersion
+	if password == "" {
+		t.Fatal("expected new password after incompatible-version reset, got empty")
+	}
+	if snap := store.Snapshot(); snap.Version != dataVersion {
+		t.Fatalf("version = %d, want %d", snap.Version, dataVersion)
+	}
+	// 旧文件应被备份（重命名为 .v1.bak）
+	if _, err := os.Stat(path + ".v1.bak"); err != nil {
+		t.Fatalf("expected backup file %s.v1.bak, got: %v", path, err)
+	}
+	// 原路径现在应是新初始化的 v2 文件
+	if _, err := os.Stat(path); err != nil {
+		t.Fatalf("new store file should exist at %s: %v", path, err)
+	}
+}
+
+func TestOpenKeepsCompatibleVersion(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "homelab-panel.json")
+
+	// 先用 Open 正常初始化一个 v2 文件
+	_, firstPw, err := Open(path, newTestLogger(t))
+	if err != nil {
+		t.Fatalf("first open: %v", err)
+	}
+	if firstPw == "" {
+		t.Fatal("expected first-run password")
+	}
+	// 再次 Open：版本匹配，不应重置、不返回密码
+	again, againPw, err := Open(path, newTestLogger(t))
+	if err != nil {
+		t.Fatalf("second open: %v", err)
+	}
+	if againPw != "" {
+		t.Fatalf("compatible version should not reset, got password %q", againPw)
+	}
+	// 数据应保持（同一个 admin hash）
+	if !again.CheckPassword(firstPw) {
+		t.Fatal("compatible version should preserve password")
 	}
 }
 
