@@ -99,9 +99,6 @@ Do not proactively run full browser/E2E validation unless the user asks for it o
 ## Backend and embedding conventions
 
 - Keep the embedded frontend asset path intact: build output is expected under `web/dist`.
-- Missing `/assets/*`, `/custom/*`, and `/static/*` paths should not silently receive SPA fallback HTML; browsers must not get `index.html` for JS/CSS asset URLs.
-- `docs/` is tracked source, not disposable build output. Do not remove `docs/docs.go`, `docs/swagger.json`, or `docs/swagger.yaml` in cleanups.
-- If `make clean; make serve` fails with a missing `homelab-panel/docs` package, inspect the clean target before changing imports.
 
 ## Change discipline
 
