@@ -1,4 +1,4 @@
 export interface LoginResponse {
   token: string
-  expiresAt?: string
+  expires_at?: string
 }

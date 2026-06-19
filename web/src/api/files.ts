@@ -3,20 +3,20 @@ import type { FileInfo, UploadFilesResponse, UploadImgResponse } from '@/types/p
 
 interface BackendFile {
   id?: number
-  originalName?: string
-  objectKey?: string
+  original_name?: string
+  object_key?: string
   url?: string
-  createdAt?: string
+  created_at?: string
 }
 
-function toFrontendFile(f: BackendFile): FileInfo {
+export function toFrontendFile(f: BackendFile): FileInfo {
   return {
     id: f.id ?? 0,
     src: f.url ?? '',
     path: f.url ?? '',
-    fileName: f.originalName ?? f.objectKey ?? f.url ?? '',
-    createTime: f.createdAt,
-    updateTime: f.createdAt,
+    fileName: f.original_name ?? f.object_key ?? f.url ?? '',
+    createTime: f.created_at,
+    updateTime: f.created_at,
   }
 }
 
