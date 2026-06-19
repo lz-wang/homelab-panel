@@ -23,6 +23,8 @@ var webFS embed.FS
 var version = "dev"
 
 func main() {
+	logging.Init()
+
 	cliApp := &cli.App{
 		Name:    "homelab-panel",
 		Usage:   "Homelab panel service",
@@ -104,12 +106,11 @@ func runResetPassword(c *cli.Context) error {
 		dataDir = "./data"
 	}
 
-	logger := logging.NewLogger()
-	defer func() { _ = logger.Sync() }()
+	defer func() { _ = logging.Sync() }()
 
 	// store 路径与 app.New 保持一致：<dataDir>/homelab-panel.json
 	storePath := filepath.Join(dataDir, "homelab-panel.json")
-	store, createdPassword, err := data.Open(storePath, logger)
+	store, createdPassword, err := data.Open(storePath)
 	if err != nil {
 		return fmt.Errorf("open store: %w", err)
 	}
@@ -126,7 +127,7 @@ func runResetPassword(c *cli.Context) error {
 	if err := store.ResetPassword(newPassword); err != nil {
 		return fmt.Errorf("reset password: %w", err)
 	}
-	logger.Info("admin password reset via CLI")
+	logging.Infof("admin password reset via CLI")
 	fmt.Println("Admin password reset.")
 	return nil
 }

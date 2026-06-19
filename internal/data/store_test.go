@@ -4,24 +4,13 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"go.uber.org/zap"
 )
-
-func newTestLogger(t *testing.T) *zap.Logger {
-	t.Helper()
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		t.Fatalf("create logger: %v", err)
-	}
-	return logger
-}
 
 func TestOpenFirstRunCreatesFileAndPassword(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "homelab-panel.json")
 
-	store, password, err := Open(path, newTestLogger(t))
+	store, password, err := Open(path)
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
@@ -35,7 +24,7 @@ func TestOpenFirstRunCreatesFileAndPassword(t *testing.T) {
 		t.Fatal("wrong password should not verify")
 	}
 
-	again, pw2, err := Open(path, newTestLogger(t))
+	again, pw2, err := Open(path)
 	if err != nil {
 		t.Fatalf("reopen: %v", err)
 	}
@@ -49,7 +38,7 @@ func TestOpenFirstRunCreatesFileAndPassword(t *testing.T) {
 
 func TestSaveAtomicAndVisible(t *testing.T) {
 	dir := t.TempDir()
-	store, _, err := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+	store, _, err := Open(filepath.Join(dir, "homelab-panel.json"))
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
@@ -71,7 +60,7 @@ func TestSaveAtomicAndVisible(t *testing.T) {
 		t.Fatalf("groups = %d", len(snap.Panel.Groups))
 	}
 
-	reopened, _, _ := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+	reopened, _, _ := Open(filepath.Join(dir, "homelab-panel.json"))
 	if reopened.Snapshot().Panel.SiteName != "My Lab" {
 		t.Fatal("save should be persisted to disk")
 	}
@@ -79,7 +68,7 @@ func TestSaveAtomicAndVisible(t *testing.T) {
 
 func TestSaveRollbackOnError(t *testing.T) {
 	dir := t.TempDir()
-	store, _, _ := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+	store, _, _ := Open(filepath.Join(dir, "homelab-panel.json"))
 
 	err := store.Save(func(d *StoreData) error {
 		d.Panel.SiteName = "should not persist"
@@ -95,7 +84,7 @@ func TestSaveRollbackOnError(t *testing.T) {
 
 func TestUpdatePassword(t *testing.T) {
 	dir := t.TempDir()
-	store, initial, _ := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+	store, initial, _ := Open(filepath.Join(dir, "homelab-panel.json"))
 
 	if err := store.UpdatePassword("wrong", "newpass"); err != ErrInvalidPassword {
 		t.Fatalf("expected ErrInvalidPassword, got %v", err)
@@ -110,7 +99,7 @@ func TestUpdatePassword(t *testing.T) {
 
 func TestResetPassword(t *testing.T) {
 	dir := t.TempDir()
-	store, initial, _ := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+	store, initial, _ := Open(filepath.Join(dir, "homelab-panel.json"))
 
 	// reset 不需要旧密码即可生效
 	if err := store.ResetPassword("brand-new"); err != nil {
@@ -124,7 +113,7 @@ func TestResetPassword(t *testing.T) {
 	}
 
 	// reset 应持久化到磁盘
-	reopened, _, _ := Open(filepath.Join(dir, "homelab-panel.json"), newTestLogger(t))
+	reopened, _, _ := Open(filepath.Join(dir, "homelab-panel.json"))
 	if !reopened.CheckPassword("brand-new") {
 		t.Fatal("reset password should be persisted to disk")
 	}
@@ -139,7 +128,7 @@ func TestOpenResetsIncompatibleVersion(t *testing.T) {
 		t.Fatalf("write old file: %v", err)
 	}
 
-	store, password, err := Open(path, newTestLogger(t))
+	store, password, err := Open(path)
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
@@ -165,7 +154,7 @@ func TestOpenKeepsCompatibleVersion(t *testing.T) {
 	path := filepath.Join(dir, "homelab-panel.json")
 
 	// 先用 Open 正常初始化一个 v2 文件
-	_, firstPw, err := Open(path, newTestLogger(t))
+	_, firstPw, err := Open(path)
 	if err != nil {
 		t.Fatalf("first open: %v", err)
 	}
@@ -173,7 +162,7 @@ func TestOpenKeepsCompatibleVersion(t *testing.T) {
 		t.Fatal("expected first-run password")
 	}
 	// 再次 Open：版本匹配，不应重置、不返回密码
-	again, againPw, err := Open(path, newTestLogger(t))
+	again, againPw, err := Open(path)
 	if err != nil {
 		t.Fatalf("second open: %v", err)
 	}
@@ -189,7 +178,7 @@ func TestOpenKeepsCompatibleVersion(t *testing.T) {
 func TestEnsureSecretGeneratesAndPersists(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "homelab-panel.json")
-	store, _, _ := Open(path, newTestLogger(t))
+	store, _, _ := Open(path)
 
 	if store.Secret() != "" {
 		t.Fatal("secret should be empty before EnsureSecret")
@@ -209,7 +198,7 @@ func TestEnsureSecretGeneratesAndPersists(t *testing.T) {
 		t.Fatal("EnsureSecret should be idempotent")
 	}
 	// 持久化到磁盘
-	reopened, _, _ := Open(path, newTestLogger(t))
+	reopened, _, _ := Open(path)
 	if reopened.Secret() != first {
 		t.Fatal("secret should persist to disk")
 	}
@@ -218,7 +207,7 @@ func TestEnsureSecretGeneratesAndPersists(t *testing.T) {
 func TestIncrementTokenVersionPersists(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "homelab-panel.json")
-	store, _, _ := Open(path, newTestLogger(t))
+	store, _, _ := Open(path)
 
 	if v := store.TokenVersion(); v != 0 {
 		t.Fatalf("initial version = %d, want 0", v)
@@ -229,7 +218,7 @@ func TestIncrementTokenVersionPersists(t *testing.T) {
 	if v := store.TokenVersion(); v != 1 {
 		t.Fatalf("version = %d, want 1", v)
 	}
-	reopened, _, _ := Open(path, newTestLogger(t))
+	reopened, _, _ := Open(path)
 	if v := reopened.TokenVersion(); v != 1 {
 		t.Fatalf("persisted version = %d, want 1", v)
 	}

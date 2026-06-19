@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"homelab-panel/internal/logging"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,14 +20,13 @@ const dataVersion = 2
 var ErrInvalidPassword = errors.New("invalid password")
 
 type Store struct {
-	mu     sync.RWMutex
-	path   string
-	data   StoreData
-	logger *zap.Logger
+	mu   sync.RWMutex
+	path string
+	data StoreData
 }
 
-func Open(path string, logger *zap.Logger) (*Store, string, error) {
-	s := &Store{path: path, logger: logger}
+func Open(path string) (*Store, string, error) {
+	s := &Store{path: path}
 
 	raw, err := os.ReadFile(path)
 	switch {
@@ -41,8 +40,8 @@ func Open(path string, logger *zap.Logger) (*Store, string, error) {
 			if err := os.Rename(path, backup); err != nil {
 				return nil, "", fmt.Errorf("backup incompatible store file: %w", err)
 			}
-			logger.Warn(fmt.Sprintf("incompatible store version %d, resetting to %d, backup=%s",
-				s.data.Version, dataVersion, backup))
+			logging.Warnf("incompatible store version %d, resetting to %d, backup=%s",
+				s.data.Version, dataVersion, backup)
 			password, err := s.init()
 			if err != nil {
 				return nil, "", err

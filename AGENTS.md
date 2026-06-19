@@ -102,7 +102,19 @@ Do not proactively run full browser/E2E validation unless the user asks for it o
 
 ## Logging conventions
 
-Application logs are plain-text single-line **English** (not JSON), built by `internal/logging.NewLogger()` (a zap console encoder). `main.go` and `internal/app` share the same configuration.
+Application logs are plain-text single-line **English** (not JSON), produced by a single **global logger** in `internal/logging` (a zap console encoder wrapped as a sugared logger).
+
+- `main()` calls `logging.Init()` once at startup, before any goroutine starts logging. The package also installs a stderr default at load time, so it is never nil even in tests that do not call `Init()`.
+- **Call the package-level functions directly** from anywhere — no logger is threaded through structs:
+
+  ```go
+  logging.Infof("starting server on %s", addr)
+  logging.Warnf("admin login failed from %s", ip)
+  logging.Errorf("save panel failed: %v", err)
+  logging.Sync() // before exit
+  ```
+
+  Available: `Debugf`/`Infof`/`Warnf`/`Errorf` (printf-style) and `Debug`/`Info`/`Warn`/`Error` (join-style). Use the printf variants and bake context into the message — do **not** use structured fields (`zap.String`, sugared `Infow`/`With`); with no fields the encoder emits only `time level message\n`.
 
 Format:
 
@@ -116,12 +128,12 @@ Format:
 - Writes to **stderr**; user-facing program output (first-run password banner, CLI reset notice) goes to stdout — the two are kept separate
 - Caller and stacktrace are disabled so every entry stays a single line
 
-When adding log calls:
+What to log:
 
-- **Use plain-text messages** — do not pass structured fields like `zap.String`/`zap.Int`. With no fields the console encoder emits only `time level message\n`; bake context into the message itself (e.g. `"admin login from " + ip` or `fmt.Sprintf`).
-- **API request logs** are recorded centrally by the `requestLogger` middleware in `internal/app/middleware.go`, registered only on the `/api/v1` group, as `<IP> <METHOD> <PATH> <STATUS> <LATENCY>` with level by status (2xx→INFO / 4xx→WARN / 5xx→ERROR). Do not duplicate access logging inside handlers.
+- **API request logs** are recorded centrally by the `requestLogger()` middleware in `internal/app/middleware.go`, registered only on the `/api/v1` group, as `<IP> <METHOD> <PATH> <STATUS> <LATENCY>` with level by status (2xx→INFO / 4xx→WARN / 5xx→ERROR). Do not duplicate access logging inside handlers.
 - **Operation logs**: state changes (login/logout/password change/panel update/upload/file delete/first-run password generation/CLI password reset, etc.) must log one INFO line; client-side failures (wrong password, unauthorized access) log WARN; server-side 500 failures log ERROR with `err` folded into the message. Request-scoped operations should include the source IP (`c.ClientIP()`).
-- Prefer the injected logger (`s.logger` / `h.Logger` / the store's `logger` field); do not construct `zap.NewProduction()`/`zap.NewDevelopment()` inside packages (tests excepted).
+
+Do not add a `logger`/`Logger` field to structs or pass `*zap.Logger` through function parameters — use the global `logging.*` calls. Do not construct `zap.NewProduction()`/`zap.NewDevelopment()` inside packages.
 
 ## Change discipline
 

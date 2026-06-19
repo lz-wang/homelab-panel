@@ -5,13 +5,10 @@ import (
 	"time"
 
 	"homelab-panel/internal/data"
-
-	"go.uber.org/zap"
 )
 
 type Deps struct {
 	Store   *data.Store
-	Logger  *zap.Logger
 	DataDir string
 	Version string
 	WebFS   fs.FS
@@ -19,7 +16,6 @@ type Deps struct {
 
 type Handler struct {
 	Store   *data.Store
-	Logger  *zap.Logger
 	DataDir string
 	Version string
 	WebFS   fs.FS
@@ -29,7 +25,6 @@ type Handler struct {
 func NewHandler(deps Deps) *Handler {
 	return &Handler{
 		Store:   deps.Store,
-		Logger:  deps.Logger,
 		DataDir: deps.DataDir,
 		Version: deps.Version,
 		WebFS:   deps.WebFS,

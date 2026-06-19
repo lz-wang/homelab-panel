@@ -12,7 +12,6 @@ import (
 	"homelab-panel/internal/data"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func TestPanelRequestUsesSnakeCaseJSONKeys(t *testing.T) {
@@ -72,12 +71,11 @@ func TestPanelViewUsesSnakeCaseKeys(t *testing.T) {
 
 func TestCreateAdminSessionResponseUsesSnakeCase(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	logger, _ := zap.NewDevelopment()
-	store, password, err := data.Open(filepath.Join(t.TempDir(), "homelab-panel.json"), logger)
+	store, password, err := data.Open(filepath.Join(t.TempDir(), "homelab-panel.json"))
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	h := NewHandler(Deps{Store: store, Logger: logger, DataDir: t.TempDir()})
+	h := NewHandler(Deps{Store: store, DataDir: t.TempDir()})
 	r := gin.New()
 	r.POST("/api/v1/admin/session", h.CreateAdminSession)
 

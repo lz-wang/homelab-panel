@@ -2,15 +2,15 @@ package app
 
 import (
 	"fmt"
+	"homelab-panel/internal/logging"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // requestLogger 记录 /api/ 请求：IP Method Path Status Latency，并按状态码分级。
 // 仅作用于 API 路由，避免 SPA 静态资源刷屏。
-func requestLogger(logger *zap.Logger) gin.HandlerFunc {
+func requestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
@@ -24,11 +24,11 @@ func requestLogger(logger *zap.Logger) gin.HandlerFunc {
 		msg := fmt.Sprintf("%s %s %s %d %s", ip, method, path, status, latency)
 		switch {
 		case status >= 500:
-			logger.Error(msg)
+			logging.Error(msg)
 		case status >= 400:
-			logger.Warn(msg)
+			logging.Warn(msg)
 		default:
-			logger.Info(msg)
+			logging.Info(msg)
 		}
 	}
 }

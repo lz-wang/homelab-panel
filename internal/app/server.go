@@ -4,23 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"homelab-panel/internal/data"
+	"homelab-panel/internal/logging"
 	"net/http"
 
-	"homelab-panel/internal/data"
-
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type ServerDeps struct {
 	Config Config
-	Logger *zap.Logger
 	Store  *data.Store
 }
 
 type Server struct {
 	config Config
-	logger *zap.Logger
 	store  *data.Store
 	router *gin.Engine
 }
@@ -31,7 +28,6 @@ func NewServer(deps ServerDeps) *Server {
 
 	server := &Server{
 		config: deps.Config,
-		logger: deps.Logger,
 		store:  deps.Store,
 		router: router,
 	}
@@ -48,7 +44,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 	errCh := make(chan error, 1)
 	go func() {
-		s.logger.Info("starting server on " + httpServer.Addr)
+		logging.Infof("starting server on %s", httpServer.Addr)
 		if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
 			return

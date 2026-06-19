@@ -5,14 +5,13 @@ import "homelab-panel/internal/handlers"
 func (s *Server) registerRoutes() {
 	h := handlers.NewHandler(handlers.Deps{
 		Store:   s.store,
-		Logger:  s.logger,
 		DataDir: s.config.dataDir(),
 		Version: s.config.Version,
 		WebFS:   s.config.WebFS,
 	})
 
 	api := s.router.Group("/api/v1")
-	api.Use(requestLogger(s.logger))
+	api.Use(requestLogger())
 	api.GET("/health", h.Health)
 	api.GET("/about", h.About)
 

@@ -9,14 +9,11 @@ import (
 	"time"
 
 	"homelab-panel/internal/data"
-
-	"go.uber.org/zap"
 )
 
 func newTokenTestStore(t *testing.T) *data.Store {
 	t.Helper()
-	logger, _ := zap.NewDevelopment()
-	s, _, err := data.Open(filepath.Join(t.TempDir(), "homelab-panel.json"), logger)
+	s, _, err := data.Open(filepath.Join(t.TempDir(), "homelab-panel.json"))
 	if err != nil {
 		t.Fatalf("open store: %v", err)
 	}

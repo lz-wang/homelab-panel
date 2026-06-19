@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"fmt"
+	"homelab-panel/internal/logging"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -71,11 +71,11 @@ func (h *Handler) UploadFiles(c *gin.Context) {
 	if err != nil {
 		// 元数据提交失败，回滚磁盘文件以保持一致性。
 		cleanupWrittenFiles(h.DataDir, writtenFiles)
-		h.Logger.Error("save file metadata failed: " + err.Error())
+		logging.Errorf("save file metadata failed: %v", err)
 		writeError(c, http.StatusInternalServerError, "save file metadata failed")
 		return
 	}
-	h.Logger.Info(fmt.Sprintf("uploaded %d file(s) from %s", len(saved), c.ClientIP()))
+	logging.Infof("uploaded %d file(s) from %s", len(saved), c.ClientIP())
 	writeJSON(c, http.StatusCreated, saved)
 }
 
@@ -124,7 +124,7 @@ func (h *Handler) DeleteFile(c *gin.Context) {
 		return nil
 	})
 	if err != nil {
-		h.Logger.Error("delete file metadata failed: " + err.Error())
+		logging.Errorf("delete file metadata failed: %v", err)
 		writeError(c, http.StatusInternalServerError, "delete file failed")
 		return
 	}
@@ -133,11 +133,11 @@ func (h *Handler) DeleteFile(c *gin.Context) {
 		return
 	}
 	if err := os.Remove(filepath.Join(h.DataDir, "uploads", removed.ObjectKey)); err != nil && !errors.Is(err, os.ErrNotExist) {
-		h.Logger.Error("remove file failed: " + err.Error())
+		logging.Errorf("remove file failed: %v", err)
 		writeError(c, http.StatusInternalServerError, "remove file failed")
 		return
 	}
-	h.Logger.Info(fmt.Sprintf("deleted file id=%d name=%s from %s", id, removed.OriginalName, c.ClientIP()))
+	logging.Infof("deleted file id=%d name=%s from %s", id, removed.OriginalName, c.ClientIP())
 	c.Status(http.StatusNoContent)
 }
 

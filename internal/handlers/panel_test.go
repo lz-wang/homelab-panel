@@ -12,13 +12,11 @@ import (
 	"homelab-panel/internal/data"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func mustStore(t *testing.T) *data.Store {
 	t.Helper()
-	logger, _ := zap.NewDevelopment()
-	s, _, err := data.Open(filepath.Join(t.TempDir(), "homelab-panel.json"), logger)
+	s, _, err := data.Open(filepath.Join(t.TempDir(), "homelab-panel.json"))
 	if err != nil {
 		t.Fatalf("open store: %v", err)
 	}
@@ -125,8 +123,7 @@ func TestNormalizeRejectsInvalidOpenMethod(t *testing.T) {
 func TestUpdatePanelStatusCodes(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	store := mustStore(t)
-	logger, _ := zap.NewDevelopment()
-	h := NewHandler(Deps{Store: store, Logger: logger, DataDir: t.TempDir()})
+	h := NewHandler(Deps{Store: store, DataDir: t.TempDir()})
 	r := gin.New()
 	r.PUT("/api/v1/panel", h.RequireAdmin(), h.UpdatePanel)
 

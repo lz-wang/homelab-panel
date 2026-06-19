@@ -9,12 +9,10 @@ import (
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type App struct {
 	config   Config
-	logger   *zap.Logger
 	server   *Server
 	password string
 }
@@ -22,14 +20,12 @@ type App struct {
 func New(config Config) (*App, error) {
 	gin.SetMode(gin.ReleaseMode)
 
-	logger := logging.NewLogger()
-
 	dataDir := config.dataDir()
 	if err := os.MkdirAll(filepath.Join(dataDir, "uploads"), 0o755); err != nil {
 		return nil, fmt.Errorf("create data directories: %w", err)
 	}
 
-	store, password, err := data.Open(filepath.Join(dataDir, "homelab-panel.json"), logger)
+	store, password, err := data.Open(filepath.Join(dataDir, "homelab-panel.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +33,7 @@ func New(config Config) (*App, error) {
 		return nil, fmt.Errorf("ensure auth secret: %w", err)
 	}
 	if password != "" {
-		logger.Info("admin password generated on first run")
+		logging.Infof("admin password generated on first run")
 		fmt.Println("========================================")
 		fmt.Println("First run: an admin password has been generated (shown only once)")
 		fmt.Printf("Password: %s\n", password)
@@ -47,13 +43,11 @@ func New(config Config) (*App, error) {
 
 	server := NewServer(ServerDeps{
 		Config: config,
-		Logger: logger,
 		Store:  store,
 	})
 
 	return &App{
 		config:   config,
-		logger:   logger,
 		server:   server,
 		password: password,
 	}, nil
@@ -65,7 +59,7 @@ func Run(ctx context.Context, config Config) error {
 		return err
 	}
 	defer func() {
-		_ = app.logger.Sync()
+		_ = logging.Sync()
 	}()
 
 	return app.server.Run(ctx)

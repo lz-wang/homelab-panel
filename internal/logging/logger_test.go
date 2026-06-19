@@ -9,12 +9,12 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func TestNewLoggerPlainTextLine(t *testing.T) {
+func TestSugaredLoggerPlainTextLine(t *testing.T) {
 	var buf bytes.Buffer
-	logger := newLogger(zapcore.AddSync(&buf))
+	logger := newSugared(zapcore.AddSync(&buf))
 
-	logger.Info("starting server on :3002")
-	logger.Error("save panel failed: boom")
+	logger.Infof("starting server on %s", ":3002")
+	logger.Errorf("save panel failed: %s", "boom")
 	_ = logger.Sync()
 
 	out := buf.String()
@@ -48,4 +48,28 @@ func TestNewLoggerPlainTextLine(t *testing.T) {
 	if strings.ContainsAny(out, "{}") {
 		t.Errorf("log output contains JSON object braces, expected plain text: %q", out)
 	}
+}
+
+func TestPackageFunctionsUseGlobal(t *testing.T) {
+	// 包级函数应通过全局 sugar 正常工作（默认实例非 nil，不显式 Init 也能记日志）。
+	// 这里只验证不 panic 且返回的 Sync 无错。
+	AssertNotPanic(t)
+}
+
+// AssertNotPanic 调用各包级日志函数，确保全局 logger 已就绪、不会 nil panic。
+func AssertNotPanic(t *testing.T) {
+	t.Helper()
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("package-level log function panicked: %v", r)
+		}
+	}()
+	Debugf("debug %d", 1)
+	Infof("info %d", 1)
+	Warnf("warn %d", 1)
+	Errorf("error %d", 1)
+	Debug("debug", "msg")
+	Info("info", "msg")
+	Warn("warn", "msg")
+	Error("error", "msg")
 }

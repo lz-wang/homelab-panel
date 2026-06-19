@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"homelab-panel/internal/logging"
 	"net/http"
 	"strings"
 
@@ -11,7 +12,7 @@ func (h *Handler) RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := bearerToken(c.GetHeader("Authorization"))
 		if !h.tokens.Valid(token) {
-			h.Logger.Warn("unauthorized admin request to " + c.Request.URL.Path + " from " + c.ClientIP())
+			logging.Warnf("unauthorized admin request to %s from %s", c.Request.URL.Path, c.ClientIP())
 			writeError(c, http.StatusUnauthorized, "invalid or missing admin token")
 			c.Abort()
 			return
