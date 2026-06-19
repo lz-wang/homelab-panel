@@ -26,7 +26,7 @@ export default function Home() {
     const navigate = useNavigate()
     const authStore = useAuthStore()
     const { panelConfig, panelDataVersion, load: loadPanel } = usePanelStore()
-    const { items, setItems, loadList } = useHomeData()
+    const { items, setItems, loading, loadList } = useHomeData()
     const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
@@ -119,7 +119,7 @@ export default function Home() {
                     <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
 
                     <Box sx={{ mx: `${panelConfig.marginX ?? 5}px` }}>
-                        {canManage && !isSearchActive && items.length === 0 && (
+                        {canManage && !loading && !isSearchActive && items.length === 0 && (
                             <Paper
                                 elevation={0}
                                 sx={{
