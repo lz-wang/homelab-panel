@@ -1,5 +1,6 @@
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
+import HubOutlinedIcon from '@mui/icons-material/HubOutlined'
 import ImportExportIcon from '@mui/icons-material/ImportExport'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import TableViewIcon from '@mui/icons-material/TableView'
@@ -16,6 +17,7 @@ import { useEffect, useState } from 'react'
 
 import { GroupManager } from '@/components/apps/GroupManager'
 import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
+import { MCPSettingsPanel } from '@/components/apps/MCPSettingsPanel'
 import { AppSettingsPanel, PageSettingsPanel } from '@/components/apps/SettingsPanels'
 import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 
@@ -52,6 +54,7 @@ const apps = [
         icon: <ImportExportIcon />,
         component: ImportExport,
     },
+    { key: 'mcp', name: 'MCP 服务', icon: <HubOutlinedIcon />, component: MCPSettingsPanel },
 ]
 
 interface Props {
