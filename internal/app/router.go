@@ -1,6 +1,12 @@
 package app
 
-import "homelab-panel/internal/handlers"
+import (
+	"homelab-panel/internal/handlers"
+	"homelab-panel/internal/mcpserver"
+	"homelab-panel/internal/panel"
+
+	"github.com/gin-gonic/gin"
+)
 
 func (s *Server) registerRoutes() {
 	h := handlers.NewHandler(handlers.Deps{
@@ -35,6 +41,14 @@ func (s *Server) registerRoutes() {
 	protected.POST("/mcp/token/reset", h.ResetMCPToken)
 	protected.DELETE("/mcp/token", h.DeleteMCPToken)
 
+	// MCP Streamable HTTP endpoint。使用独立的 bearer token 鉴权（非管理员 JWT）。
+	panelSvc := panel.NewService(s.store)
+	mcpHandler := mcpserver.NewHTTPHandler(panelSvc, mcpserver.ServerOptions{
+		Version: s.config.Version,
+	})
+	api.Any("/mcp", gin.WrapH(mcpserver.AuthMiddleware(s.store, mcpHandler)))
+
 	s.router.GET("/uploads/*filepath", h.Upload)
 	s.router.NoRoute(h.Static)
 }
+
