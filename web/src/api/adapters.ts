@@ -1,9 +1,10 @@
 import type { ItemIcon, ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
+import { keysToCamel, keysToSnake } from '@/utils/case'
 
 export interface PanelWire {
-  siteName: string
-  config: PanelConfig
-  searchEngine: unknown
+  site_name: string
+  config: Record<string, unknown>
+  search_engine: Record<string, unknown>
   groups: PanelGroupWire[]
   items: PanelItemWire[]
 }
@@ -17,12 +18,12 @@ export interface PanelGroupWire {
 
 export interface PanelItemWire {
   id?: number
-  groupId: number
+  group_id: number
   title: string
   url: string
   description?: string
   icon: ItemIcon | null
-  openMethod: string
+  open_method: string
   sort?: number
 }
 
@@ -46,21 +47,21 @@ export function toFrontendItem(w: PanelItemWire): ItemInfo {
     title: w.title ?? '',
     url: w.url ?? '',
     description: w.description ?? '',
-    openMethod: toFrontendOpenMethod(w.openMethod),
+    openMethod: toFrontendOpenMethod(w.open_method),
     sort: w.sort,
-    itemIconGroupId: w.groupId,
+    itemIconGroupId: w.group_id,
   }
 }
 
 export function toBackendItem(it: ItemInfo): PanelItemWire {
   return {
     id: it.id,
-    groupId: it.itemIconGroupId ?? 0,
+    group_id: it.itemIconGroupId ?? 0,
     title: it.title,
     url: it.url,
     description: it.description ?? '',
     icon: it.icon ?? null,
-    openMethod: toBackendOpenMethod(it.openMethod),
+    open_method: toBackendOpenMethod(it.openMethod),
     sort: it.sort,
   }
 }
@@ -91,9 +92,9 @@ export interface FrontendPanel {
 
 export function toFrontendPanel(w: PanelWire): FrontendPanel {
   return {
-    siteName: w.siteName ?? '',
-    config: (w.config ?? {}) as PanelConfig,
-    searchEngine: w.searchEngine ?? {},
+    siteName: w.site_name ?? '',
+    config: keysToCamel(w.config ?? {}) as PanelConfig,
+    searchEngine: keysToCamel(w.search_engine ?? {}),
     groups: (w.groups ?? []).map(toFrontendGroup),
     items: (w.items ?? []).map(toFrontendItem),
   }
@@ -101,9 +102,9 @@ export function toFrontendPanel(w: PanelWire): FrontendPanel {
 
 export function toBackendPanel(doc: FrontendPanel): PanelWire {
   return {
-    siteName: doc.siteName,
-    config: doc.config,
-    searchEngine: doc.searchEngine ?? {},
+    site_name: doc.siteName,
+    config: keysToSnake(doc.config) as Record<string, unknown>,
+    search_engine: keysToSnake(doc.searchEngine ?? {}) as Record<string, unknown>,
     groups: doc.groups.map(toBackendGroup),
     items: doc.items.map(toBackendItem),
   }
