@@ -90,7 +90,7 @@ export function GroupManager() {
 
         const ok = await confirm({
             title: t('common.delete'),
-            content: t('common.deleteConfirmByName', { name: group.title ?? '' }),
+            content: t('common.deleteGroupConfirm', { name: group.title ?? '' }),
             confirmText: t('common.delete'),
             cancelText: t('common.cancel'),
         })
