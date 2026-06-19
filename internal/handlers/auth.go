@@ -67,7 +67,9 @@ func (h *Handler) UpdateAdminPassword(c *gin.Context) {
 		writeError(c, http.StatusInternalServerError, "update password failed")
 		return
 	}
-	// 改密成功：作废旧 token（踢掉其他设备），并为当前会话重签
+	// 改密成功：作废旧 token（踢掉其他设备），并为当前会话重签。
+	// 若 Revoke 成功而 Issue 失败（极罕见的磁盘/熵错误），旧 token 已失效且无新 token 返回，
+	// 用户需用新密码重新登录——属 fail-safe，不会残留可用旧凭证。
 	if err := h.tokens.Revoke(); err != nil {
 		writeError(c, http.StatusInternalServerError, "rotate session failed")
 		return
