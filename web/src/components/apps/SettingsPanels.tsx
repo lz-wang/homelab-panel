@@ -89,6 +89,23 @@ const appCardAspectRatioOptions = [
     { label: '3:1', value: '3 / 1' },
 ]
 
+const appCardPreviewWidthSx = {
+    width: '100%',
+    mx: 'auto',
+    '@container (min-width: 418px)': {
+        width: 'calc((100% - 18px) / 2)',
+    },
+    '@container (min-width: 636px)': {
+        width: 'calc((100% - 36px) / 3)',
+    },
+    '@container (min-width: 854px)': {
+        width: 'calc((100% - 54px) / 4)',
+    },
+    '@container (min-width: 1072px)': {
+        width: 'calc((100% - 72px) / 5)',
+    },
+}
+
 const appCardPreviewItem: ItemInfo = {
     icon: {
         itemType: 3,
@@ -325,9 +342,10 @@ export function AppSettingsPanel() {
                         border: '1px solid',
                         borderColor: 'divider',
                         bgcolor: 'rgba(15, 23, 42, 0.28)',
+                        containerType: 'inline-size',
                     }}
                 >
-                    <Box sx={{ width: 'min(100%, 280px)' }}>
+                    <Box sx={appCardPreviewWidthSx}>
                         <AppIcon
                             item={appCardPreviewItem}
                             hideDescription={form.iconTextInfoHideDescription ?? false}
