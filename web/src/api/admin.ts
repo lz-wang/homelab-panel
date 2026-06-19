@@ -12,7 +12,7 @@ export function logout() {
 }
 
 export function changePassword(oldPassword: string, newPassword: string) {
-    return put<{ ok: boolean }>({
+    return put<{ ok: boolean; token?: string; expires_at?: string }>({
         url: '/admin/password',
         data: { old_password: oldPassword, new_password: newPassword },
     })
