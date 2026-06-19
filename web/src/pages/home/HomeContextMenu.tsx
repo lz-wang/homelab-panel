@@ -46,6 +46,7 @@ export function HomeContextMenu({
                         if (contextMenu?.item) onEdit(contextMenu.item)
                         onClose()
                     }}
+                    sx={{ pr: 4 }}
                 >
                     <ListItemIcon>
                         <EditOutlinedIcon fontSize="small" />
@@ -59,11 +60,12 @@ export function HomeContextMenu({
                         if (contextMenu?.item) onCopy(contextMenu.item)
                         onClose()
                     }}
+                    sx={{ pr: 4 }}
                 >
                     <ListItemIcon>
                         <ContentCopyOutlinedIcon fontSize="small" />
                     </ListItemIcon>
-                    复制
+                    {t('common.copy')}
                 </MenuItem>
             )}
             {canManage && (
@@ -72,6 +74,7 @@ export function HomeContextMenu({
                         if (contextMenu?.item) onDelete(contextMenu.item)
                         onClose()
                     }}
+                    sx={{ pr: 4 }}
                 >
                     <ListItemIcon>
                         <DeleteOutlinedIcon fontSize="small" />
