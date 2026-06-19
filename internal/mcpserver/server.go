@@ -31,6 +31,7 @@ func NewServer(panelSvc *panel.Service, opts ServerOptions) *mcp.Server {
 	}, nil)
 
 	registerReadTools(s, panelSvc)
+	registerWriteTools(s, panelSvc)
 
 	return s
 }

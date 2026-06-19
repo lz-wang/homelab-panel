@@ -34,6 +34,7 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 		TouchLastUsedAtThrottled(store, time.Minute)
 
 		ctx := WithScope(r.Context(), string(cfg.Scope))
+		ctx = WithRemoteAddr(ctx, r.RemoteAddr)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
