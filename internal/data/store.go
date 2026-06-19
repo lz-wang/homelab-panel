@@ -51,6 +51,7 @@ func Open(path string) (*Store, string, error) {
 		if s.data.Files == nil {
 			s.data.Files = []File{}
 		}
+		normalizeMCPDefaults(&s.data)
 		return s, "", nil
 	case errors.Is(err, os.ErrNotExist):
 		password, err := s.init()
@@ -89,6 +90,10 @@ func (s *Store) init() (string, error) {
 		},
 		Files:     []File{},
 		NextID:    NextID{Group: 1, Item: 1, File: 1},
+		MCP: MCPConfig{
+			Enabled: false,
+			Scope:   MCPScopeReadOnly,
+		},
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
@@ -252,4 +257,12 @@ func generatePassword() (string, error) {
 		return "", fmt.Errorf("read random: %w", err)
 	}
 	return hex.EncodeToString(buf[:]), nil
+}
+
+// normalizeMCPDefaults 为缺少 MCP 配置的旧数据文件补默认值：scope 留空时回退为只读。
+// enabled 默认 false；token 相关字段留空表示尚未签发。
+func normalizeMCPDefaults(d *StoreData) {
+	if d.MCP.Scope == "" {
+		d.MCP.Scope = MCPScopeReadOnly
+	}
 }

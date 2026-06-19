@@ -9,11 +9,32 @@ type StoreData struct {
 	Version   int       `json:"version"`
 	Admin     Admin     `json:"admin"`
 	Auth      Auth      `json:"auth"`
+	MCP       MCPConfig `json:"mcp"`
 	Panel     Panel     `json:"panel"`
 	Files     []File    `json:"files"`
 	NextID    NextID    `json:"next_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// MCPScope 控制某个 MCP token 可执行的操作范围。
+type MCPScope string
+
+const (
+	MCPScopeReadOnly  MCPScope = "read_only"
+	MCPScopeReadWrite MCPScope = "read_write"
+)
+
+// MCPConfig 保存 MCP HTTP 服务的开关、权限范围与 token 状态。
+// 明文 token 永不落盘，仅保存其前缀与 sha256 摘要。
+type MCPConfig struct {
+	Enabled     bool      `json:"enabled"`
+	TokenHash   string    `json:"token_hash,omitempty"`
+	TokenPrefix string    `json:"token_prefix,omitempty"`
+	Scope       MCPScope  `json:"scope"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	LastUsedAt  time.Time `json:"last_used_at"`
 }
 
 type Admin struct {
