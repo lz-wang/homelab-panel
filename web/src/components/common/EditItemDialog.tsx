@@ -635,32 +635,32 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                 <DialogTitle>{item ? t('common.edit') : t('common.add')}</DialogTitle>
                 <DialogContent>
                     <Stack spacing={2} sx={{ pt: 1 }}>
-                        <Box
-                            sx={{
-                                width: { xs: '100%', sm: 220 },
-                                maxWidth: 240,
-                                height: 64,
-                                mx: 'auto',
-                                mb: 2,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                px: 2.5,
-                                borderRadius: 3,
-                                bgcolor: selectedBackgroundColor,
-                                color: selectedIconColor,
-                            }}
-                        >
-                            <IconifyIcon icon={form.icon?.text} size={30} />
-                            <Box sx={{ minWidth: 0 }}>
-                                <Typography variant="subtitle1" noWrap sx={{ fontWeight: 700 }}>
-                                    {previewTitle}
-                                </Typography>
-                                {previewSubtitle && (
-                                    <Typography variant="caption" noWrap sx={{ opacity: 0.72 }}>
-                                        {previewSubtitle}
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 5 }}>
+                            <Box
+                                sx={{
+                                    width: { xs: '100%', sm: 220 },
+                                    maxWidth: 240,
+                                    height: 64,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    px: 2.5,
+                                    borderRadius: 3,
+                                    bgcolor: selectedBackgroundColor,
+                                    color: selectedIconColor,
+                                }}
+                            >
+                                <IconifyIcon icon={form.icon?.text} size={30} />
+                                <Box sx={{ minWidth: 0 }}>
+                                    <Typography variant="subtitle1" noWrap sx={{ fontWeight: 700 }}>
+                                        {previewTitle}
                                     </Typography>
-                                )}
+                                    {previewSubtitle && (
+                                        <Typography variant="caption" noWrap sx={{ opacity: 0.72 }}>
+                                            {previewSubtitle}
+                                        </Typography>
+                                    )}
+                                </Box>
                             </Box>
                         </Box>
 
