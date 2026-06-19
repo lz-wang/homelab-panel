@@ -89,22 +89,9 @@ const appCardAspectRatioOptions = [
     { label: '3:1', value: '3 / 1' },
 ]
 
-const appCardPreviewWidthSx = {
-    width: '100%',
-    mx: 'auto',
-    '@container (min-width: 418px)': {
-        width: 'calc((100% - 18px) / 2)',
-    },
-    '@container (min-width: 636px)': {
-        width: 'calc((100% - 36px) / 3)',
-    },
-    '@container (min-width: 854px)': {
-        width: 'calc((100% - 54px) / 4)',
-    },
-    '@container (min-width: 1072px)': {
-        width: 'calc((100% - 72px) / 5)',
-    },
-}
+const appCardGridMinWidth = 200
+const appCardGridGap = 18
+const homeContentHorizontalPadding = 32
 
 const appCardPreviewItem: ItemInfo = {
     icon: {
@@ -117,6 +104,40 @@ const appCardPreviewItem: ItemInfo = {
     description: 'Hello world',
     url: 'https://github.com',
     openMethod: 2,
+}
+
+function currentViewportWidth() {
+    if (typeof window === 'undefined') return 1280
+
+    return window.innerWidth
+}
+
+function useViewportWidth() {
+    const [viewportWidth, setViewportWidth] = useState(currentViewportWidth)
+
+    useEffect(() => {
+        function handleResize() {
+            setViewportWidth(currentViewportWidth())
+        }
+
+        window.addEventListener('resize', handleResize)
+
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    return viewportWidth
+}
+
+function appCardAutoWidth(viewportWidth: number, marginX: number | undefined) {
+    const horizontalMarginRatio = Math.min(40, Math.max(0, marginX ?? 5) * 2) / 100
+    const contentWidth = Math.max(appCardGridMinWidth, viewportWidth - homeContentHorizontalPadding)
+    const appAreaWidth = Math.max(appCardGridMinWidth, contentWidth * (1 - horizontalMarginRatio))
+    const columnCount = Math.max(
+        1,
+        Math.floor((appAreaWidth + appCardGridGap) / (appCardGridMinWidth + appCardGridGap)),
+    )
+
+    return Math.round((appAreaWidth - (columnCount - 1) * appCardGridGap) / columnCount)
 }
 
 function useSettingsForm() {
@@ -327,10 +348,12 @@ export function PageSettingsPanel() {
 
 export function AppSettingsPanel() {
     const { form, patch, handleSave, saving } = useSettingsForm()
+    const viewportWidth = useViewportWidth()
     const appCardAspectRatio =
         form.appCardAspectRatio && form.appCardAspectRatio !== 'auto'
             ? form.appCardAspectRatio
             : undefined
+    const previewCardWidth = appCardAutoWidth(viewportWidth, form.marginX)
 
     return (
         <Stack spacing={3}>
@@ -342,10 +365,9 @@ export function AppSettingsPanel() {
                         border: '1px solid',
                         borderColor: 'divider',
                         bgcolor: 'rgba(15, 23, 42, 0.28)',
-                        containerType: 'inline-size',
                     }}
                 >
-                    <Box sx={appCardPreviewWidthSx}>
+                    <Box sx={{ width: previewCardWidth, maxWidth: '100%', mx: 'auto' }}>
                         <AppIcon
                             item={appCardPreviewItem}
                             hideDescription={form.iconTextInfoHideDescription ?? false}
