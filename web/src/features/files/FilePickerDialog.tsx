@@ -5,24 +5,24 @@ import DialogTitle from '@mui/material/DialogTitle'
 import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 
 interface Props {
-  open: boolean
-  onClose: () => void
-  onSelect: (url: string) => void
+    open: boolean
+    onClose: () => void
+    onSelect: (url: string) => void
 }
 
 export function FilePickerDialog({ open, onClose, onSelect }: Props) {
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>选择文件</DialogTitle>
-      <DialogContent>
-        <FileManagerPanel
-          selectable
-          onSelect={(url) => {
-            onSelect(url)
-            onClose()
-          }}
-        />
-      </DialogContent>
-    </Dialog>
-  )
+    return (
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+            <DialogTitle>选择文件</DialogTitle>
+            <DialogContent>
+                <FileManagerPanel
+                    selectable
+                    onSelect={(url) => {
+                        onSelect(url)
+                        onClose()
+                    }}
+                />
+            </DialogContent>
+        </Dialog>
+    )
 }

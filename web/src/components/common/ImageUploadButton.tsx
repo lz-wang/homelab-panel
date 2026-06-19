@@ -11,81 +11,76 @@ import { FilePickerDialog } from '@/features/files/FilePickerDialog'
 import { t } from '@/locales'
 
 interface Props {
-  label: string
-  value?: string
-  onChange: (url: string) => void
+    label: string
+    value?: string
+    onChange: (url: string) => void
 }
 
 export function ImageUploadButton({ label, value, onChange }: Props) {
-  const notify = useNotify()
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [pickerOpen, setPickerOpen] = useState(false)
+    const notify = useNotify()
+    const inputRef = useRef<HTMLInputElement | null>(null)
+    const [uploading, setUploading] = useState(false)
+    const [pickerOpen, setPickerOpen] = useState(false)
 
-  async function handleFileChange(file?: File) {
-    if (!file)
-      return
+    async function handleFileChange(file?: File) {
+        if (!file) return
 
-    setUploading(true)
+        setUploading(true)
 
-    try {
-      const res = await uploadImg(file)
+        try {
+            const res = await uploadImg(file)
 
-      if (res.code === 0) {
-        onChange(res.data.imageUrl)
-        notify.success('上传成功')
-      }
-      else {
-        notify.error(`${t('common.saveFail')}:${res.msg}`)
-      }
+            if (res.code === 0) {
+                onChange(res.data.imageUrl)
+                notify.success('上传成功')
+            } else {
+                notify.error(`${t('common.saveFail')}:${res.msg}`)
+            }
+        } catch {
+            notify.error('上传失败')
+        } finally {
+            setUploading(false)
+            if (inputRef.current) inputRef.current.value = ''
+        }
     }
-    catch {
-      notify.error('上传失败')
-    }
-    finally {
-      setUploading(false)
-      if (inputRef.current)
-        inputRef.current.value = ''
-    }
-  }
 
-  return (
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-      <TextField
-        label={label}
-        value={value ?? ''}
-        onChange={event => onChange(event.target.value)}
-        fullWidth
-      />
-      <Button
-        variant="outlined"
-        startIcon={<UploadIcon />}
-        loading={uploading}
-        onClick={() => inputRef.current?.click()}
-        sx={{ minWidth: 120 }}
-      >
-        上传
-      </Button>
-      <Button
-        variant="outlined"
-        startIcon={<FolderOpenIcon />}
-        onClick={() => setPickerOpen(true)}
-        sx={{ minWidth: 120 }}
-      >
-        选择
-      </Button>
-      <input
-        ref={inputRef}
-        hidden
-        type="file"
-        accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon"
-        onChange={event => handleFileChange(event.target.files?.[0])}
-      />
-      <FilePickerDialog
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        onSelect={onChange}
-      />
-    </Stack>
-  )
+    return (
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <TextField
+                label={label}
+                value={value ?? ''}
+                onChange={(event) => onChange(event.target.value)}
+                fullWidth
+            />
+            <Button
+                variant="outlined"
+                startIcon={<UploadIcon />}
+                loading={uploading}
+                onClick={() => inputRef.current?.click()}
+                sx={{ minWidth: 120 }}
+            >
+                上传
+            </Button>
+            <Button
+                variant="outlined"
+                startIcon={<FolderOpenIcon />}
+                onClick={() => setPickerOpen(true)}
+                sx={{ minWidth: 120 }}
+            >
+                选择
+            </Button>
+            <input
+                ref={inputRef}
+                hidden
+                type="file"
+                accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon"
+                onChange={(event) => handleFileChange(event.target.files?.[0])}
+            />
+            <FilePickerDialog
+                open={pickerOpen}
+                onClose={() => setPickerOpen(false)}
+                onSelect={onChange}
+            />
+        </Stack>
+    )
 }

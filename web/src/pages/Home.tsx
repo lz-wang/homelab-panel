@@ -23,194 +23,193 @@ import { useHomeSort } from './home/useHomeSort'
 import type { ItemGroup } from './home/types'
 
 export default function Home() {
-  const navigate = useNavigate()
-  const authStore = useAuthStore()
-  const { panelConfig, panelDataVersion, load: loadPanel } = usePanelStore()
-  const { items, setItems, loadList } = useHomeData()
-  const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
-  const canManage = Boolean(authStore.token) && authStore.isAdmin
+    const navigate = useNavigate()
+    const authStore = useAuthStore()
+    const { panelConfig, panelDataVersion, load: loadPanel } = usePanelStore()
+    const { items, setItems, loadList } = useHomeData()
+    const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items, panelConfig)
+    const [settingsOpen, setSettingsOpen] = useState(false)
+    const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
+    const canManage = Boolean(authStore.token) && authStore.isAdmin
 
-  const {
-    editItemOpen,
-    setEditItemOpen,
-    editItem,
-    addItemIconGroupId,
-    creatingFirstGroup,
-    handleItemClick,
-    handleDelete,
-    handleEditItem,
-    handleAddItem,
-    handleAddFirstItem,
-  } = useHomeActions({
-    canManage,
-    items,
-    loadList,
-  })
-
-  const {
-    setDragState,
-    setGroupSortStatus,
-    handleSaveSort,
-    handleCancelSort,
-    handleDrop,
-  } = useHomeSort({
-    canManage,
-    isSearchActive,
-    items,
-    setItems,
-  })
-
-  useEffect(() => {
-    loadPanel()
-  }, [loadPanel])
-
-  useEffect(() => {
-    loadList()
-  }, [loadList, panelDataVersion])
-
-  useEffect(() => {
-    if (panelConfig.logoText)
-      document.title = panelConfig.logoText
-  }, [panelConfig.logoText])
-
-  function getSourceGroupIndex(group: ItemGroup, fallbackIndex: number) {
-    if (!group.id)
-      return fallbackIndex
-
-    const index = items.findIndex(item => item.id === group.id)
-
-    return index >= 0 ? index : fallbackIndex
-  }
-
-  function handleContextMenu(event: React.MouseEvent, item: ItemInfo, sorting?: boolean) {
-    if (sorting)
-      return
-
-    event.preventDefault()
-    setContextMenu({
-      mouseX: event.clientX,
-      mouseY: event.clientY,
-      item,
+    const {
+        editItemOpen,
+        setEditItemOpen,
+        editItem,
+        addItemIconGroupId,
+        creatingFirstGroup,
+        handleItemClick,
+        handleDelete,
+        handleEditItem,
+        handleAddItem,
+        handleAddFirstItem,
+    } = useHomeActions({
+        canManage,
+        items,
+        loadList,
     })
-  }
 
-  return (
-    <Box sx={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          transform: 'scale(1.05)',
-          filter: `blur(${panelConfig.backgroundBlur ?? 0}px)`,
-          background: `url(${panelConfig.backgroundImageSrc}) center / cover no-repeat`,
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          bgcolor: `rgba(0,0,0,${panelConfig.backgroundMaskNumber ?? 0})`,
-        }}
-      />
-      <Box sx={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
-        <Box
-          sx={{
-            p: 2,
-            mx: 'auto',
-            mt: `${panelConfig.marginTop ?? 10}%`,
-            mb: `${panelConfig.marginBottom ?? 10}%`,
-            maxWidth: `${panelConfig.maxWidth ?? 1200}${panelConfig.maxWidthUnit}`,
-          }}
-        >
-          <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
+    const { setDragState, setGroupSortStatus, handleSaveSort, handleCancelSort, handleDrop } =
+        useHomeSort({
+            canManage,
+            isSearchActive,
+            items,
+            setItems,
+        })
 
-          <Box sx={{ mx: `${panelConfig.marginX ?? 5}px` }}>
-            {canManage && !isSearchActive && items.length === 0 && (
-              <Paper
-                elevation={0}
+    useEffect(() => {
+        loadPanel()
+    }, [loadPanel])
+
+    useEffect(() => {
+        loadList()
+    }, [loadList, panelDataVersion])
+
+    useEffect(() => {
+        if (panelConfig.logoText) document.title = panelConfig.logoText
+    }, [panelConfig.logoText])
+
+    function getSourceGroupIndex(group: ItemGroup, fallbackIndex: number) {
+        if (!group.id) return fallbackIndex
+
+        const index = items.findIndex((item) => item.id === group.id)
+
+        return index >= 0 ? index : fallbackIndex
+    }
+
+    function handleContextMenu(event: React.MouseEvent, item: ItemInfo, sorting?: boolean) {
+        if (sorting) return
+
+        event.preventDefault()
+        setContextMenu({
+            mouseX: event.clientX,
+            mouseY: event.clientY,
+            item,
+        })
+    }
+
+    return (
+        <Box sx={{ width: '100%', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+            <Box
                 sx={{
-                  mt: 6,
-                  p: 4,
-                  border: '1px dashed rgba(255,255,255,0.35)',
-                  borderRadius: 3,
-                  bgcolor: 'rgba(15,23,42,0.45)',
-                  color: 'white',
-                  textAlign: 'center',
-                  backdropFilter: 'blur(12px)',
+                    position: 'absolute',
+                    inset: 0,
+                    transform: 'scale(1.05)',
+                    filter: `blur(${panelConfig.backgroundBlur ?? 0}px)`,
+                    background: `url(${panelConfig.backgroundImageSrc}) center / cover no-repeat`,
                 }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                  还没有应用
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1, mb: 3, color: 'rgba(255,255,255,0.72)' }}>
-                  添加第一个应用时会自动创建默认分组，之后可以在设置中调整分组。
-                </Typography>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  loading={creatingFirstGroup}
-                  onClick={handleAddFirstItem}
+            />
+            <Box
+                sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    bgcolor: `rgba(0,0,0,${panelConfig.backgroundMaskNumber ?? 0})`,
+                }}
+            />
+            <Box sx={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
+                <Box
+                    sx={{
+                        p: 2,
+                        mx: 'auto',
+                        mt: `${panelConfig.marginTop ?? 10}%`,
+                        mb: `${panelConfig.marginBottom ?? 10}%`,
+                        maxWidth: `${panelConfig.maxWidth ?? 1200}${panelConfig.maxWidthUnit}`,
+                    }}
                 >
-                  添加第一个应用
-                </Button>
-              </Paper>
-            )}
+                    <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
 
-            {filteredItems.map((group, groupIndex) => {
-              const sourceGroupIndex = getSourceGroupIndex(group, groupIndex)
+                    <Box sx={{ mx: `${panelConfig.marginX ?? 5}px` }}>
+                        {canManage && !isSearchActive && items.length === 0 && (
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    mt: 6,
+                                    p: 4,
+                                    border: '1px dashed rgba(255,255,255,0.35)',
+                                    borderRadius: 3,
+                                    bgcolor: 'rgba(15,23,42,0.45)',
+                                    color: 'white',
+                                    textAlign: 'center',
+                                    backdropFilter: 'blur(12px)',
+                                }}
+                            >
+                                <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                                    还没有应用
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    sx={{ mt: 1, mb: 3, color: 'rgba(255,255,255,0.72)' }}
+                                >
+                                    添加第一个应用时会自动创建默认分组，之后可以在设置中调整分组。
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<AddIcon />}
+                                    loading={creatingFirstGroup}
+                                    onClick={handleAddFirstItem}
+                                >
+                                    添加第一个应用
+                                </Button>
+                            </Paper>
+                        )}
 
-              return (
-                <HomeGroup
-                  key={group.id ?? groupIndex}
-                  group={group}
-                  groupIndex={groupIndex}
-                  sourceGroupIndex={sourceGroupIndex}
-                  canManage={canManage}
-                  isSearchActive={isSearchActive}
-                  panelConfig={panelConfig}
-                  onAddItem={handleAddItem}
-                  onToggleSort={setGroupSortStatus}
-                  onSaveSort={handleSaveSort}
-                  onCancelSort={handleCancelSort}
-                  onDragStart={(groupIndex, itemIndex) => setDragState({ groupIndex, itemIndex })}
-                  onDrop={handleDrop}
-                  onItemClick={handleItemClick}
-                  onContextMenu={handleContextMenu}
-                />
-              )
-            })}
-          </Box>
+                        {filteredItems.map((group, groupIndex) => {
+                            const sourceGroupIndex = getSourceGroupIndex(group, groupIndex)
 
-          {panelConfig.footerHtml && (
-            <Box sx={{ mt: 5 }} dangerouslySetInnerHTML={{ __html: panelConfig.footerHtml }} />
-          )}
+                            return (
+                                <HomeGroup
+                                    key={group.id ?? groupIndex}
+                                    group={group}
+                                    sourceGroupIndex={sourceGroupIndex}
+                                    canManage={canManage}
+                                    isSearchActive={isSearchActive}
+                                    panelConfig={panelConfig}
+                                    onAddItem={handleAddItem}
+                                    onToggleSort={setGroupSortStatus}
+                                    onSaveSort={handleSaveSort}
+                                    onCancelSort={handleCancelSort}
+                                    onDragStart={(groupIndex, itemIndex) =>
+                                        setDragState({ groupIndex, itemIndex })
+                                    }
+                                    onDrop={handleDrop}
+                                    onItemClick={handleItemClick}
+                                    onContextMenu={handleContextMenu}
+                                />
+                            )
+                        })}
+                    </Box>
+
+                    {panelConfig.footerHtml && (
+                        <Box
+                            sx={{ mt: 5 }}
+                            dangerouslySetInnerHTML={{ __html: panelConfig.footerHtml }}
+                        />
+                    )}
+                </Box>
+            </Box>
+
+            <HomeContextMenu
+                contextMenu={contextMenu}
+                canManage={canManage}
+                onClose={() => setContextMenu(null)}
+                onEdit={handleEditItem}
+                onDelete={handleDelete}
+            />
+
+            <HomeFloatingActions
+                canManage={canManage}
+                onOpenSettings={() => setSettingsOpen(true)}
+                onLogin={() => navigate('/login')}
+            />
+
+            <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+            <EditItemDialog
+                open={editItemOpen}
+                item={editItem}
+                itemIconGroupId={addItemIconGroupId}
+                onClose={() => setEditItemOpen(false)}
+                onSaved={loadList}
+            />
         </Box>
-      </Box>
-
-      <HomeContextMenu
-        contextMenu={contextMenu}
-        canManage={canManage}
-        onClose={() => setContextMenu(null)}
-        onEdit={handleEditItem}
-        onDelete={handleDelete}
-      />
-
-      <HomeFloatingActions
-        canManage={canManage}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onLogin={() => navigate('/login')}
-      />
-
-      <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <EditItemDialog
-        open={editItemOpen}
-        item={editItem}
-        itemIconGroupId={addItemIconGroupId}
-        onClose={() => setEditItemOpen(false)}
-        onSaved={loadList}
-      />
-    </Box>
-  )
+    )
 }

@@ -16,15 +16,19 @@ import { NotifyProvider } from './components/common/NotifyProvider'
 import { theme } from './theme/theme'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <InitColorSchemeScript attribute="data-mui-color-scheme" defaultMode="system" modeStorageKey="homelab-color-mode" />
-    <ThemeProvider theme={theme} defaultMode="system" modeStorageKey="homelab-color-mode">
-      <CssBaseline />
-      <NotifyProvider>
-        <ConfirmProvider>
-          <App />
-        </ConfirmProvider>
-      </NotifyProvider>
-    </ThemeProvider>
-  </React.StrictMode>,
+    <React.StrictMode>
+        <InitColorSchemeScript
+            attribute="data-mui-color-scheme"
+            defaultMode="system"
+            modeStorageKey="homelab-color-mode"
+        />
+        <ThemeProvider theme={theme} defaultMode="system" modeStorageKey="homelab-color-mode">
+            <CssBaseline />
+            <NotifyProvider>
+                <ConfirmProvider>
+                    <App />
+                </ConfirmProvider>
+            </NotifyProvider>
+        </ThemeProvider>
+    </React.StrictMode>,
 )

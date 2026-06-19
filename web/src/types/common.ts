@@ -1,19 +1,19 @@
 export interface ListResponse<T> {
-  list: T
-  count: number
+    list: T
+    count: number
 }
 
 export interface InfoBase {
-  createTime?: string
-  updateTime?: string
-  id?: number
+    createTime?: string
+    updateTime?: string
+    id?: number
 }
 
 export interface SortItemRequest {
-  id: number
-  sort: number
+    id: number
+    sort: number
 }
 
 export interface DeleteIdsRequest {
-  ids: number[]
+    ids: number[]
 }

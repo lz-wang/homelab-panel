@@ -1,49 +1,54 @@
-import antfu from '@antfu/eslint-config'
-import process from 'node:process'
+import js from '@eslint/js'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
-export default antfu({
-  lessOpinionated: true,
-  ignores: [
-    'docker-compose',
-    'kubernetes',
-    'dist',
-    'node_modules',
-  ],
-  rules: {
-    'antfu/consistent-chaining': 'off',
-    'antfu/consistent-list-newline': 'off',
-    'curly': 'off',
-    'e18e/prefer-date-now': 'off',
-    'import/consistent-type-specifier-style': 'off',
-    'import/newline-after-import': 'off',
-    'jsdoc/check-param-names': 'off',
-    'jsdoc/check-types': 'off',
-    'jsonc/sort-keys': 'off',
-    'node/prefer-global/process': 'off',
-    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-    'perfectionist/sort-imports': 'off',
-    'perfectionist/sort-named-exports': 'off',
-    'perfectionist/sort-named-imports': 'off',
-    'perfectionist/sort-exports': 'off',
-    'style/eol-last': 'off',
-    'style/indent': 'off',
-    'style/key-spacing': 'off',
-    'style/no-mixed-spaces-and-tabs': 'off',
-    'style/member-delimiter-style': 'off',
-    'style/no-multi-spaces': 'off',
-    'style/no-multiple-empty-lines': 'off',
-    'style/no-tabs': 'off',
-    'style/no-trailing-spaces': 'off',
-    'style/quote-props': 'off',
-    'style/space-before-blocks': 'off',
-    'style/space-infix-ops': 'off',
-    'style/type-annotation-spacing': 'off',
-    'style/type-generic-spacing': 'off',
-    'style/type-named-tuple-spacing': 'off',
-    'ts/method-signature-style': 'off',
-    'ts/no-duplicate-enum-values': 'off',
-    'unicorn/prefer-node-protocol': 'off',
-    'unicorn/prefer-number-properties': 'off',
-    'unused-imports/no-unused-vars': 'off',
-  },
-})
+export default tseslint.config(
+    {
+        ignores: ['dist', 'node_modules', 'coverage'],
+    },
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
+    reactHooks.configs.flat.recommended,
+    reactRefresh.configs.vite,
+    {
+        files: ['**/*.{ts,tsx}'],
+        languageOptions: {
+            ecmaVersion: 'latest',
+            globals: {
+                ...globals.browser,
+                ...globals.es2025,
+                ...globals.node,
+            },
+            parserOptions: {
+                ecmaFeatures: {
+                    jsx: true,
+                },
+                sourceType: 'module',
+            },
+        },
+        rules: {
+            '@typescript-eslint/no-duplicate-enum-values': 'off',
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                {
+                    argsIgnorePattern: '^_',
+                    caughtErrorsIgnorePattern: '^_',
+                    varsIgnorePattern: '^_',
+                },
+            ],
+            'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+            'react-hooks/set-state-in-effect': 'off',
+            'react-refresh/only-export-components': 'off',
+        },
+    },
+    {
+        files: ['*.{js,mjs}', 'vite.config.ts'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+            },
+        },
+    },
+)
