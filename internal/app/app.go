@@ -35,6 +35,9 @@ func New(config Config) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := store.EnsureSecret(); err != nil {
+		return nil, fmt.Errorf("ensure auth secret: %w", err)
+	}
 	if password != "" {
 		fmt.Println("========================================")
 		fmt.Println("首次启动：已生成管理员密码（仅显示一次）")
