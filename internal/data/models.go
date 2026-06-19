@@ -8,6 +8,7 @@ import (
 type StoreData struct {
 	Version   int       `json:"version"`
 	Admin     Admin     `json:"admin"`
+	Auth      Auth      `json:"auth"`
 	Panel     Panel     `json:"panel"`
 	Files     []File    `json:"files"`
 	NextID    NextID    `json:"next_id"`
@@ -19,6 +20,13 @@ type Admin struct {
 	PasswordHash string    `json:"password_hash"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+}
+
+// Auth 保存 JWT 签名密钥与 token 撤销版本号。
+// 旧数据文件缺此段时为零值，由 Store.EnsureSecret 懒初始化（不 bump dataVersion）。
+type Auth struct {
+	Secret       string `json:"secret"`
+	TokenVersion int    `json:"token_version"`
 }
 
 type Panel struct {

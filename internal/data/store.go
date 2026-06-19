@@ -194,6 +194,51 @@ func (s *Store) ResetPassword(newPassword string) error {
 	})
 }
 
+// Secret 返回 HS256 签名密钥（只读）。调用前应已通过 EnsureSecret 生成。
+func (s *Store) Secret() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.data.Auth.Secret
+}
+
+// TokenVersion 返回当前 token 撤销版本号。
+func (s *Store) TokenVersion() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.data.Auth.TokenVersion
+}
+
+// EnsureSecret 在密钥为空时生成 32 字节随机 hex 并持久化；已存在则原样保留（幂等）。
+func (s *Store) EnsureSecret() error {
+	return s.Save(func(d *StoreData) error {
+		if d.Auth.Secret != "" {
+			return nil
+		}
+		secret, err := generateSecret()
+		if err != nil {
+			return err
+		}
+		d.Auth.Secret = secret
+		return nil
+	})
+}
+
+// IncrementTokenVersion 递增撤销版本号，使所有已签发 token 失效（登出/改密时调用）。
+func (s *Store) IncrementTokenVersion() error {
+	return s.Save(func(d *StoreData) error {
+		d.Auth.TokenVersion++
+		return nil
+	})
+}
+
+func generateSecret() (string, error) {
+	var buf [32]byte
+	if _, err := rand.Read(buf[:]); err != nil {
+		return "", fmt.Errorf("read random: %w", err)
+	}
+	return hex.EncodeToString(buf[:]), nil
+}
+
 func deepCopy(d StoreData) StoreData {
 	raw, err := json.Marshal(d)
 	if err != nil {

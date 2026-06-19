@@ -186,6 +186,55 @@ func TestOpenKeepsCompatibleVersion(t *testing.T) {
 	}
 }
 
+func TestEnsureSecretGeneratesAndPersists(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "homelab-panel.json")
+	store, _, _ := Open(path, newTestLogger(t))
+
+	if store.Secret() != "" {
+		t.Fatal("secret should be empty before EnsureSecret")
+	}
+	if err := store.EnsureSecret(); err != nil {
+		t.Fatalf("ensure: %v", err)
+	}
+	first := store.Secret()
+	if first == "" {
+		t.Fatal("secret should be generated after EnsureSecret")
+	}
+	// 幂等：再次调用不改变密钥
+	if err := store.EnsureSecret(); err != nil {
+		t.Fatalf("ensure again: %v", err)
+	}
+	if store.Secret() != first {
+		t.Fatal("EnsureSecret should be idempotent")
+	}
+	// 持久化到磁盘
+	reopened, _, _ := Open(path, newTestLogger(t))
+	if reopened.Secret() != first {
+		t.Fatal("secret should persist to disk")
+	}
+}
+
+func TestIncrementTokenVersionPersists(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "homelab-panel.json")
+	store, _, _ := Open(path, newTestLogger(t))
+
+	if v := store.TokenVersion(); v != 0 {
+		t.Fatalf("initial version = %d, want 0", v)
+	}
+	if err := store.IncrementTokenVersion(); err != nil {
+		t.Fatalf("increment: %v", err)
+	}
+	if v := store.TokenVersion(); v != 1 {
+		t.Fatalf("version = %d, want 1", v)
+	}
+	reopened, _, _ := Open(path, newTestLogger(t))
+	if v := reopened.TokenVersion(); v != 1 {
+		t.Fatalf("persisted version = %d, want 1", v)
+	}
+}
+
 var assertErr = errSentinel("sentinel")
 
 type errSentinel string
