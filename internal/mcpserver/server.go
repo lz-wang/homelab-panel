@@ -1,6 +1,8 @@
 package mcpserver
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -32,6 +34,23 @@ func NewServer(panelSvc *panel.Service, opts ServerOptions) *mcp.Server {
 
 	registerReadTools(s, panelSvc)
 	registerWriteTools(s, panelSvc)
+
+	// 按工具限流：对写工具与搜索工具按 token+IP 单独计数，超出返回 tool error。
+	// SDK 把 req.Context()（auth 中间件注入了 principal）传入，故可读到主体。
+	s.AddReceivingMiddleware(func(next mcp.MethodHandler) mcp.MethodHandler {
+		return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
+			if method == "tools/call" {
+				if params, ok := req.GetParams().(*mcp.CallToolParamsRaw); ok && params != nil {
+					if limiter := limiterForTool(params.Name); limiter != nil {
+						if !limiter.Allow(PrincipalFromContext(ctx)) {
+							return nil, fmt.Errorf("rate limit exceeded for tool %s", params.Name)
+						}
+					}
+				}
+			}
+			return next(ctx, method, req)
+		}
+	})
 
 	return s
 }

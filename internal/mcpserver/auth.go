@@ -31,10 +31,23 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 			return
 		}
 
+		// 限流主体：token 前缀 + 客户端地址。
+		principal := cfg.TokenPrefix
+		if principal == "" {
+			principal = "noprefix"
+		}
+		principal = principal + "|" + r.RemoteAddr
+
+		if !overallLimiter.Allow(principal) {
+			http.Error(w, "rate limit exceeded", http.StatusTooManyRequests)
+			return
+		}
+
 		TouchLastUsedAtThrottled(store, time.Minute)
 
 		ctx := WithScope(r.Context(), string(cfg.Scope))
 		ctx = WithRemoteAddr(ctx, r.RemoteAddr)
+		ctx = WithPrincipal(ctx, principal)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

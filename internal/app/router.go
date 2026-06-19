@@ -46,7 +46,10 @@ func (s *Server) registerRoutes() {
 	mcpHandler := mcpserver.NewHTTPHandler(panelSvc, mcpserver.ServerOptions{
 		Version: s.config.Version,
 	})
-	api.Any("/mcp", gin.WrapH(mcpserver.AuthMiddleware(s.store, mcpHandler)))
+	api.Any("/mcp",
+		LimitBodySize(MCPMaxBodyBytes),
+		OriginCheck(),
+		gin.WrapH(mcpserver.AuthMiddleware(s.store, mcpHandler)))
 
 	s.router.GET("/uploads/*filepath", h.Upload)
 	s.router.NoRoute(h.Static)
