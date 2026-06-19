@@ -37,7 +37,10 @@ func (h *Handler) CreateAdminSession(c *gin.Context) {
 }
 
 func (h *Handler) DeleteAdminSession(c *gin.Context) {
-	h.tokens.Revoke(currentAdminToken(c))
+	if err := h.tokens.Revoke(); err != nil {
+		writeError(c, http.StatusInternalServerError, "revoke session failed")
+		return
+	}
 	c.Status(http.StatusNoContent)
 }
 
@@ -64,5 +67,15 @@ func (h *Handler) UpdateAdminPassword(c *gin.Context) {
 		writeError(c, http.StatusInternalServerError, "update password failed")
 		return
 	}
-	writeJSON(c, http.StatusOK, gin.H{"ok": true})
+	// 改密成功：作废旧 token（踢掉其他设备），并为当前会话重签
+	if err := h.tokens.Revoke(); err != nil {
+		writeError(c, http.StatusInternalServerError, "rotate session failed")
+		return
+	}
+	token, expires, err := h.tokens.Issue()
+	if err != nil {
+		writeError(c, http.StatusInternalServerError, "reissue session failed")
+		return
+	}
+	writeJSON(c, http.StatusOK, gin.H{"ok": true, "token": token, "expires_at": expires})
 }

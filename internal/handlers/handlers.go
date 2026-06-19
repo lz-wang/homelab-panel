@@ -33,6 +33,6 @@ func NewHandler(deps Deps) *Handler {
 		DataDir: deps.DataDir,
 		Version: deps.Version,
 		WebFS:   deps.WebFS,
-		tokens:  NewTokenManager(7 * 24 * time.Hour),
+		tokens:  NewTokenManager(deps.Store, 30*24*time.Hour),
 	}
 }
