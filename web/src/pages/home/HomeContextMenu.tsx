@@ -34,6 +34,7 @@ export function HomeContextMenu({
     return (
         <Menu
             open={Boolean(contextMenu)}
+            disableAutoFocusItem
             onClose={onClose}
             anchorReference="anchorPosition"
             anchorPosition={
