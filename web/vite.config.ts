@@ -16,6 +16,33 @@ export default defineConfig({
     },
     build: {
         reportCompressedSize: false,
+        rolldownOptions: {
+            output: {
+                codeSplitting: {
+                    groups: [
+                        {
+                            name: 'react-vendor',
+                            priority: 30,
+                            test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+                        },
+                        {
+                            name: 'mui-vendor',
+                            priority: 20,
+                            test: /node_modules[\\/](@mui|@emotion)[\\/]/,
+                        },
+                        {
+                            name: 'icon-vendor',
+                            priority: 10,
+                            test: /node_modules[\\/](@iconify)[\\/]/,
+                        },
+                        {
+                            name: 'vendor',
+                            test: /node_modules/,
+                        },
+                    ],
+                },
+            },
+        },
         sourcemap: false,
     },
     test: {

@@ -26,7 +26,6 @@ help:
 	@echo "Version: $(VERSION)"
 
 web:
-	cd $(WEB_DIR) && npm ci
 	cd $(WEB_DIR) && npm run build
 
 build: web
