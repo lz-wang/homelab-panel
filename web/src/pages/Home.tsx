@@ -206,6 +206,7 @@ export default function Home() {
                                     }
                                     onDrop={handleDrop}
                                     onItemClick={handleItemClick}
+                                    onItemEdit={handleEditItem}
                                     onContextMenu={handleContextMenu}
                                 />
                             )
