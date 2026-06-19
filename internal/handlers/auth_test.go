@@ -66,6 +66,58 @@ func TestCreateSessionRejectsWrongPassword(t *testing.T) {
 	}
 }
 
+func TestGetSessionRequiresValidToken(t *testing.T) {
+	h, _ := newAuthHandler(t)
+	token, _, _ := h.tokens.Issue()
+
+	r := gin.New()
+	r.GET("/api/v1/admin/session", h.RequireAdmin(), h.GetAdminSession)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/session", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected missing token to return 401, got %d", w.Code)
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/api/v1/admin/session", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected valid token to return 200, got %d (body=%s)", w.Code, w.Body.String())
+	}
+
+	var resp struct {
+		OK bool `json:"ok"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if !resp.OK {
+		t.Fatalf("expected ok response, got %+v", resp)
+	}
+}
+
+func TestGetSessionRejectsRevokedToken(t *testing.T) {
+	h, _ := newAuthHandler(t)
+	token, _, _ := h.tokens.Issue()
+	if err := h.tokens.Revoke(); err != nil {
+		t.Fatalf("revoke token: %v", err)
+	}
+
+	r := gin.New()
+	r.GET("/api/v1/admin/session", h.RequireAdmin(), h.GetAdminSession)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/session", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected revoked token to return 401, got %d", w.Code)
+	}
+}
+
 func TestLogoutRevokesSession(t *testing.T) {
 	h, _ := newAuthHandler(t)
 	token, _, _ := h.tokens.Issue()

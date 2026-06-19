@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+import { validateSession } from '@/api/session'
+
 interface AuthState {
     token: string | null
     isAdmin: boolean
@@ -23,9 +25,26 @@ export const useAuthStore = create<AuthState>()(
             setInitialized: (initialized) => set({ initialized }),
             clearToken: () => set({ token: null, isAdmin: false }),
             bootstrapAuth: async () => {
-                // 始终公开：面板无需登录即可加载；此处仅置 initialized，
-                // token 是否有效在调用受保护接口时按 401 处理（apiResult.handleLoginExpiration 会清 token）。
-                set({ initialized: true, isAdmin: Boolean(useAuthStore.getState().token) })
+                // 始终公开：面板无需登录即可加载；有 token 时先向后端确认是否仍有效。
+                const token = useAuthStore.getState().token
+
+                if (!token) {
+                    set({ initialized: true, isAdmin: false })
+                    return
+                }
+
+                try {
+                    const res = await validateSession(token)
+
+                    if (res.code === 0 && res.data.ok) {
+                        set({ initialized: true, isAdmin: true })
+                        return
+                    }
+                } catch {
+                    // 网络或解析异常按未登录处理，避免显示管理入口。
+                }
+
+                set({ token: null, isAdmin: false, initialized: true })
             },
         }),
         {

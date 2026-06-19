@@ -69,6 +69,14 @@ export default function Home() {
         if (panelConfig.logoText) document.title = panelConfig.logoText
     }, [panelConfig.logoText])
 
+    useEffect(() => {
+        if (canManage) return
+
+        setSettingsOpen(false)
+        setContextMenu(null)
+        setEditItemOpen(false)
+    }, [canManage, setEditItemOpen])
+
     function getSourceGroupIndex(group: ItemGroup, fallbackIndex: number) {
         if (!group.id) return fallbackIndex
 
@@ -78,7 +86,7 @@ export default function Home() {
     }
 
     function handleContextMenu(event: React.MouseEvent, item: ItemInfo, sorting?: boolean) {
-        if (sorting) return
+        if (sorting || !canManage) return
 
         event.preventDefault()
         setContextMenu({
@@ -202,14 +210,16 @@ export default function Home() {
                 onLogin={() => navigate('/login')}
             />
 
-            <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-            <EditItemDialog
-                open={editItemOpen}
-                item={editItem}
-                itemIconGroupId={addItemIconGroupId}
-                onClose={() => setEditItemOpen(false)}
-                onSaved={loadList}
-            />
+            {canManage && <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />}
+            {canManage && (
+                <EditItemDialog
+                    open={editItemOpen}
+                    item={editItem}
+                    itemIconGroupId={addItemIconGroupId}
+                    onClose={() => setEditItemOpen(false)}
+                    onSaved={loadList}
+                />
+            )}
         </Box>
     )
 }

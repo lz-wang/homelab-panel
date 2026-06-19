@@ -36,6 +36,10 @@ func (h *Handler) CreateAdminSession(c *gin.Context) {
 	writeJSON(c, http.StatusCreated, gin.H{"token": token, "expires_at": expires})
 }
 
+func (h *Handler) GetAdminSession(c *gin.Context) {
+	writeJSON(c, http.StatusOK, gin.H{"ok": true})
+}
+
 func (h *Handler) DeleteAdminSession(c *gin.Context) {
 	if err := h.tokens.Revoke(); err != nil {
 		writeError(c, http.StatusInternalServerError, "revoke session failed")

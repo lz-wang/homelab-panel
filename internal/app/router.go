@@ -21,6 +21,7 @@ func (s *Server) registerRoutes() {
 
 	protected := api.Group("")
 	protected.Use(h.RequireAdmin())
+	protected.GET("/admin/session", h.GetAdminSession)
 	protected.DELETE("/admin/session", h.DeleteAdminSession)
 	protected.PUT("/admin/password", h.UpdateAdminPassword)
 	protected.PUT("/panel", h.UpdatePanel)
