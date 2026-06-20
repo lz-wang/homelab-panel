@@ -24,6 +24,9 @@ import { useHomeSearch } from './home/useHomeSearch'
 import { useHomeSort } from './home/useHomeSort'
 import type { ItemGroup } from './home/types'
 
+// 浏览模式（已登录管理员临时切到只读）是否开启，持久化以在刷新后保持。
+const BROWSING_AS_GUEST_KEY = 'homelab-panel:browsing-as-guest'
+
 export default function Home() {
     const navigate = useNavigate()
     const authStore = useAuthStore()
@@ -32,7 +35,11 @@ export default function Home() {
     const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
-    const [browsingAsGuest, setBrowsingAsGuest] = useState(false)
+    const [browsingAsGuest, setBrowsingAsGuest] = useState(() => {
+        // 仅登录管理员恢复浏览模式；未登录无意义（本就不能编辑）。
+        const isAdmin = Boolean(authStore.token) && authStore.isAdmin
+        return isAdmin && localStorage.getItem(BROWSING_AS_GUEST_KEY) === '1'
+    })
     const loggedInAsAdmin = Boolean(authStore.token) && authStore.isAdmin
     const canManage = loggedInAsAdmin && !browsingAsGuest
 
@@ -73,6 +80,16 @@ export default function Home() {
     useEffect(() => {
         if (panelConfig.logoText) document.title = panelConfig.logoText
     }, [panelConfig.logoText])
+
+    // 浏览模式开关持久化到 localStorage，刷新后保持上次状态。
+    useEffect(() => {
+        try {
+            if (browsingAsGuest) localStorage.setItem(BROWSING_AS_GUEST_KEY, '1')
+            else localStorage.removeItem(BROWSING_AS_GUEST_KEY)
+        } catch {
+            // localStorage 不可用时静默忽略
+        }
+    }, [browsingAsGuest])
 
     useEffect(() => {
         if (loggedInAsAdmin) return
