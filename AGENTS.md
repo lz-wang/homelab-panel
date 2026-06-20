@@ -94,6 +94,7 @@ Do not proactively run full browser/E2E validation unless the user asks for it o
 - Keep `npm run lint` clean; it includes Prettier format checking.
 - Prefer existing API adapter seams in `web/src/api/*`, especially `web/src/api/adapters.ts`, when backend contracts change.
 - Keep React/MUI UI changes localized and avoid unrelated styling churn.
+- MUI `Tooltip` always renders below the anchor — use `placement="bottom"` consistently.
 - Do not stage or commit `web/.env` by default.
 
 ## Backend and embedding conventions

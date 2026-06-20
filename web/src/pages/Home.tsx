@@ -2,6 +2,7 @@ import AddIcon from '@mui/icons-material/Add'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Paper from '@mui/material/Paper'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -152,7 +153,7 @@ export default function Home() {
                     <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
 
                     <Box sx={{ mx: `${panelConfig.marginX ?? 5}%` }}>
-                        {canManage && !loading && !isSearchActive && items.length === 0 && (
+                        {!loading && !isSearchActive && items.length === 0 && (
                             <Paper
                                 elevation={0}
                                 sx={{
@@ -175,14 +176,31 @@ export default function Home() {
                                 >
                                     添加第一个应用时会自动创建默认分组，之后可以在设置中调整分组。
                                 </Typography>
-                                <Button
-                                    variant="contained"
-                                    startIcon={<AddIcon />}
-                                    loading={creatingFirstGroup}
-                                    onClick={handleAddFirstItem}
-                                >
-                                    添加第一个应用
-                                </Button>
+                                {canManage ? (
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<AddIcon />}
+                                        loading={creatingFirstGroup}
+                                        onClick={handleAddFirstItem}
+                                    >
+                                        添加第一个应用
+                                    </Button>
+                                ) : (
+                                    <Tooltip
+                                        title="请点击右下角登录后，进入编辑模式添加/编辑应用"
+                                        placement="bottom"
+                                    >
+                                        <span>
+                                            <Button
+                                                variant="contained"
+                                                startIcon={<AddIcon />}
+                                                disabled
+                                            >
+                                                添加第一个应用
+                                            </Button>
+                                        </span>
+                                    </Tooltip>
+                                )}
                             </Paper>
                         )}
 
