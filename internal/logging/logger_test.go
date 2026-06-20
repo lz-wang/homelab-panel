@@ -2,6 +2,8 @@ package logging
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -72,4 +74,38 @@ func AssertNotPanic(t *testing.T) {
 	Info("info", "msg")
 	Warn("warn", "msg")
 	Error("error", "msg")
+}
+
+// TestInitWritesLogFile 断言 Init(dataDir) 把日志落到 <dataDir>/logs/homelab-panel.log。
+func TestInitWritesLogFile(t *testing.T) {
+	dir := t.TempDir()
+	Init(dir)
+	Infof("persisted line")
+	_ = Sync()
+
+	logPath := filepath.Join(dir, "logs", logFilename)
+	data, err := os.ReadFile(logPath)
+	if err != nil {
+		t.Fatalf("read log file: %v", err)
+	}
+	if !strings.Contains(string(data), "persisted line") {
+		t.Fatalf("log file missing line, got: %q", data)
+	}
+
+	// 恢复全局 logger 为 stderr，避免污染后续测试。
+	Init("")
+}
+
+// TestInitEmptyDataDirNoFile 断言 Init("") 不创建日志文件（仅 stderr）。
+func TestInitEmptyDataDirNoFile(t *testing.T) {
+	dir := t.TempDir()
+	Init("")
+	Infof("stderr only")
+	_ = Sync()
+
+	logPath := filepath.Join(dir, "logs", logFilename)
+	if _, err := os.Stat(logPath); !os.IsNotExist(err) {
+		t.Fatalf("expected no log file under %s, got err=%v", logPath, err)
+	}
+	Init("")
 }

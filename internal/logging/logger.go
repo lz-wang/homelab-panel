@@ -1,6 +1,6 @@
 // Package logging 提供项目全局 logger。
 //
-// 在启动时调用 Init() 完成初始化；之后各处直接用包级函数：
+// 在启动时调用 Init(dataDir) 完成初始化；之后各处直接用包级函数：
 //
 //	logging.Infof("starting server on %s", addr)
 //	logging.Warnf("admin login failed from %s", ip)
@@ -12,7 +12,9 @@
 //
 //	- 时间：2006-01-02 15:04:05
 //	- 级别：大写、固定 6 字符宽左对齐，保证消息列对齐
-//	- 默认写到 stderr，与 stdout 上的用户态输出分离
+//	- 同时写到 <dataDir>/logs/homelab-panel.log（按 maxLogSizeMB 轮转，
+//	  保留 maxLogBackups 份并 gzip 压缩）与 stderr；dataDir 为空或目录
+//	  不可写时降级为仅 stderr，保证日志不丢
 //	- 禁用 caller/stacktrace，确保始终单行
 //
 // 调用方应使用 Infof/Debugf 等 printf 风格把上下文拼进 message，
@@ -23,20 +25,52 @@ package logging
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
+)
+
+// 日志文件轮转参数（固定常量，不对外配置）。
+const (
+	logFilename   = "homelab-panel.log"
+	maxLogSizeMB  = 50
+	maxLogBackups = 7
+	compressLogs  = true
 )
 
 // sugar 是全局 sugared logger。包级初始化为写向 stderr 的默认实例，
 // 因此即便未显式调用 Init（如测试）也始终非 nil；Init() 在启动时重新配置。
 var sugar = newSugared(zapcore.AddSync(os.Stderr))
 
-// Init 在启动时初始化全局 logger。应在程序入口（main）最先调用一次，
-// 早于任何 goroutine 开始记日志。
-func Init() {
-	sugar = newSugared(zapcore.AddSync(os.Stderr))
+// Init 在启动时初始化全局 logger：同时写到 <dataDir>/logs/homelab-panel.log
+// （按 maxLogSizeMB 轮转，保留 maxLogBackups 份并 gzip 压缩）与 stderr。
+// dataDir 为空时仅写 stderr；创建日志目录失败时降级为仅 stderr。
+// 应在程序入口（main）解析到数据目录后最先调用一次，早于任何 goroutine 开始记日志。
+func Init(dataDir string) {
+	stderrSyncer := zapcore.AddSync(os.Stderr)
+	if dataDir == "" {
+		sugar = newSugared(stderrSyncer)
+		return
+	}
+
+	logPath := filepath.Join(dataDir, "logs", logFilename)
+	if err := os.MkdirAll(filepath.Dir(logPath), 0o755); err != nil {
+		fmt.Fprintf(os.Stderr, "create log dir %s failed, falling back to stderr only: %v\n", filepath.Dir(logPath), err)
+		sugar = newSugared(stderrSyncer)
+		return
+	}
+
+	fileSyncer := zapcore.AddSync(&lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    maxLogSizeMB,
+		MaxBackups: maxLogBackups,
+		Compress:   compressLogs,
+		LocalTime:  true,
+	})
+	sugar = newSugared(zapcore.NewMultiWriteSyncer(stderrSyncer, fileSyncer))
 }
 
 // ---- 包级日志函数：各处直接调用即可 ----

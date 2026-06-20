@@ -23,8 +23,6 @@ var webFS embed.FS
 var version = "dev"
 
 func main() {
-	logging.Init()
-
 	cliApp := &cli.App{
 		Name:    "homelab-panel",
 		Usage:   "Homelab panel service",
@@ -92,6 +90,14 @@ func runServe(c *cli.Context) error {
 		Version: version,
 		WebFS:   staticFS,
 	}
+
+	// 与 app.Config.dataDir() 一致：空值兜底 ./data，确保日志与 store 落在同一目录。
+	dataDir := cfg.DataDir
+	if dataDir == "" {
+		dataDir = "./data"
+	}
+	logging.Init(dataDir)
+
 	return app.Run(c.Context, cfg)
 }
 
