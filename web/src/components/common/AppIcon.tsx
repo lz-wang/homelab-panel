@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import type { ItemInfo } from '@/types/panel'
@@ -23,7 +24,7 @@ export function AppIcon({
     const background = item.icon?.backgroundColor || defaultBackgroundColor
     const itemColor = item.icon?.color || '#FFFFFF'
 
-    return (
+    const card = (
         <Box
             sx={{
                 width: '100%',
@@ -69,16 +70,7 @@ export function AppIcon({
                         {item.title}
                     </Typography>
                     {!hideDescription && item.description && (
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                display: '-webkit-box',
-                                overflow: 'hidden',
-                                opacity: 0.72,
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                            }}
-                        >
+                        <Typography noWrap variant="caption" sx={{ opacity: 0.72 }}>
                             {item.description}
                         </Typography>
                     )}
@@ -86,4 +78,21 @@ export function AppIcon({
             </Box>
         </Box>
     )
+
+    // 隐藏描述时，悬浮卡片用 Tooltip 展示描述。
+    // 给 Tooltip 根元素 block + 满宽，避免其默认 inline 包裹破坏卡片撑满父容器的布局。
+    if (hideDescription && item.description) {
+        return (
+            <Tooltip
+                title={item.description}
+                placement="bottom"
+                arrow
+                sx={{ display: 'block', width: '100%' }}
+            >
+                {card}
+            </Tooltip>
+        )
+    }
+
+    return card
 }
