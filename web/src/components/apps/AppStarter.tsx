@@ -1,11 +1,10 @@
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import CableIcon from '@mui/icons-material/Cable'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
-import ImportExportIcon from '@mui/icons-material/ImportExport'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import TableViewIcon from '@mui/icons-material/TableView'
+import TuneIcon from '@mui/icons-material/Tune'
 import Box from '@mui/material/Box'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
@@ -19,21 +18,16 @@ import { useEffect, useState } from 'react'
 
 import { AboutPanel } from '@/components/apps/AboutPanel'
 import { GroupManager } from '@/components/apps/GroupManager'
-import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
 import { MCPSettingsPanel } from '@/components/apps/MCPSettingsPanel'
 import {
-    AccountSettingsPanel,
     AppSettingsPanel,
+    MiscSettingsPanel,
     PageSettingsPanel,
 } from '@/components/apps/SettingsPanels'
 import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 
 function Groups() {
     return <GroupManager />
-}
-
-function ImportExport() {
-    return <ImportExportPanel />
 }
 
 function Files() {
@@ -55,19 +49,8 @@ const apps = [
     },
     { key: 'groups', name: '分组管理', icon: <TableViewIcon />, component: Groups },
     { key: 'files', name: '文件管理', icon: <FolderOutlinedIcon />, component: Files },
-    {
-        key: 'account',
-        name: '帐号设置',
-        icon: <ManageAccountsIcon />,
-        component: AccountSettingsPanel,
-    },
     { key: 'mcp', name: 'MCP设置', icon: <CableIcon />, component: MCPSettingsPanel },
-    {
-        key: 'importExport',
-        name: '备份恢复',
-        icon: <ImportExportIcon />,
-        component: ImportExport,
-    },
+    { key: 'misc', name: '其他设置', icon: <TuneIcon />, component: MiscSettingsPanel },
     { key: 'about', name: '关于', icon: <InfoOutlinedIcon />, component: AboutPanel },
 ]
 
