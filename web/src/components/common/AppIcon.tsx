@@ -8,7 +8,7 @@ import { ItemIcon } from './ItemIcon'
 
 interface Props {
     item: ItemInfo
-    hideDescription: boolean
+    showDescription: boolean
     borderRadius?: number
     aspectRatio?: string
     defaultBackgroundColor?: string
@@ -16,7 +16,7 @@ interface Props {
 
 export function AppIcon({
     item,
-    hideDescription,
+    showDescription,
     borderRadius = 16,
     aspectRatio,
     defaultBackgroundColor = '#2196F3',
@@ -64,12 +64,12 @@ export function AppIcon({
                 <Box sx={{ minWidth: 0 }}>
                     <Typography
                         noWrap
-                        variant={hideDescription ? 'subtitle1' : 'body1'}
+                        variant={!showDescription ? 'subtitle1' : 'body1'}
                         sx={{ fontWeight: 700 }}
                     >
                         {item.title}
                     </Typography>
-                    {!hideDescription && item.description && (
+                    {showDescription && item.description && (
                         <Typography noWrap variant="caption" sx={{ opacity: 0.72 }}>
                             {item.description}
                         </Typography>
@@ -81,7 +81,7 @@ export function AppIcon({
 
     // 隐藏描述时，悬浮卡片用 Tooltip 展示描述。
     // 给 Tooltip 根元素 block + 满宽，避免其默认 inline 包裹破坏卡片撑满父容器的布局。
-    if (hideDescription && item.description) {
+    if (!showDescription && item.description) {
         return (
             <Tooltip
                 title={item.description}

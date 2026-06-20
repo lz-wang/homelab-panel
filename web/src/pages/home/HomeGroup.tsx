@@ -164,7 +164,7 @@ export function HomeGroup({
                     >
                         <AppIcon
                             item={item}
-                            hideDescription={panelConfig.iconTextInfoHideDescription ?? false}
+                            showDescription={panelConfig.iconTextInfoShowDescription ?? false}
                             borderRadius={panelConfig.appCardRadius ?? 16}
                             aspectRatio={
                                 panelConfig.appCardAspectRatio === 'auto'

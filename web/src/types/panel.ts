@@ -28,7 +28,7 @@ export interface PanelConfig {
     backgroundImageSrc?: string
     backgroundBlur?: number
     backgroundMaskNumber?: number
-    iconTextInfoHideDescription?: boolean
+    iconTextInfoShowDescription?: boolean
     logoText?: string
     logoImageSrc?: string
     clockShow?: boolean

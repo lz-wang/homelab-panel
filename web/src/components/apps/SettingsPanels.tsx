@@ -319,7 +319,7 @@ export function PageSettingsPanel() {
                     />
                     <BoolField
                         checked={form.clockShowSecond ?? false}
-                        label="时钟显示秒"
+                        label="显示秒数"
                         onChange={(checked) => patch({ clockShowSecond: checked })}
                     />
                     <BoolField
@@ -364,7 +364,7 @@ export function AppSettingsPanel() {
                     <Box sx={{ width: previewCardWidth, maxWidth: '100%', mx: 'auto' }}>
                         <AppIcon
                             item={appCardPreviewItem}
-                            hideDescription={form.iconTextInfoHideDescription ?? false}
+                            showDescription={form.iconTextInfoShowDescription ?? false}
                             borderRadius={form.appCardRadius ?? 16}
                             aspectRatio={appCardAspectRatio}
                             defaultBackgroundColor={form.appCardDefaultColor ?? '#2196F3'}
@@ -377,9 +377,9 @@ export function AppSettingsPanel() {
 
             <Section title="应用显示">
                 <BoolField
-                    checked={form.iconTextInfoHideDescription ?? false}
-                    label="隐藏描述"
-                    onChange={(checked) => patch({ iconTextInfoHideDescription: checked })}
+                    checked={form.iconTextInfoShowDescription ?? false}
+                    label="显示描述"
+                    onChange={(checked) => patch({ iconTextInfoShowDescription: checked })}
                 />
 
                 <Box>

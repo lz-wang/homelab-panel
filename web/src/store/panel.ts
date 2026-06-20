@@ -32,7 +32,7 @@ export function defaultPanelConfig(): PanelConfig {
         backgroundImageSrc: background1,
         backgroundBlur: 0,
         backgroundMaskNumber: 0,
-        iconTextInfoHideDescription: false,
+        iconTextInfoShowDescription: false,
         logoText: 'Homelab Panel',
         logoImageSrc: '',
         clockShow: true,
@@ -87,8 +87,8 @@ export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
         backgroundImageSrc: config.backgroundImageSrc ?? defaults.backgroundImageSrc,
         backgroundBlur: config.backgroundBlur ?? defaults.backgroundBlur,
         backgroundMaskNumber: config.backgroundMaskNumber ?? defaults.backgroundMaskNumber,
-        iconTextInfoHideDescription:
-            config.iconTextInfoHideDescription ?? defaults.iconTextInfoHideDescription,
+        iconTextInfoShowDescription:
+            config.iconTextInfoShowDescription ?? defaults.iconTextInfoShowDescription,
         logoText: config.logoText ?? defaults.logoText,
         logoImageSrc: config.logoImageSrc ?? defaults.logoImageSrc,
         clockShow: config.clockShow ?? defaults.clockShow,
