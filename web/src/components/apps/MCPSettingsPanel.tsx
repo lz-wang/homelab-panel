@@ -1,10 +1,8 @@
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
-import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Dialog from '@mui/material/Dialog'
@@ -17,6 +15,8 @@ import Radio from '@mui/material/Radio'
 import RadioGroup from '@mui/material/RadioGroup'
 import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
+import Tab from '@mui/material/Tab'
+import Tabs from '@mui/material/Tabs'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useCallback, useEffect, useState } from 'react'
@@ -24,10 +24,10 @@ import { useCallback, useEffect, useState } from 'react'
 import {
     type MCPScope,
     type MCPSettings,
+    type MCPTokenInfo,
     deleteMCPToken,
     generateMCPToken,
     getMCPSettings,
-    resetMCPToken,
     updateMCPSettings,
 } from '@/api/mcp'
 import { API_SUCCESS_CODE } from '@/api/apiResult'
@@ -44,6 +44,11 @@ function formatTime(value?: string) {
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return '—'
     return date.toLocaleString('zh-CN', { hour12: false })
+}
+
+// maskPrefix 展示 token 的可识别前缀，并用占位符表示隐藏的 secret 部分（如 abc******）。
+function maskPrefix(prefix: string) {
+    return `${prefix}········`
 }
 
 // 客户端配置模板。token 不写入配置，统一由环境变量 HOMELAB_PANEL_MCP_TOKEN 提供。
@@ -93,6 +98,47 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     )
 }
 
+function TokenRow({
+    token,
+    loading,
+    onDelete,
+}: {
+    token: MCPTokenInfo
+    loading: boolean
+    onDelete: () => void
+}) {
+    return (
+        <Stack
+            spacing={0.5}
+            sx={{ py: 1, px: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
+        >
+            <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+            >
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <VpnKeyOutlinedIcon fontSize="small" color="action" />
+                    <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                        {maskPrefix(token.prefix)}
+                    </Typography>
+                </Stack>
+                <IconButton
+                    size="small"
+                    aria-label="删除 token"
+                    disabled={loading}
+                    onClick={onDelete}
+                >
+                    <DeleteOutlinedIcon fontSize="small" />
+                </IconButton>
+            </Stack>
+            <Typography variant="caption" color="text.secondary">
+                创建：{formatTime(token.createdAt)} · 最近使用：{formatTime(token.lastUsedAt)}
+            </Typography>
+        </Stack>
+    )
+}
+
 export function MCPSettingsPanel() {
     const { loading, run } = useApiAction()
     const confirm = useConfirm()
@@ -138,29 +184,13 @@ export function MCPSettingsPanel() {
         }
     }
 
-    async function handleReset() {
-        const ok = await confirm({
-            title: '重置 Token',
-            content: '重置后旧 Token 立即失效，已接入的客户端需更新配置。确定继续？',
-        })
-        if (!ok) return
-        const response = await run(() => resetMCPToken(), {
-            successMessage: 'Token 已重置',
-            errorMessage: (res) => `重置失败:${res.msg}`,
-        })
-        if (response?.code === API_SUCCESS_CODE) {
-            setTokenDialog({ token: response.data.token, prefix: response.data.tokenPrefix })
-            void refresh()
-        }
-    }
-
-    async function handleDelete() {
+    async function handleDeleteToken(prefix: string) {
         const ok = await confirm({
             title: '删除 Token',
-            content: '删除 Token 将同时禁用 MCP 服务。确定继续？',
+            content: `确定删除前缀为 ${prefix} 的 Token？该 Token 将立即失效。`,
         })
         if (!ok) return
-        const response = await run(() => deleteMCPToken(), {
+        const response = await run(() => deleteMCPToken(prefix), {
             successMessage: 'Token 已删除',
             errorMessage: (res) => `删除失败:${res.msg}`,
         })
@@ -211,7 +241,7 @@ export function MCPSettingsPanel() {
                     <FormControlLabel
                         value="read_write"
                         control={<Radio disabled={loading} />}
-                        label="读写（可增删改）"
+                        label="读写（可增改）"
                     />
                 </RadioGroup>
             </Section>
@@ -233,60 +263,34 @@ export function MCPSettingsPanel() {
             </Section>
 
             <Section title="Token">
-                {settings.hasToken ? (
-                    <Stack spacing={1}>
-                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                            <VpnKeyOutlinedIcon fontSize="small" color="action" />
-                            <Typography variant="body2">
-                                前缀：<code>{settings.tokenPrefix}</code>
-                            </Typography>
-                        </Stack>
-                        <Typography variant="body2" color="text.secondary">
-                            创建时间：{formatTime(settings.createdAt)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            最近使用：{formatTime(settings.lastUsedAt)}
-                        </Typography>
-                        <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                startIcon={<RefreshOutlinedIcon />}
-                                disabled={loading}
-                                onClick={handleReset}
-                            >
-                                重置 Token
-                            </Button>
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                color="error"
-                                startIcon={<DeleteOutlinedIcon />}
-                                disabled={loading}
-                                onClick={handleDelete}
-                            >
-                                删除 Token
-                            </Button>
-                        </Stack>
-                    </Stack>
-                ) : (
-                    <Stack spacing={1}>
-                        <Typography variant="body2" color="text.secondary">
-                            尚未生成 Token，生成后将自动启用 MCP 服务。
-                        </Typography>
-                        <Box>
-                            <Button
-                                size="small"
-                                variant="contained"
-                                startIcon={<AddOutlinedIcon />}
-                                disabled={loading}
-                                onClick={handleGenerate}
-                            >
-                                生成 Token
-                            </Button>
-                        </Box>
-                    </Stack>
-                )}
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                    <Typography variant="body2" color="text.secondary">
+                        {settings.tokens.length > 0
+                            ? `已生成 ${settings.tokens.length} 个 Token，首个生成时自动启用 MCP 服务`
+                            : '尚未生成 Token，生成后将自动启用 MCP 服务'}
+                    </Typography>
+                    <Button
+                        size="small"
+                        variant="contained"
+                        startIcon={<AddOutlinedIcon />}
+                        disabled={loading}
+                        onClick={handleGenerate}
+                    >
+                        生成 Token
+                    </Button>
+                </Stack>
+                {settings.tokens.map((tok) => (
+                    <TokenRow
+                        key={tok.prefix}
+                        token={tok}
+                        loading={loading}
+                        onDelete={() => handleDeleteToken(tok.prefix)}
+                    />
+                ))}
             </Section>
 
             <ClientConfigs endpoint={endpoint} onCopy={copyText} />
@@ -366,49 +370,20 @@ function TokenRevealDialog({
     )
 }
 
-function ConfigBlock({
-    label,
-    value,
-    onCopy,
-}: {
-    label: string
-    value: string
-    onCopy: (text: string) => void
-}) {
-    return (
-        <Stack spacing={1}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {label}
-            </Typography>
-            <TextField
-                value={value}
-                fullWidth
-                multiline
-                minRows={3}
-                size="small"
-                slotProps={{
-                    input: { readOnly: true, sx: { fontFamily: 'monospace', fontSize: 12 } },
-                }}
-            />
-            <Button size="small" startIcon={<ContentCopyIcon />} onClick={() => onCopy(value)}>
-                复制配置
-            </Button>
-        </Stack>
-    )
-}
-
 function ClientConfigs({ endpoint, onCopy }: { endpoint: string; onCopy: (text: string) => void }) {
     const envHint = 'export HOMELAB_PANEL_MCP_TOKEN="<粘贴你的 token>"'
-    const blocks = [
-        { label: 'Codex（~/.codex/config.toml）', value: codexConfig(endpoint) },
-        { label: 'Claude Code CLI', value: claudeCodeCommand(endpoint) },
+    const tabs = [
+        { label: 'Codex', value: codexConfig(endpoint) },
+        { label: 'Claude Code', value: claudeCodeCommand(endpoint) },
         { label: '.mcp.json', value: mcpJsonConfig(endpoint) },
     ]
+    const [active, setActive] = useState(0)
+    const current = tabs[active] ?? tabs[0]
 
     return (
         <Section title="客户端配置">
             <Typography variant="body2" color="text.secondary">
-                先在终端设置环境变量，再按所用客户端复制对应配置。token
+                先在终端设置环境变量，再切换 tab 复制所用客户端的配置。token
                 仅通过环境变量传递，不写入配置文件。
             </Typography>
             <TextField
@@ -419,14 +394,28 @@ function ClientConfigs({ endpoint, onCopy }: { endpoint: string; onCopy: (text: 
                     input: { readOnly: true, sx: { fontFamily: 'monospace', fontSize: 12 } },
                 }}
             />
-            {blocks.map((block) => (
-                <ConfigBlock
-                    key={block.label}
-                    label={block.label}
-                    value={block.value}
-                    onCopy={onCopy}
-                />
-            ))}
+            <Tabs value={active} onChange={(_, value) => setActive(value)}>
+                {tabs.map((tab) => (
+                    <Tab key={tab.label} label={tab.label} />
+                ))}
+            </Tabs>
+            <TextField
+                value={current.value}
+                fullWidth
+                multiline
+                minRows={3}
+                size="small"
+                slotProps={{
+                    input: { readOnly: true, sx: { fontFamily: 'monospace', fontSize: 12 } },
+                }}
+            />
+            <Button
+                size="small"
+                startIcon={<ContentCopyIcon />}
+                onClick={() => onCopy(current.value)}
+            >
+                复制配置
+            </Button>
         </Section>
     )
 }

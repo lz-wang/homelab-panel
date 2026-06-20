@@ -48,6 +48,11 @@ func TestVerifyToken(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GenerateToken error: %v", err)
 	}
+	// 另一个 token 的真实 hash：格式合法但内容不同，必须不匹配。
+	_, _, otherHash, err := GenerateToken()
+	if err != nil {
+		t.Fatalf("GenerateToken error: %v", err)
+	}
 
 	tests := []struct {
 		name      string
@@ -60,7 +65,7 @@ func TestVerifyToken(t *testing.T) {
 		{"empty token", "", hash, false},
 		{"whitespace token", "   ", hash, false},
 		{"empty expected hash", plain, "", false},
-		{"tampered hash", plain, hash[:len(hash)-1] + "0", false},
+		{"different hash", plain, otherHash, false},
 		{"trimmed token still valid", " " + plain + " ", hash, true},
 	}
 	for _, tt := range tests {

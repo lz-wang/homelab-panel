@@ -93,6 +93,7 @@ func (s *Store) init() (string, error) {
 		MCP: MCPConfig{
 			Enabled: false,
 			Scope:   MCPScopeReadOnly,
+			Tokens:  []MCPToken{},
 		},
 		CreatedAt: now,
 		UpdatedAt: now,
@@ -259,10 +260,12 @@ func generatePassword() (string, error) {
 	return hex.EncodeToString(buf[:]), nil
 }
 
-// normalizeMCPDefaults 为缺少 MCP 配置的旧数据文件补默认值：scope 留空时回退为只读。
-// enabled 默认 false；token 相关字段留空表示尚未签发。
+// normalizeMCPDefaults 补默认值：scope 留空时回退为只读，tokens 为 nil 时置空切片。
 func normalizeMCPDefaults(d *StoreData) {
 	if d.MCP.Scope == "" {
 		d.MCP.Scope = MCPScopeReadOnly
+	}
+	if d.MCP.Tokens == nil {
+		d.MCP.Tokens = []MCPToken{}
 	}
 }

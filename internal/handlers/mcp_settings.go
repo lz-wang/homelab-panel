@@ -11,18 +11,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// mcpSettingsResponse 是 MCP 设置的只读视图：绝不返回 token hash，仅返回可展示前缀。
-type mcpSettingsResponse struct {
-	Enabled     bool       `json:"enabled"`
-	Scope       string     `json:"scope"`
-	HasToken    bool       `json:"has_token"`
-	TokenPrefix string     `json:"token_prefix,omitempty"`
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
-	LastUsedAt  *time.Time `json:"last_used_at,omitempty"`
+// mcpTokenInfo 是单个 token 的只读视图：仅返回可展示前缀与时间，绝不返回 hash。
+type mcpTokenInfo struct {
+	Prefix     string     `json:"prefix"`
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
 }
 
-// mcpTokenResponse 仅在生成/重置 token 时返回明文一次。
+// mcpSettingsResponse 是 MCP 设置的只读视图。
+type mcpSettingsResponse struct {
+	Enabled    bool           `json:"enabled"`
+	Scope      string         `json:"scope"`
+	Tokens     []mcpTokenInfo `json:"tokens"`
+	UpdatedAt  *time.Time     `json:"updated_at,omitempty"`
+}
+
+// mcpTokenResponse 仅在生成 token 时返回明文一次。
 type mcpTokenResponse struct {
 	Token       string `json:"token"`
 	TokenPrefix string `json:"token_prefix"`
@@ -48,28 +52,33 @@ func generateMCPToken() (plain string, prefix string, hash string, err error) {
 	return mcpserver.GenerateToken()
 }
 
+func tokenInfoView(t data.MCPToken) mcpTokenInfo {
+	info := mcpTokenInfo{Prefix: t.Prefix}
+	if !t.CreatedAt.IsZero() {
+		info.CreatedAt = &t.CreatedAt
+	}
+	if !t.LastUsedAt.IsZero() {
+		info.LastUsedAt = &t.LastUsedAt
+	}
+	return info
+}
+
 func mcpSettingsView(cfg data.MCPConfig) mcpSettingsResponse {
 	resp := mcpSettingsResponse{
-		Enabled:  cfg.Enabled,
-		Scope:    string(cfg.Scope),
-		HasToken: cfg.TokenHash != "",
+		Enabled: cfg.Enabled,
+		Scope:   string(cfg.Scope),
+		Tokens:  make([]mcpTokenInfo, 0, len(cfg.Tokens)),
 	}
-	if cfg.TokenPrefix != "" {
-		resp.TokenPrefix = cfg.TokenPrefix
-	}
-	if !cfg.CreatedAt.IsZero() {
-		resp.CreatedAt = &cfg.CreatedAt
+	for _, t := range cfg.Tokens {
+		resp.Tokens = append(resp.Tokens, tokenInfoView(t))
 	}
 	if !cfg.UpdatedAt.IsZero() {
 		resp.UpdatedAt = &cfg.UpdatedAt
 	}
-	if !cfg.LastUsedAt.IsZero() {
-		resp.LastUsedAt = &cfg.LastUsedAt
-	}
 	return resp
 }
 
-// GetMCPSettings 返回 MCP 开关、权限范围与 token 状态（不含 hash）。
+// GetMCPSettings 返回 MCP 开关、权限范围与 token 列表（不含 hash）。
 func (h *Handler) GetMCPSettings(c *gin.Context) {
 	snap := h.Store.Snapshot()
 	writeJSON(c, http.StatusOK, mcpSettingsView(snap.MCP))
@@ -116,8 +125,8 @@ func (h *Handler) UpdateMCPSettings(c *gin.Context) {
 	writeJSON(c, http.StatusOK, mcpSettingsView(snap.MCP))
 }
 
-// GenerateMCPToken 首次生成 token：明文只返回一次，并隐式启用 MCP。
-// 若 token 已存在则拒绝，提示使用 reset。
+// GenerateMCPToken 生成一个新 token 并加入列表，明文只返回一次，并隐式启用 MCP。
+// 支持生成多个 token（每个独立前缀与 hash）。
 func (h *Handler) GenerateMCPToken(c *gin.Context) {
 	plain, prefix, hash, err := generateMCPToken()
 	if err != nil {
@@ -127,16 +136,13 @@ func (h *Handler) GenerateMCPToken(c *gin.Context) {
 	}
 
 	now := time.Now()
-	alreadyExists := false
 	err = h.Store.Save(func(d *data.StoreData) error {
-		if d.MCP.TokenHash != "" {
-			alreadyExists = true
-			return nil
-		}
-		d.MCP.TokenHash = hash
-		d.MCP.TokenPrefix = prefix
+		d.MCP.Tokens = append(d.MCP.Tokens, data.MCPToken{
+			Prefix:    prefix,
+			Hash:      hash,
+			CreatedAt: now,
+		})
 		d.MCP.Enabled = true
-		d.MCP.CreatedAt = now
 		d.MCP.UpdatedAt = now
 		return nil
 	})
@@ -145,54 +151,31 @@ func (h *Handler) GenerateMCPToken(c *gin.Context) {
 		writeError(c, http.StatusInternalServerError, "save mcp token failed")
 		return
 	}
-	if alreadyExists {
-		logging.Warnf("mcp token generate rejected: token exists, from %s", c.ClientIP())
-		writeError(c, http.StatusConflict, "mcp token already exists; use reset")
-		return
-	}
 
-	logging.Infof("mcp token generated from %s", c.ClientIP())
+	logging.Infof("mcp token generated (prefix=%s) from %s", prefix, c.ClientIP())
 	writeJSON(c, http.StatusOK, mcpTokenResponse{Token: plain, TokenPrefix: prefix})
 }
 
-// ResetMCPToken 生成新 token，旧 token 因 hash 变更立即失效。
-func (h *Handler) ResetMCPToken(c *gin.Context) {
-	plain, prefix, hash, err := generateMCPToken()
-	if err != nil {
-		logging.Errorf("generate mcp token failed: %v", err)
-		writeError(c, http.StatusInternalServerError, "generate mcp token failed")
-		return
-	}
-
-	now := time.Now()
-	err = h.Store.Save(func(d *data.StoreData) error {
-		d.MCP.TokenHash = hash
-		d.MCP.TokenPrefix = prefix
-		d.MCP.Enabled = true
-		d.MCP.CreatedAt = now
-		d.MCP.UpdatedAt = now
-		d.MCP.LastUsedAt = time.Time{}
-		return nil
-	})
-	if err != nil {
-		logging.Errorf("save mcp token failed: %v", err)
-		writeError(c, http.StatusInternalServerError, "save mcp token failed")
-		return
-	}
-
-	logging.Infof("mcp token reset from %s", c.ClientIP())
-	writeJSON(c, http.StatusOK, mcpTokenResponse{Token: plain, TokenPrefix: prefix})
-}
-
-// DeleteMCPToken 删除 token 并禁用 MCP。
+// DeleteMCPToken 按前缀删除指定 token；被删 token 因 hash 移除立即失效。
 func (h *Handler) DeleteMCPToken(c *gin.Context) {
+	prefix := c.Param("prefix")
+	if prefix == "" {
+		writeError(c, http.StatusBadRequest, "token prefix is required")
+		return
+	}
+
 	now := time.Now()
+	found := false
 	err := h.Store.Save(func(d *data.StoreData) error {
-		d.MCP.TokenHash = ""
-		d.MCP.TokenPrefix = ""
-		d.MCP.Enabled = false
-		d.MCP.CreatedAt = time.Time{}
-		d.MCP.LastUsedAt = time.Time{}
+		kept := make([]data.MCPToken, 0, len(d.MCP.Tokens))
+		for _, t := range d.MCP.Tokens {
+			if t.Prefix == prefix {
+				found = true
+				continue
+			}
+			kept = append(kept, t)
+		}
+		d.MCP.Tokens = kept
 		d.MCP.UpdatedAt = now
 		return nil
 	})
@@ -201,8 +184,13 @@ func (h *Handler) DeleteMCPToken(c *gin.Context) {
 		writeError(c, http.StatusInternalServerError, "delete mcp token failed")
 		return
 	}
+	if !found {
+		logging.Warnf("mcp token delete not found (prefix=%s) from %s", prefix, c.ClientIP())
+		writeError(c, http.StatusNotFound, "mcp token not found")
+		return
+	}
 
-	logging.Infof("mcp token deleted from %s", c.ClientIP())
+	logging.Infof("mcp token deleted (prefix=%s) from %s", prefix, c.ClientIP())
 
 	snap := h.Store.Snapshot()
 	writeJSON(c, http.StatusOK, mcpSettingsView(snap.MCP))

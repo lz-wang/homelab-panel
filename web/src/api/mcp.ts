@@ -2,14 +2,17 @@ import { del, get, post, put } from '@/api/request'
 
 export type MCPScope = 'read_only' | 'read_write'
 
+export interface MCPTokenInfo {
+    prefix: string
+    createdAt?: string
+    lastUsedAt?: string
+}
+
 export interface MCPSettings {
     enabled: boolean
     scope: MCPScope
-    hasToken: boolean
-    tokenPrefix?: string
-    createdAt?: string
+    tokens: MCPTokenInfo[]
     updatedAt?: string
-    lastUsedAt?: string
 }
 
 export interface MCPTokenResponse {
@@ -34,10 +37,6 @@ export function generateMCPToken() {
     return post<MCPTokenResponse>({ url: '/mcp/token' })
 }
 
-export function resetMCPToken() {
-    return post<MCPTokenResponse>({ url: '/mcp/token/reset' })
-}
-
-export function deleteMCPToken() {
-    return del<MCPSettings>({ url: '/mcp/token' })
+export function deleteMCPToken(prefix: string) {
+    return del<MCPSettings>({ url: `/mcp/token/${encodeURIComponent(prefix)}` })
 }

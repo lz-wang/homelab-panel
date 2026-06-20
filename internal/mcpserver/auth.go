@@ -22,17 +22,28 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 		}
 
 		cfg := store.Snapshot().MCP
-		if !cfg.Enabled || cfg.TokenHash == "" {
+		if !cfg.Enabled || len(cfg.Tokens) == 0 {
 			http.Error(w, "mcp disabled", http.StatusForbidden)
 			return
 		}
-		if !VerifyToken(token, cfg.TokenHash) {
+
+		// 与任意一个已签发 token 匹配即通过；记录命中前缀用于限流与审计。
+		matchedPrefix := ""
+		matched := false
+		for _, t := range cfg.Tokens {
+			if VerifyToken(token, t.Hash) {
+				matchedPrefix = t.Prefix
+				matched = true
+				break
+			}
+		}
+		if !matched {
 			http.Error(w, "invalid bearer token", http.StatusUnauthorized)
 			return
 		}
 
 		// 限流主体：token 前缀 + 客户端地址。
-		principal := cfg.TokenPrefix
+		principal := matchedPrefix
 		if principal == "" {
 			principal = "noprefix"
 		}
@@ -43,7 +54,7 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 			return
 		}
 
-		TouchLastUsedAtThrottled(store, time.Minute)
+		TouchTokenLastUsedAt(store, matchedPrefix, time.Minute)
 
 		ctx := WithScope(r.Context(), string(cfg.Scope))
 		ctx = WithRemoteAddr(ctx, r.RemoteAddr)
@@ -60,27 +71,36 @@ func bearerFromHeader(header string) string {
 	return strings.TrimSpace(strings.TrimPrefix(header, prefix))
 }
 
-// lastUsedTracker 节流 last_used_at 落盘，避免每个 MCP 请求都写盘。
+// lastUsedTracker 按 token 前缀节流 last_used_at 落盘，避免每个 MCP 请求都写盘。
 var lastUsedTracker struct {
 	mu      sync.Mutex
-	persist time.Time
+	persist map[string]time.Time
 }
 
-// TouchLastUsedAtThrottled 至多每 interval 更新一次 MCP.LastUsedAt。
-// 首次调用（persist 为零值）必定落盘。
-func TouchLastUsedAtThrottled(store *data.Store, interval time.Duration) {
+func init() {
+	lastUsedTracker.persist = make(map[string]time.Time)
+}
+
+// TouchTokenLastUsedAt 至多每 interval 更新一次指定前缀 token 的 LastUsedAt。
+// 首次调用（该前缀无记录）必定落盘。
+func TouchTokenLastUsedAt(store *data.Store, prefix string, interval time.Duration) {
 	now := time.Now()
 
 	lastUsedTracker.mu.Lock()
-	if now.Sub(lastUsedTracker.persist) < interval {
+	if now.Sub(lastUsedTracker.persist[prefix]) < interval {
 		lastUsedTracker.mu.Unlock()
 		return
 	}
-	lastUsedTracker.persist = now
+	lastUsedTracker.persist[prefix] = now
 	lastUsedTracker.mu.Unlock()
 
 	_ = store.Save(func(d *data.StoreData) error {
-		d.MCP.LastUsedAt = now
+		for i := range d.MCP.Tokens {
+			if d.MCP.Tokens[i].Prefix == prefix {
+				d.MCP.Tokens[i].LastUsedAt = now
+				return nil
+			}
+		}
 		return nil
 	})
 }

@@ -29,8 +29,7 @@ func newMCPStore(t *testing.T, enabled bool, scope data.MCPScope) (*data.Store, 
 	}
 	if err := store.Save(func(d *data.StoreData) error {
 		d.MCP.Enabled = enabled
-		d.MCP.TokenHash = hash
-		d.MCP.TokenPrefix = prefix
+		d.MCP.Tokens = []data.MCPToken{{Prefix: prefix, Hash: hash}}
 		d.MCP.Scope = scope
 		return nil
 	}); err != nil {

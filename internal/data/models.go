@@ -25,16 +25,21 @@ const (
 	MCPScopeReadWrite MCPScope = "read_write"
 )
 
-// MCPConfig 保存 MCP HTTP 服务的开关、权限范围与 token 状态。
-// 明文 token 永不落盘，仅保存其前缀与 sha256 摘要。
+// MCPConfig 保存 MCP HTTP 服务的开关、权限范围与一组 token。
+// 明文 token 永不落盘，每个 token 仅保存其前缀（可展示）与 sha256 摘要。
 type MCPConfig struct {
-	Enabled     bool      `json:"enabled"`
-	TokenHash   string    `json:"token_hash,omitempty"`
-	TokenPrefix string    `json:"token_prefix,omitempty"`
-	Scope       MCPScope  `json:"scope"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	LastUsedAt  time.Time `json:"last_used_at"`
+	Enabled   bool       `json:"enabled"`
+	Scope     MCPScope   `json:"scope"`
+	Tokens    []MCPToken `json:"tokens"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
+// MCPToken 是单个 MCP 凭据的非敏感记录：前缀用于展示与删除定位，Hash 用于校验。
+type MCPToken struct {
+	Prefix     string    `json:"token_prefix"`
+	Hash       string    `json:"token_hash"`
+	CreatedAt  time.Time `json:"created_at"`
+	LastUsedAt time.Time `json:"last_used_at"`
 }
 
 type Admin struct {

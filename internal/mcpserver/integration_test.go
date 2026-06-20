@@ -50,8 +50,7 @@ func newMCPTestServer(t *testing.T, scope data.MCPScope) (*data.Store, *httptest
 	}
 	if err := store.Save(func(d *data.StoreData) error {
 		d.MCP.Enabled = true
-		d.MCP.TokenHash = hash
-		d.MCP.TokenPrefix = prefix
+		d.MCP.Tokens = []data.MCPToken{{Prefix: prefix, Hash: hash}}
 		d.MCP.Scope = scope
 		return nil
 	}); err != nil {

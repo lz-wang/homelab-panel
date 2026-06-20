@@ -38,8 +38,7 @@ func (s *Server) registerRoutes() {
 	protected.GET("/mcp/settings", h.GetMCPSettings)
 	protected.PUT("/mcp/settings", h.UpdateMCPSettings)
 	protected.POST("/mcp/token", h.GenerateMCPToken)
-	protected.POST("/mcp/token/reset", h.ResetMCPToken)
-	protected.DELETE("/mcp/token", h.DeleteMCPToken)
+	protected.DELETE("/mcp/token/:prefix", h.DeleteMCPToken)
 
 	// MCP Streamable HTTP endpoint。使用独立的 bearer token 鉴权（非管理员 JWT）。
 	panelSvc := panel.NewService(s.store)
