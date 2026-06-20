@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PanelDocument } from '@/api/panel'
+import { defaultPanelConfig, sanitizePanelConfig } from '@/store/panel'
 import type { ItemIconGroup, ItemInfo } from '@/types/panel'
 
 const apiMock = vi.hoisted(() => {
@@ -155,5 +156,40 @@ describe('panel store', () => {
                 title: 'Example',
             },
         ])
+    })
+})
+
+describe('sanitizePanelConfig faviconSrc', () => {
+    it('defaults to undefined', () => {
+        expect(defaultPanelConfig().faviconSrc).toBeUndefined()
+        expect(sanitizePanelConfig({}).faviconSrc).toBeUndefined()
+    })
+
+    it('keeps a valid favicon source', () => {
+        expect(sanitizePanelConfig({ faviconSrc: '/uploads/a.png' }).faviconSrc).toBe(
+            '/uploads/a.png',
+        )
+        expect(sanitizePanelConfig({ faviconSrc: 'https://e.com/i.ico' }).faviconSrc).toBe(
+            'https://e.com/i.ico',
+        )
+    })
+
+    it('treats empty / whitespace as undefined', () => {
+        expect(sanitizePanelConfig({ faviconSrc: '' }).faviconSrc).toBeUndefined()
+        expect(sanitizePanelConfig({ faviconSrc: '   ' }).faviconSrc).toBeUndefined()
+    })
+
+    it('rejects disallowed protocols and non-uploads root paths', () => {
+        expect(
+            sanitizePanelConfig({ faviconSrc: 'javascript:alert(1)' }).faviconSrc,
+        ).toBeUndefined()
+        expect(sanitizePanelConfig({ faviconSrc: '/evil.png' }).faviconSrc).toBeUndefined()
+        expect(sanitizePanelConfig({ faviconSrc: 'file:///x' }).faviconSrc).toBeUndefined()
+    })
+
+    it('allows inline data:image/ icons', () => {
+        expect(sanitizePanelConfig({ faviconSrc: 'data:image/png;base64,AAAA' }).faviconSrc).toBe(
+            'data:image/png;base64,AAAA',
+        )
     })
 })

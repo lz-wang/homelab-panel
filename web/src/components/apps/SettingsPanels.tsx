@@ -1,6 +1,7 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import LinkIcon from '@mui/icons-material/Link'
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import SaveIcon from '@mui/icons-material/Save'
 import Box from '@mui/material/Box'
@@ -29,6 +30,7 @@ import { t } from '@/locales'
 import { builtinBackgrounds, defaultPanelConfig, usePanelStore } from '@/store/panel'
 import type { ItemInfo, PanelConfig } from '@/types/panel'
 import { cleanGroup, cleanItem, type HomelabPanelExportV1, isExportV1 } from '@/utils/exportFormat'
+import { FaviconCropDialog } from './FaviconCropDialog'
 
 function BoolField({
     checked,
@@ -149,11 +151,146 @@ function appCardAutoWidth(viewportWidth: number, marginX: number | undefined) {
     return Math.round((appAreaWidth - (columnCount - 1) * appCardGridGap) / columnCount)
 }
 
+interface FaviconSettingSectionProps {
+    value: string | undefined
+    onPatch: (src: string) => void
+    onClear: () => void
+}
+
+function FaviconSettingSection({ value, onPatch, onClear }: FaviconSettingSectionProps) {
+    const [cropOpen, setCropOpen] = useState(false)
+    const [imageSrc, setImageSrc] = useState<string | null>(null)
+    const [remoteOpen, setRemoteOpen] = useState(false)
+    const previewSrc = value?.trim() ? value : '/favicon.svg'
+
+    function handleFile(file: File) {
+        const reader = new FileReader()
+        reader.onload = () => {
+            setImageSrc(reader.result as string)
+            setCropOpen(true)
+        }
+        reader.readAsDataURL(file)
+    }
+
+    return (
+        <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                网站图标
+            </Typography>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+                <Box
+                    component="img"
+                    src={previewSrc}
+                    alt="favicon"
+                    sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 0.5,
+                        bgcolor: 'background.paper',
+                        objectFit: 'contain',
+                    }}
+                />
+                <Button component="label" startIcon={<CloudUploadIcon />} variant="outlined">
+                    上传图片
+                    <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            if (file) handleFile(file)
+                            event.target.value = ''
+                        }}
+                    />
+                </Button>
+                <Button
+                    startIcon={<LinkIcon />}
+                    variant="outlined"
+                    onClick={() => setRemoteOpen(true)}
+                >
+                    远程图标
+                </Button>
+                {value?.trim() && (
+                    <Button onClick={onClear} color="error">
+                        移除自定义图标
+                    </Button>
+                )}
+            </Stack>
+            {cropOpen && imageSrc && (
+                <FaviconCropDialog
+                    imageSrc={imageSrc}
+                    onCancel={() => {
+                        setCropOpen(false)
+                        setImageSrc(null)
+                    }}
+                    onConfirm={(url) => {
+                        onPatch(url)
+                        setCropOpen(false)
+                        setImageSrc(null)
+                    }}
+                />
+            )}
+            <RemoteFaviconDialog
+                open={remoteOpen}
+                initialValue={value ?? ''}
+                onCancel={() => setRemoteOpen(false)}
+                onConfirm={(url) => {
+                    onPatch(url)
+                    setRemoteOpen(false)
+                }}
+            />
+        </Box>
+    )
+}
+
+interface RemoteFaviconDialogProps {
+    open: boolean
+    initialValue: string
+    onCancel: () => void
+    onConfirm: (url: string) => void
+}
+
+function RemoteFaviconDialog({
+    open,
+    initialValue,
+    onCancel,
+    onConfirm,
+}: RemoteFaviconDialogProps) {
+    const [url, setUrl] = useState(initialValue)
+
+    useEffect(() => {
+        if (open) setUrl(initialValue)
+    }, [open, initialValue])
+
+    return (
+        <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
+            <DialogTitle>远程图标地址</DialogTitle>
+            <Stack spacing={2} sx={{ px: 3, pb: 3 }}>
+                <TextField
+                    label="图标 URL"
+                    placeholder="https://example.com/favicon.ico"
+                    value={url}
+                    onChange={(event) => setUrl(event.target.value)}
+                    autoFocus
+                    fullWidth
+                />
+                <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+                    <Button onClick={onCancel}>取消</Button>
+                    <Button variant="contained" onClick={() => onConfirm(url.trim())}>
+                        确定
+                    </Button>
+                </Stack>
+            </Stack>
+        </Dialog>
+    )
+}
+
 function useSettingsForm() {
     const panelConfig = usePanelStore((s) => s.panelConfig)
     const setPanelConfig = usePanelStore((s) => s.setPanelConfig)
     const [form, setForm] = useState<PanelConfig>(() => normalizeForm(panelConfig))
     const { loading: saving, run } = useApiAction()
+    const initialFaviconRef = useRef(panelConfig.faviconSrc)
 
     useEffect(() => {
         setForm(normalizeForm(panelConfig))
@@ -164,10 +301,16 @@ function useSettingsForm() {
     }
 
     async function handleSave() {
+        const faviconChanged = initialFaviconRef.current !== form.faviconSrc
         await run(async () => setPanelConfig(form), {
-            successMessage: t('common.saveSuccess'),
+            successMessage: faviconChanged
+                ? '网站图标已保存，刷新页面以查看效果'
+                : t('common.saveSuccess'),
             errorMessage: (response) => `${t('common.saveFail')}:${response.msg}`,
         })
+        if (faviconChanged) {
+            initialFaviconRef.current = form.faviconSrc
+        }
     }
 
     return { form, patch, handleSave, saving }
@@ -196,10 +339,21 @@ export function PageSettingsPanel() {
                     fullWidth
                 />
 
+                <FaviconSettingSection
+                    value={form.faviconSrc}
+                    onPatch={(src) => patch({ faviconSrc: src })}
+                    onClear={() => patch({ faviconSrc: '' })}
+                />
+
                 <Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                         页面背景
-                        <Typography component="span" sx={{ ml: 0.5 }}>
+                        <Typography
+                            component="span"
+                            variant="caption"
+                            color="text.disabled"
+                            sx={{ ml: 0.5 }}
+                        >
                             （自定义背景请先在文件管理中上传）
                         </Typography>
                     </Typography>
@@ -458,7 +612,11 @@ function ChangePasswordSection() {
     return (
         <>
             <Section title="修改密码">
-                <Button startIcon={<ManageAccountsIcon />} onClick={handleOpen} sx={{ width: 'fit-content' }}>
+                <Button
+                    startIcon={<ManageAccountsIcon />}
+                    onClick={handleOpen}
+                    sx={{ width: 'fit-content' }}
+                >
                     修改密码
                 </Button>
             </Section>

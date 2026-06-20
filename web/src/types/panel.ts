@@ -39,6 +39,7 @@ export interface PanelConfig {
     appCardRadius?: number
     appCardAspectRatio?: string
     appCardDefaultColor?: string
+    faviconSrc?: string
 }
 
 export interface PanelState {

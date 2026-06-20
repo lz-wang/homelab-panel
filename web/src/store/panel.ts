@@ -37,6 +37,7 @@ export function defaultPanelConfig(): PanelConfig {
         appCardRadius: 20,
         appCardAspectRatio: 'auto',
         appCardDefaultColor: defaultAppCardColor,
+        faviconSrc: undefined,
     }
 }
 
@@ -72,6 +73,19 @@ function sanitizeHexColor(value: string | undefined, fallback: string | undefine
     return value.toUpperCase()
 }
 
+// faviconSrc 是用户可控字符串，最终会进入 <link href>、<img src> 与 fetch()，
+// 因此必须在协议层收紧：仅允许 http(s) 外链、本站 /uploads/ 上传路径、以及 data:image/ 内联图。
+// 其它（如 javascript:、file: 等）一律丢弃，回退默认图标。
+function sanitizeFaviconSrc(value: string | undefined): string | undefined {
+    const trimmed = value?.trim()
+    if (!trimmed) return undefined
+    const allowed =
+        /^https?:\/\//i.test(trimmed) ||
+        trimmed.startsWith('/uploads/') ||
+        trimmed.startsWith('data:image/')
+    return allowed ? trimmed : undefined
+}
+
 export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
     const defaults = defaultPanelConfig()
 
@@ -105,6 +119,7 @@ export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
             config.appCardDefaultColor,
             defaults.appCardDefaultColor,
         ),
+        faviconSrc: sanitizeFaviconSrc(config.faviconSrc),
     }
 }
 
