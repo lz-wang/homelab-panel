@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from 'react'
 
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
 
+const inputColor = '#fff'
+
 export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void }) {
     const [value, setValue] = useState('')
     const inputRef = useRef<HTMLInputElement>(null)
@@ -37,22 +39,31 @@ export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void })
                 input: {
                     startAdornment: (
                         <InputAdornment position="start">
-                            <SearchIcon />
+                            <SearchIcon sx={{ color: inputColor }} />
                         </InputAdornment>
                     ),
                     endAdornment: (
                         <InputAdornment position="end">
                             <Typography
                                 variant="caption"
-                                sx={{ color: 'text.disabled', userSelect: 'none' }}
+                                sx={{ color: 'rgba(255,255,255,0.5)', userSelect: 'none' }}
                             >
                                 {isMac ? '⌘K' : 'Ctrl K'}
                             </Typography>
                         </InputAdornment>
                     ),
                     sx: {
-                        bgcolor: 'background.paper',
+                        bgcolor: 'rgba(15,23,42,0.45)',
+                        backdropFilter: 'blur(12px)',
                         borderRadius: 2,
+                        color: inputColor,
+                        '& fieldset': {
+                            borderColor: 'rgba(255,255,255,0.2)',
+                            borderStyle: 'solid',
+                        },
+                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.35)' },
+                        '&.Mui-focused fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                        '&::placeholder': { color: 'rgba(255,255,255,0.5)' },
                     },
                 },
             }}
