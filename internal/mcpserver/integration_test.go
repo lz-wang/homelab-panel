@@ -27,7 +27,7 @@ func (r *bearerRT) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // newMCPTestServer 构造一个内嵌 token 鉴权的 httptest MCP 服务，并预置一个分组与应用。
-func newMCPTestServer(t *testing.T, scope data.MCPScope) (*data.Store, *httptest.Server, string) {
+func newMCPTestServer(t *testing.T) (*data.Store, *httptest.Server, string) {
 	t.Helper()
 	store := newTestStore(t)
 
@@ -51,7 +51,6 @@ func newMCPTestServer(t *testing.T, scope data.MCPScope) (*data.Store, *httptest
 	if err := store.Save(func(d *data.StoreData) error {
 		d.MCP.Enabled = true
 		d.MCP.Tokens = []data.MCPToken{{Prefix: prefix, Hash: hash}}
-		d.MCP.Scope = scope
 		return nil
 	}); err != nil {
 		t.Fatalf("seed mcp: %v", err)
@@ -112,8 +111,8 @@ func callTool(t *testing.T, sess *mcp.ClientSession, name string, args map[strin
 	return res
 }
 
-func TestMCPReadOnlyFlow(t *testing.T) {
-	_, srv, token := newMCPTestServer(t, data.MCPScopeReadOnly)
+func TestMCPReadTools(t *testing.T) {
+	_, srv, token := newMCPTestServer(t)
 	sess := connectMCP(t, srv.URL, token)
 	ctx := context.Background()
 
@@ -161,16 +160,10 @@ func TestMCPReadOnlyFlow(t *testing.T) {
 	if !res.IsError {
 		t.Error("oversized pattern should be a tool error")
 	}
-
-	// read_only 调写工具 → tool error（permission denied）。
-	res = callTool(t, sess, "homelab_panel_patch_app", map[string]any{"id": 10, "title": "X"})
-	if !res.IsError {
-		t.Error("read_only scope should reject write tool")
-	}
 }
 
 func TestMCPWriteFlow(t *testing.T) {
-	store, srv, token := newMCPTestServer(t, data.MCPScopeReadWrite)
+	store, srv, token := newMCPTestServer(t)
 	sess := connectMCP(t, srv.URL, token)
 
 	// patch_app：只改传入字段。

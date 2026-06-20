@@ -36,23 +36,23 @@ POST /api/v1/mcp
 
 ### Tools
 
-| Tool | Scope | Description |
-| --- | --- | --- |
-| `homelab_panel_list_groups` | read | List groups without their apps |
-| `homelab_panel_list_apps_by_group` | read | List apps in a group |
-| `homelab_panel_search_apps` | read | Regex search by title / description / icon |
-| `homelab_panel_get_app` | read | Full app detail by id |
-| `homelab_panel_rename_group` | write | Rename a group |
-| `homelab_panel_create_app` | write | Create an app (server allocates the id) |
-| `homelab_panel_replace_app` | write | Replace an app's full config |
-| `homelab_panel_patch_app` | write | Patch selected app fields |
+| Tool | Description |
+| --- | --- |
+| `homelab_panel_list_groups` | List groups without their apps |
+| `homelab_panel_list_apps_by_group` | List apps in a group |
+| `homelab_panel_search_apps` | Regex search by title / description / icon |
+| `homelab_panel_get_app` | Full app detail by id |
+| `homelab_panel_rename_group` | Rename a group |
+| `homelab_panel_create_app` | Create an app (server allocates the id) |
+| `homelab_panel_replace_app` | Replace an app's full config |
+| `homelab_panel_patch_app` | Patch selected app fields |
 
 ### Setup
 
-1. Sign in, open **Settings → MCP 服务**.
-2. Choose a scope (**只读** read-only or **读写** read-write) and **生成 Token**.
-   The plaintext token is shown **once** — copy it immediately. Only a sha256
-   hash and a display prefix are stored.
+1. Sign in, open **Settings → MCP 设置**.
+2. Click **生成 Token**. The plaintext token is shown **once** — copy it
+   immediately. Only a sha256 hash and a display prefix are stored. You can
+   issue multiple tokens and delete any one by its prefix.
 3. Export the token and copy the matching client config from the same page:
 
    ```bash
@@ -68,8 +68,7 @@ The settings page also provides ready-to-copy blocks for Codex
 ### Security notes
 
 - Authentication uses an MCP bearer token, **not** the admin session JWT.
-- Write tools require the `read_write` scope; a `read_only` token gets a tool
-  error on writes.
+  All tools are available once authenticated.
 - Per token+IP rate limits apply (overall 60/min, writes 10/min, search 20/min),
   plus a 1 MiB request body cap and an Origin check on the endpoint.
 - Tools never return admin credentials, token hashes, or internal store state.

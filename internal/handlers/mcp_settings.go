@@ -21,7 +21,6 @@ type mcpTokenInfo struct {
 // mcpSettingsResponse 是 MCP 设置的只读视图。
 type mcpSettingsResponse struct {
 	Enabled    bool           `json:"enabled"`
-	Scope      string         `json:"scope"`
 	Tokens     []mcpTokenInfo `json:"tokens"`
 	UpdatedAt  *time.Time     `json:"updated_at,omitempty"`
 }
@@ -34,17 +33,7 @@ type mcpTokenResponse struct {
 
 // mcpSettingsRequest 用指针字段支持部分更新：缺省字段不改动当前值。
 type mcpSettingsRequest struct {
-	Enabled *bool   `json:"enabled"`
-	Scope   *string `json:"scope"`
-}
-
-func validMCPScope(scope string) bool {
-	switch data.MCPScope(scope) {
-	case data.MCPScopeReadOnly, data.MCPScopeReadWrite:
-		return true
-	default:
-		return false
-	}
+	Enabled *bool `json:"enabled"`
 }
 
 // generateMCPToken 包装 mcpserver.GenerateToken，集中 token 生成入口。
@@ -66,7 +55,6 @@ func tokenInfoView(t data.MCPToken) mcpTokenInfo {
 func mcpSettingsView(cfg data.MCPConfig) mcpSettingsResponse {
 	resp := mcpSettingsResponse{
 		Enabled: cfg.Enabled,
-		Scope:   string(cfg.Scope),
 		Tokens:  make([]mcpTokenInfo, 0, len(cfg.Tokens)),
 	}
 	for _, t := range cfg.Tokens {
@@ -78,13 +66,13 @@ func mcpSettingsView(cfg data.MCPConfig) mcpSettingsResponse {
 	return resp
 }
 
-// GetMCPSettings 返回 MCP 开关、权限范围与 token 列表（不含 hash）。
+// GetMCPSettings 返回 MCP 开关与 token 列表（不含 hash）。
 func (h *Handler) GetMCPSettings(c *gin.Context) {
 	snap := h.Store.Snapshot()
 	writeJSON(c, http.StatusOK, mcpSettingsView(snap.MCP))
 }
 
-// UpdateMCPSettings 修改 enabled 与 scope。
+// UpdateMCPSettings 修改 enabled。
 func (h *Handler) UpdateMCPSettings(c *gin.Context) {
 	var req mcpSettingsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -92,22 +80,9 @@ func (h *Handler) UpdateMCPSettings(c *gin.Context) {
 		return
 	}
 
-	var scope string
-	if req.Scope != nil {
-		scope = *req.Scope
-		if !validMCPScope(scope) {
-			logging.Warnf("invalid mcp scope %q from %s", scope, c.ClientIP())
-			writeError(c, http.StatusBadRequest, "invalid mcp scope")
-			return
-		}
-	}
-
 	err := h.Store.Save(func(d *data.StoreData) error {
 		if req.Enabled != nil {
 			d.MCP.Enabled = *req.Enabled
-		}
-		if scope != "" {
-			d.MCP.Scope = data.MCPScope(scope)
 		}
 		d.MCP.UpdatedAt = time.Now()
 		return nil
@@ -118,8 +93,7 @@ func (h *Handler) UpdateMCPSettings(c *gin.Context) {
 		return
 	}
 
-	logging.Infof("mcp settings updated (enabled=%t scope=%s) from %s",
-		req.Enabled, scope, c.ClientIP())
+	logging.Infof("mcp settings updated (enabled=%t) from %s", req.Enabled, c.ClientIP())
 
 	snap := h.Store.Snapshot()
 	writeJSON(c, http.StatusOK, mcpSettingsView(snap.MCP))

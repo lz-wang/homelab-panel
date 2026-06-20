@@ -20,7 +20,7 @@ func newTestStore(t *testing.T) *data.Store {
 }
 
 // newMCPStore 构造一个带 token 的测试 store，返回 store 与明文 token。
-func newMCPStore(t *testing.T, enabled bool, scope data.MCPScope) (*data.Store, string) {
+func newMCPStore(t *testing.T, enabled bool) (*data.Store, string) {
 	t.Helper()
 	store := newTestStore(t)
 	plain, prefix, hash, err := GenerateToken()
@@ -30,7 +30,6 @@ func newMCPStore(t *testing.T, enabled bool, scope data.MCPScope) (*data.Store, 
 	if err := store.Save(func(d *data.StoreData) error {
 		d.MCP.Enabled = enabled
 		d.MCP.Tokens = []data.MCPToken{{Prefix: prefix, Hash: hash}}
-		d.MCP.Scope = scope
 		return nil
 	}); err != nil {
 		t.Fatalf("seed mcp config: %v", err)
@@ -39,8 +38,8 @@ func newMCPStore(t *testing.T, enabled bool, scope data.MCPScope) (*data.Store, 
 }
 
 func TestAuthMiddleware(t *testing.T) {
-	enabledStore, validToken := newMCPStore(t, true, data.MCPScopeReadOnly)
-	disabledStore, _ := newMCPStore(t, false, data.MCPScopeReadOnly)
+	enabledStore, validToken := newMCPStore(t, true)
+	disabledStore, _ := newMCPStore(t, false)
 	wrongToken := "hlpmcp_deadbeef.thisisnottherealsecret"
 
 	cases := []struct {

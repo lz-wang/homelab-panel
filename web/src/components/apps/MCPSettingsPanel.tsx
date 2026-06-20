@@ -11,8 +11,6 @@ import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import IconButton from '@mui/material/IconButton'
-import Radio from '@mui/material/Radio'
-import RadioGroup from '@mui/material/RadioGroup'
 import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
 import Tab from '@mui/material/Tab'
@@ -22,7 +20,6 @@ import Typography from '@mui/material/Typography'
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-    type MCPScope,
     type MCPSettings,
     type MCPTokenInfo,
     deleteMCPToken,
@@ -165,8 +162,8 @@ export function MCPSettingsPanel() {
         }
     }
 
-    async function updateField(field: 'enabled' | 'scope', value: boolean | MCPScope) {
-        const response = await run(() => updateMCPSettings({ [field]: value }), {
+    async function updateEnabled(value: boolean) {
+        const response = await run(() => updateMCPSettings({ enabled: value }), {
             successMessage: '已保存',
             errorMessage: (res) => `保存失败:${res.msg}`,
         })
@@ -215,7 +212,7 @@ export function MCPSettingsPanel() {
                         <Switch
                             checked={settings.enabled}
                             disabled={loading}
-                            onChange={(event) => updateField('enabled', event.target.checked)}
+                            onChange={(event) => updateEnabled(event.target.checked)}
                         />
                     }
                     label="启用 MCP HTTP 服务"
@@ -227,39 +224,26 @@ export function MCPSettingsPanel() {
                 )}
             </Section>
 
-            <Section title="权限范围">
-                <RadioGroup
-                    row
-                    value={settings.scope}
-                    onChange={(event) => updateField('scope', event.target.value as MCPScope)}
-                >
-                    <FormControlLabel
-                        value="read_only"
-                        control={<Radio disabled={loading} />}
-                        label="只读（仅查询）"
-                    />
-                    <FormControlLabel
-                        value="read_write"
-                        control={<Radio disabled={loading} />}
-                        label="读写（可增改）"
-                    />
-                </RadioGroup>
-            </Section>
-
             <Section title="接入地址">
                 <TextField
                     value={endpoint}
                     fullWidth
                     size="small"
-                    slotProps={{ input: { readOnly: true } }}
+                    slotProps={{
+                        input: {
+                            readOnly: true,
+                            endAdornment: (
+                                <IconButton
+                                    aria-label="复制接入地址"
+                                    edge="end"
+                                    onClick={() => copyText(endpoint, '接入地址已复制')}
+                                >
+                                    <ContentCopyIcon />
+                                </IconButton>
+                            ),
+                        },
+                    }}
                 />
-                <Button
-                    size="small"
-                    startIcon={<ContentCopyIcon />}
-                    onClick={() => copyText(endpoint, '接入地址已复制')}
-                >
-                    复制地址
-                </Button>
             </Section>
 
             <Section title="Token">

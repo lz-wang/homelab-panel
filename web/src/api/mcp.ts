@@ -1,7 +1,5 @@
 import { del, get, post, put } from '@/api/request'
 
-export type MCPScope = 'read_only' | 'read_write'
-
 export interface MCPTokenInfo {
     prefix: string
     createdAt?: string
@@ -10,7 +8,6 @@ export interface MCPTokenInfo {
 
 export interface MCPSettings {
     enabled: boolean
-    scope: MCPScope
     tokens: MCPTokenInfo[]
     updatedAt?: string
 }
@@ -22,7 +19,6 @@ export interface MCPTokenResponse {
 
 export interface UpdateMCPSettingsInput {
     enabled?: boolean
-    scope?: MCPScope
 }
 
 export function getMCPSettings() {

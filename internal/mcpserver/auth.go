@@ -56,8 +56,7 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 
 		TouchTokenLastUsedAt(store, matchedPrefix, time.Minute)
 
-		ctx := WithScope(r.Context(), string(cfg.Scope))
-		ctx = WithRemoteAddr(ctx, r.RemoteAddr)
+		ctx := WithRemoteAddr(r.Context(), r.RemoteAddr)
 		ctx = WithPrincipal(ctx, principal)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

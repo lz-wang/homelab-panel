@@ -1,6 +1,6 @@
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
+import CableIcon from '@mui/icons-material/Cable'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
-import HubOutlinedIcon from '@mui/icons-material/HubOutlined'
 import ImportExportIcon from '@mui/icons-material/ImportExport'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import TableViewIcon from '@mui/icons-material/TableView'
@@ -54,7 +54,7 @@ const apps = [
         icon: <ImportExportIcon />,
         component: ImportExport,
     },
-    { key: 'mcp', name: 'MCP 服务', icon: <HubOutlinedIcon />, component: MCPSettingsPanel },
+    { key: 'mcp', name: 'MCP设置', icon: <CableIcon />, component: MCPSettingsPanel },
 ]
 
 interface Props {
