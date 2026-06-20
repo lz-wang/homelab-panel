@@ -4,11 +4,10 @@ import { persist } from 'zustand/middleware'
 import { type ApiResponse, API_SUCCESS_CODE } from '@/api/apiResult'
 import type { FrontendPanel } from '@/api/adapters'
 import { getPanel, savePanel, type PanelDocument } from '@/api/panel'
-import background1 from '@/assets/background-1.jpg'
-import background2 from '@/assets/background-2.jpg'
-import background3 from '@/assets/background-3.jpg'
-import background4 from '@/assets/background-4.jpg'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
+
+// 背景图置于 public/backgrounds，Vite 以根路径静态提供（dev 与 build 一致）。
+const backgroundMd = '/backgrounds/background-md.jpg'
 
 const marginLimits = {
     marginTop: { min: 0, max: 30 },
@@ -16,32 +15,26 @@ const marginLimits = {
     marginX: { min: 0, max: 20 },
 }
 
-const appCardRadiusLimits = { min: 0, max: 32 }
+const appCardRadiusLimits = { min: 0, max: 64 }
 const appCardAspectRatios = new Set(['auto', '16 / 9', '2 / 1', '5 / 2', '3 / 1'])
 const defaultAppCardColor = '#2196F3'
 
-export const builtinBackgrounds = [
-    { label: '背景 1', src: background1 },
-    { label: '背景 2', src: background2 },
-    { label: '背景 3', src: background3 },
-    { label: '背景 4', src: background4 },
-]
+export const builtinBackgrounds = [{ label: '背景', src: backgroundMd }]
 
 export function defaultPanelConfig(): PanelConfig {
     return {
-        backgroundImageSrc: background1,
+        backgroundImageSrc: backgroundMd,
         backgroundBlur: 0,
         backgroundMaskNumber: 0,
         iconTextInfoShowDescription: false,
         logoText: 'Homelab Panel',
-        logoImageSrc: '',
         clockShow: true,
         clockShowSecond: false,
-        searchBoxShow: false,
+        searchBoxShow: true,
         marginBottom: 2,
         marginTop: 3,
         marginX: 5,
-        appCardRadius: 16,
+        appCardRadius: 20,
         appCardAspectRatio: 'auto',
         appCardDefaultColor: defaultAppCardColor,
     }
@@ -89,10 +82,8 @@ export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
         iconTextInfoShowDescription:
             config.iconTextInfoShowDescription ?? defaults.iconTextInfoShowDescription,
         logoText: config.logoText ?? defaults.logoText,
-        logoImageSrc: config.logoImageSrc ?? defaults.logoImageSrc,
         clockShow: config.clockShow ?? defaults.clockShow,
         clockShowSecond: config.clockShowSecond ?? defaults.clockShowSecond,
-        clockColor: config.clockColor ?? defaults.clockColor,
         searchBoxShow: config.searchBoxShow ?? defaults.searchBoxShow,
         marginTop: clampPercent(config.marginTop, defaults.marginTop, marginLimits.marginTop),
         marginBottom: clampPercent(

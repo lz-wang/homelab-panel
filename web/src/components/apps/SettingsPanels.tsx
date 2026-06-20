@@ -383,9 +383,9 @@ export function AppSettingsPanel() {
                     </Typography>
                     <Slider
                         min={0}
-                        max={32}
+                        max={64}
                         step={1}
-                        value={form.appCardRadius ?? 16}
+                        value={form.appCardRadius ?? 20}
                         onChange={(_, value) => patch({ appCardRadius: value as number })}
                         valueLabelDisplay="auto"
                     />

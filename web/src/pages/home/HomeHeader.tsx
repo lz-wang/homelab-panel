@@ -11,6 +11,9 @@ interface Props {
     onSearch: (keyword: string) => void
 }
 
+// 标题与时钟共享的前景色，保证两者颜色始终一致。
+const headerColor = '#fff'
+
 export function HomeHeader({ panelConfig, onSearch }: Props) {
     return (
         <>
@@ -21,14 +24,14 @@ export function HomeHeader({ panelConfig, onSearch }: Props) {
             >
                 <Typography
                     variant="h3"
-                    sx={{ color: '#fff', fontWeight: 700, textShadow: '2px 2px 50px #000' }}
+                    sx={{ color: headerColor, fontWeight: 700, textShadow: '2px 2px 50px #000' }}
                 >
                     {panelConfig.logoText}
                 </Typography>
                 {panelConfig.clockShow && (
                     <>
-                        <Typography sx={{ color: '#fff' }}>|</Typography>
-                        <Clock hideSecond={!panelConfig.clockShowSecond} />
+                        <Typography sx={{ color: headerColor }}>|</Typography>
+                        <Clock color={headerColor} hideSecond={!panelConfig.clockShowSecond} />
                     </>
                 )}
             </Stack>

@@ -72,7 +72,7 @@ func (s *Store) init() (string, error) {
 		Files:  []File{},
 		NextID: NextID{Group: 1, Item: 1, File: 1},
 		MCP: MCPConfig{
-			Enabled: false,
+			Enabled: true,
 			Tokens:  []MCPToken{},
 		},
 		CreatedAt: now,
@@ -232,10 +232,27 @@ func deepCopy(d StoreData) StoreData {
 	return copy
 }
 
+// passwordAlphabet 是首启管理员密码字符集（大小写字母 + 数字，共 62）。
+const (
+	passwordAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	passwordLength   = 16
+)
+
+// generatePassword 生成首启管理员密码：16 位、大小写字母 + 数字。
+// 用 rejection sampling 避免模偏差；明文仅返回给调用方经 stdout 打印一次，绝不写日志。
 func generatePassword() (string, error) {
-	var buf [12]byte
-	if _, err := rand.Read(buf[:]); err != nil {
-		return "", fmt.Errorf("read random: %w", err)
+	result := make([]byte, passwordLength)
+	max := 256 - 256%len(passwordAlphabet) // 丢弃 >= max 的字节以保证均匀分布
+	for i := 0; i < passwordLength; {
+		var b [1]byte
+		if _, err := rand.Read(b[:]); err != nil {
+			return "", fmt.Errorf("read random: %w", err)
+		}
+		if int(b[0]) >= max {
+			continue
+		}
+		result[i] = passwordAlphabet[int(b[0])%len(passwordAlphabet)]
+		i++
 	}
-	return hex.EncodeToString(buf[:]), nil
+	return string(result), nil
 }

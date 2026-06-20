@@ -30,10 +30,8 @@ export interface PanelConfig {
     backgroundMaskNumber?: number
     iconTextInfoShowDescription?: boolean
     logoText?: string
-    logoImageSrc?: string
     clockShow?: boolean
     clockShowSecond?: boolean
-    clockColor?: string
     searchBoxShow?: boolean
     marginTop?: number
     marginBottom?: number
