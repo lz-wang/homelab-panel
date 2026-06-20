@@ -41,7 +41,6 @@ export function defaultPanelConfig(): PanelConfig {
         marginBottom: 2,
         marginTop: 3,
         marginX: 5,
-        footerShow: true,
         appCardRadius: 16,
         appCardAspectRatio: 'auto',
         appCardDefaultColor: defaultAppCardColor,
@@ -102,7 +101,6 @@ export function sanitizePanelConfig(config: Partial<PanelConfig>): PanelConfig {
             marginLimits.marginBottom,
         ),
         marginX: clampPercent(config.marginX, defaults.marginX, marginLimits.marginX),
-        footerShow: config.footerShow ?? defaults.footerShow,
         appCardRadius: clampNumber(
             config.appCardRadius,
             defaults.appCardRadius,

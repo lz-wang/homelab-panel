@@ -327,11 +327,6 @@ export function PageSettingsPanel() {
                         label="显示搜索框"
                         onChange={(checked) => patch({ searchBoxShow: checked })}
                     />
-                    <BoolField
-                        checked={form.footerShow ?? true}
-                        label="显示页脚"
-                        onChange={(checked) => patch({ footerShow: checked })}
-                    />
                 </Box>
             </Section>
 

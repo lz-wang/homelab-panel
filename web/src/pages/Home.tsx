@@ -212,28 +212,6 @@ export default function Home() {
                             )
                         })}
                     </Box>
-
-                    {panelConfig.footerShow && (
-                        <Box
-                            sx={{
-                                mt: 12,
-                                display: 'flex',
-                                justifyContent: 'center',
-                                color: '#cbd5e1',
-                            }}
-                        >
-                            Powered By
-                            <Box
-                                component="a"
-                                href="https://github.com/lz-wang/homelab-panel"
-                                target="_blank"
-                                rel="noreferrer"
-                                sx={{ ml: 0.5, color: 'inherit' }}
-                            >
-                                Homelab Panel
-                            </Box>
-                        </Box>
-                    )}
                 </Box>
             </Box>
 

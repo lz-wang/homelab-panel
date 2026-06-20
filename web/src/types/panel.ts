@@ -38,7 +38,6 @@ export interface PanelConfig {
     marginTop?: number
     marginBottom?: number
     marginX?: number
-    footerShow?: boolean
     appCardRadius?: number
     appCardAspectRatio?: string
     appCardDefaultColor?: string
