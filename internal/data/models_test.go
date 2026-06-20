@@ -10,7 +10,6 @@ import (
 func TestStoreDataUsesSnakeCaseJSONKeys(t *testing.T) {
 	now := time.Date(2026, 6, 19, 0, 0, 0, 0, time.UTC)
 	d := StoreData{
-		Version: 2,
 		Admin: Admin{
 			PasswordHash: "hash",
 			CreatedAt:    now,

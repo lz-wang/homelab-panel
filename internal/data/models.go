@@ -6,7 +6,6 @@ import (
 )
 
 type StoreData struct {
-	Version   int       `json:"version"`
 	Admin     Admin     `json:"admin"`
 	Auth      Auth      `json:"auth"`
 	MCP       MCPConfig `json:"mcp"`
@@ -40,7 +39,7 @@ type Admin struct {
 }
 
 // Auth 保存 JWT 签名密钥与 token 撤销版本号。
-// 旧数据文件缺此段时为零值，由 Store.EnsureSecret 懒初始化（不 bump dataVersion）。
+// 首启时 Secret 为空，由 Store.EnsureSecret 生成并持久化（幂等）。
 type Auth struct {
 	Secret       string `json:"secret"`
 	TokenVersion int    `json:"token_version"`

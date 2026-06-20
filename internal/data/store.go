@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"homelab-panel/internal/logging"
 	"os"
 	"path/filepath"
 	"sync"
@@ -14,8 +13,6 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-const dataVersion = 2
 
 var ErrInvalidPassword = errors.New("invalid password")
 
@@ -34,24 +31,9 @@ func Open(path string) (*Store, string, error) {
 		if err := json.Unmarshal(raw, &s.data); err != nil {
 			return nil, "", fmt.Errorf("parse store file: %w", err)
 		}
-		if s.data.Version != dataVersion {
-			// 旧版本格式：备份后重新初始化（重置策略，避免静默数据损坏）
-			backup := fmt.Sprintf("%s.v%d.bak", path, s.data.Version)
-			if err := os.Rename(path, backup); err != nil {
-				return nil, "", fmt.Errorf("backup incompatible store file: %w", err)
-			}
-			logging.Warnf("incompatible store version %d, resetting to %d, backup=%s",
-				s.data.Version, dataVersion, backup)
-			password, err := s.init()
-			if err != nil {
-				return nil, "", err
-			}
-			return s, password, nil
-		}
 		if s.data.Files == nil {
 			s.data.Files = []File{}
 		}
-		normalizeMCPDefaults(&s.data)
 		return s, "", nil
 	case errors.Is(err, os.ErrNotExist):
 		password, err := s.init()
@@ -75,7 +57,6 @@ func (s *Store) init() (string, error) {
 	}
 	now := time.Now()
 	s.data = StoreData{
-		Version: dataVersion,
 		Admin: Admin{
 			PasswordHash: string(hash),
 			CreatedAt:    now,
@@ -88,8 +69,8 @@ func (s *Store) init() (string, error) {
 			Groups:       []Group{},
 			Items:        []Item{},
 		},
-		Files:     []File{},
-		NextID:    NextID{Group: 1, Item: 1, File: 1},
+		Files:  []File{},
+		NextID: NextID{Group: 1, Item: 1, File: 1},
 		MCP: MCPConfig{
 			Enabled: false,
 			Tokens:  []MCPToken{},
@@ -257,11 +238,4 @@ func generatePassword() (string, error) {
 		return "", fmt.Errorf("read random: %w", err)
 	}
 	return hex.EncodeToString(buf[:]), nil
-}
-
-// normalizeMCPDefaults 补默认值：tokens 为 nil 时置空切片。
-func normalizeMCPDefaults(d *StoreData) {
-	if d.MCP.Tokens == nil {
-		d.MCP.Tokens = []MCPToken{}
-	}
 }
