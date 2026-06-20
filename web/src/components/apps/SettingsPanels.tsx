@@ -15,7 +15,6 @@ import { useEffect, useState, type ReactNode } from 'react'
 
 import { AppIcon } from '@/components/common/AppIcon'
 import { ColorSwatchPicker } from '@/components/common/ColorSwatchPicker'
-import { ImageUploadButton } from '@/components/common/ImageUploadButton'
 import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
 import { builtinBackgrounds, defaultPanelConfig, usePanelStore } from '@/store/panel'
@@ -187,24 +186,24 @@ export function PageSettingsPanel() {
                     fullWidth
                 />
 
-                <ImageUploadButton
-                    label="自定义背景"
-                    value={form.backgroundImageSrc ?? ''}
-                    onChange={(value) => patch({ backgroundImageSrc: value })}
-                />
-
                 <Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        内置背景
+                        页面背景
+                        <Typography component="span" sx={{ ml: 0.5 }}>
+                            （自定义背景请先在文件管理中上传）
+                        </Typography>
                     </Typography>
                     <Box
                         sx={{
-                            display: 'grid',
-                            gridTemplateColumns: {
-                                xs: 'repeat(2, minmax(0, 1fr))',
-                                sm: 'repeat(4, minmax(0, 1fr))',
-                            },
+                            display: 'flex',
                             gap: 1,
+                            overflowX: 'auto',
+                            pb: 0.5,
+                            '&::-webkit-scrollbar': { height: 4 },
+                            '&::-webkit-scrollbar-thumb': {
+                                borderRadius: 2,
+                                bgcolor: 'divider',
+                            },
                         }}
                     >
                         {builtinBackgrounds.map((background) => {
@@ -217,6 +216,8 @@ export function PageSettingsPanel() {
                                     onClick={() => patch({ backgroundImageSrc: background.src })}
                                     sx={{
                                         position: 'relative',
+                                        flexShrink: 0,
+                                        width: 120,
                                         aspectRatio: '16 / 9',
                                         overflow: 'hidden',
                                         borderRadius: 1,
@@ -231,8 +232,8 @@ export function PageSettingsPanel() {
                                             color="primary"
                                             sx={{
                                                 position: 'absolute',
-                                                top: 6,
-                                                right: 6,
+                                                top: 4,
+                                                right: 4,
                                                 bgcolor: 'background.paper',
                                                 borderRadius: '50%',
                                             }}
