@@ -3,7 +3,6 @@ package mcpserver
 import (
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestGenerateToken(t *testing.T) {
@@ -74,24 +73,5 @@ func TestVerifyToken(t *testing.T) {
 				t.Errorf("VerifyToken(%q, hash) = %v, want %v", tt.token, got, tt.wantValid)
 			}
 		})
-	}
-}
-
-func TestRateLimiter(t *testing.T) {
-	rl := NewRateLimiter(3, time.Minute)
-	key := "principal|1.2.3.4"
-
-	for i := 1; i <= 3; i++ {
-		if !rl.Allow(key) {
-			t.Fatalf("call %d should be allowed", i)
-		}
-	}
-	if rl.Allow(key) {
-		t.Error("4th call within window should be rejected")
-	}
-
-	// 不同 key 互不影响。
-	if !rl.Allow("other|5.6.7.8") {
-		t.Error("different key should be independent")
 	}
 }

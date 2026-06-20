@@ -27,7 +27,7 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 			return
 		}
 
-		// 与任意一个已签发 token 匹配即通过；记录命中前缀用于限流与审计。
+		// 与任意一个已签发 token 匹配即通过；记录命中前缀用于更新 last_used_at 与审计。
 		matchedPrefix := ""
 		matched := false
 		for _, t := range cfg.Tokens {
@@ -42,22 +42,9 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 			return
 		}
 
-		// 限流主体：token 前缀 + 客户端地址。
-		principal := matchedPrefix
-		if principal == "" {
-			principal = "noprefix"
-		}
-		principal = principal + "|" + r.RemoteAddr
-
-		if !overallLimiter.Allow(principal) {
-			http.Error(w, "rate limit exceeded", http.StatusTooManyRequests)
-			return
-		}
-
 		TouchTokenLastUsedAt(store, matchedPrefix, time.Minute)
 
 		ctx := WithRemoteAddr(r.Context(), r.RemoteAddr)
-		ctx = WithPrincipal(ctx, principal)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
