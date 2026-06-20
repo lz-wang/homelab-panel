@@ -12,7 +12,7 @@ type EmptyInput struct{}
 
 // AppIcon 描述应用图标，字段与 panel.AppIcon 对齐。
 type AppIcon struct {
-	ItemType        int    `json:"item_type,omitempty" jsonschema:"icon item type (0 plain text, 1 image, 2 iconify, 3 mixed)"`
+	ItemType        int    `json:"item_type,omitempty" jsonschema:"icon item type: 1=plain text, 2=image (requires src), 3=iconify (requires text, e.g. mdi:git). Default 3 (iconify) when omitted."`
 	Src             string `json:"src,omitempty" jsonschema:"image url or data url for image icons"`
 	Text            string `json:"text,omitempty" jsonschema:"iconify icon name or text label"`
 	Color           string `json:"color,omitempty" jsonschema:"foreground (text) color; must be #FFFFFF or #000000 (case-insensitive)"`

@@ -65,10 +65,38 @@ func iconToPanel(icon *AppIcon) panel.AppIcon {
 		return panel.AppIcon{}
 	}
 	return panel.AppIcon{
-		ItemType:        icon.ItemType,
+		ItemType:        normalizeIconItemType(icon.ItemType, icon.Src, icon.Text),
 		Src:             icon.Src,
 		Text:            icon.Text,
 		Color:           icon.Color,
 		BackgroundColor: icon.BackgroundColor,
+	}
+}
+
+// normalizeIconItemType 把 MCP 入参的 item_type 归一化到前端 ItemIcon 能渲染的语义：
+// 1=纯文本、2=图片（需 src）、3=iconify（需 text，如 mdi:git）。
+//
+// 前端对 0 或未知 item_type 不渲染图标，且历史上 agent 曾按错误描述把 iconify
+// 图标设为 2（图片），导致前端拿 mdi 名当图片 URL 渲染而空白。这里在写入前纠正：
+//   - 1/3 原样保留；
+//   - 2 仅在确有 src 时保留为图片，否则按 iconify(3) 处理；
+//   - 0/未知按字段推断：有 src→2，有 text→3，都没有→0（无图标）。
+func normalizeIconItemType(itemType int, src, text string) int {
+	switch itemType {
+	case 1, 3:
+		return itemType
+	case 2:
+		if src != "" {
+			return 2
+		}
+		return 3
+	default:
+		if src != "" {
+			return 2
+		}
+		if text != "" {
+			return 3
+		}
+		return 0
 	}
 }
