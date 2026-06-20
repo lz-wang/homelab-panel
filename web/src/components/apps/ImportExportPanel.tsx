@@ -1,9 +1,8 @@
-import DownloadIcon from '@mui/icons-material/Download'
-import UploadFileIcon from '@mui/icons-material/UploadFile'
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
 import { useRef, useState } from 'react'
 
 import { useConfirm } from '@/components/common/ConfirmProvider'
@@ -59,12 +58,12 @@ export function ImportExportPanel() {
             const fallback = buildFrontendBackup()
 
             if ('error' in fallback) {
-                notify.error(`导出失败:${fallback.error}`)
+                notify.error(`备份失败:${fallback.error}`)
                 return
             }
 
             downloadJson(fallback.data)
-            notify.success('导出成功')
+            notify.success('备份成功')
         } finally {
             setExporting(false)
         }
@@ -72,9 +71,9 @@ export function ImportExportPanel() {
 
     async function importData(data: HomelabPanelExportV1) {
         const ok = await confirm({
-            title: '导入配置',
+            title: '恢复配置',
             content:
-                '导入会保存面板配置，并将备份中的分组和图标作为新数据添加。当前版本使用前端顺序导入，不会清空现有数据。',
+                '恢复会保存面板配置，并将备份中的分组和图标作为新数据添加。当前版本使用前端顺序恢复，不会清空现有数据。',
             confirmText: '导入',
             cancelText: t('common.cancel'),
         })
@@ -87,7 +86,7 @@ export function ImportExportPanel() {
             const configRes = await setPanelConfig(data.panel)
 
             if (configRes.code !== 0) {
-                notify.error(`导入面板配置失败:${configRes.msg}`)
+                notify.error(`恢复面板配置失败:${configRes.msg}`)
                 return
             }
 
@@ -95,7 +94,7 @@ export function ImportExportPanel() {
                 const groupRes = await upsertGroup(cleanGroup(entry.group))
 
                 if (groupRes.code !== 0) {
-                    notify.error(`导入分组失败:${groupRes.msg}`)
+                    notify.error(`恢复分组失败:${groupRes.msg}`)
                     return
                 }
 
@@ -111,14 +110,14 @@ export function ImportExportPanel() {
                     const itemRes = await addItems(entryItems)
 
                     if (itemRes.code !== 0) {
-                        notify.error(`导入图标失败:${itemRes.msg}`)
+                        notify.error(`恢复图标失败:${itemRes.msg}`)
                         return
                     }
                 }
             }
 
             await load()
-            notify.success('导入成功')
+            notify.success('恢复成功')
         } finally {
             setImporting(false)
             if (inputRef.current) inputRef.current.value = ''
@@ -132,35 +131,36 @@ export function ImportExportPanel() {
             const data = JSON.parse(await file.text()) as unknown
 
             if (!isExportV1(data)) {
-                notify.error('导入文件格式不正确')
+                notify.error('文件格式不正确')
                 return
             }
 
             await importData(data)
         } catch {
-            notify.error('导入文件解析失败')
+            notify.error('文件解析失败')
         }
     }
 
     return (
         <Stack spacing={2}>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                导入导出
-            </Typography>
             <Alert severity="info">
-                当前导出包含面板配置、分组和图标；不包含用户、密码和文件二进制。导入会新增分组和图标，不会清空现有数据。
+                当前备份包含面板配置、分组和图标；不包含用户、密码和文件。恢复会新增分组和图标，不会清空现有数据。
             </Alert>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                <Button startIcon={<DownloadIcon />} loading={exporting} onClick={handleExport}>
-                    导出 JSON
+                <Button
+                    startIcon={<CloudDownloadIcon />}
+                    loading={exporting}
+                    onClick={handleExport}
+                >
+                    备份
                 </Button>
                 <Button
                     variant="outlined"
-                    startIcon={<UploadFileIcon />}
+                    startIcon={<CloudUploadIcon />}
                     loading={importing}
                     onClick={() => inputRef.current?.click()}
                 >
-                    导入 JSON
+                    恢复
                 </Button>
             </Stack>
             <input

@@ -3,6 +3,8 @@ import SaveIcon from '@mui/icons-material/Save'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import ButtonBase from '@mui/material/ButtonBase'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import MenuItem from '@mui/material/MenuItem'
@@ -13,6 +15,7 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useState, type ReactNode } from 'react'
 
+import { changePassword } from '@/api/admin'
 import { AppIcon } from '@/components/common/AppIcon'
 import { ColorSwatchPicker } from '@/components/common/ColorSwatchPicker'
 import { useApiAction } from '@/hooks/useApiAction'
@@ -414,5 +417,80 @@ export function AppSettingsPanel() {
             </Section>
             <SettingsSaveButton saving={saving} onSave={handleSave} />
         </Stack>
+    )
+}
+
+export function AccountSettingsPanel() {
+    const [open, setOpen] = useState(false)
+    const [oldPassword, setOldPassword] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const { loading: saving, run } = useApiAction()
+
+    const mismatch = Boolean(newPassword && confirmPassword && newPassword !== confirmPassword)
+
+    function handleOpen() {
+        setOldPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        setOpen(true)
+    }
+
+    async function handleChangePassword() {
+        if (!oldPassword || !newPassword || !confirmPassword || mismatch) return
+
+        const res = await run(async () => changePassword(oldPassword, newPassword), {
+            successMessage: '密码修改成功',
+            errorMessage: (response) => `${t('common.saveFail')}:${response.msg}`,
+        })
+        if (res?.code === 0) {
+            setOpen(false)
+        }
+    }
+
+    return (
+        <>
+            <Stack spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                    管理你的帐号密码
+                </Typography>
+                <Button variant="outlined" startIcon={<SaveIcon />} onClick={handleOpen}>
+                    修改密码
+                </Button>
+            </Stack>
+
+            <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
+                <DialogTitle>修改密码</DialogTitle>
+                <Stack spacing={2} sx={{ px: 3, pb: 3 }}>
+                    <TextField
+                        label="当前密码"
+                        type="password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        fullWidth
+                        autoComplete="current-password"
+                    />
+                    <TextField
+                        label="新密码"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        fullWidth
+                        autoComplete="new-password"
+                    />
+                    <TextField
+                        label="确认新密码"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        error={mismatch}
+                        helperText={mismatch ? '两次输入的密码不一致' : ''}
+                        fullWidth
+                        autoComplete="new-password"
+                    />
+                    <SettingsSaveButton saving={saving} onSave={handleChangePassword} />
+                </Stack>
+            </Dialog>
+        </>
     )
 }

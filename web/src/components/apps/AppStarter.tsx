@@ -3,6 +3,7 @@ import CableIcon from '@mui/icons-material/Cable'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
 import ImportExportIcon from '@mui/icons-material/ImportExport'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import TableViewIcon from '@mui/icons-material/TableView'
 import Box from '@mui/material/Box'
@@ -20,7 +21,11 @@ import { AboutPanel } from '@/components/apps/AboutPanel'
 import { GroupManager } from '@/components/apps/GroupManager'
 import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
 import { MCPSettingsPanel } from '@/components/apps/MCPSettingsPanel'
-import { AppSettingsPanel, PageSettingsPanel } from '@/components/apps/SettingsPanels'
+import {
+    AccountSettingsPanel,
+    AppSettingsPanel,
+    PageSettingsPanel,
+} from '@/components/apps/SettingsPanels'
 import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 
 function Groups() {
@@ -51,12 +56,18 @@ const apps = [
     { key: 'groups', name: '分组管理', icon: <TableViewIcon />, component: Groups },
     { key: 'files', name: '文件管理', icon: <FolderOutlinedIcon />, component: Files },
     {
+        key: 'account',
+        name: '帐号设置',
+        icon: <ManageAccountsIcon />,
+        component: AccountSettingsPanel,
+    },
+    { key: 'mcp', name: 'MCP设置', icon: <CableIcon />, component: MCPSettingsPanel },
+    {
         key: 'importExport',
-        name: '导入导出',
+        name: '备份恢复',
         icon: <ImportExportIcon />,
         component: ImportExport,
     },
-    { key: 'mcp', name: 'MCP设置', icon: <CableIcon />, component: MCPSettingsPanel },
     { key: 'about', name: '关于', icon: <InfoOutlinedIcon />, component: AboutPanel },
 ]
 
