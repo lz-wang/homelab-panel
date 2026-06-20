@@ -46,7 +46,7 @@ test: web
 	go test ./...
 
 clean:
-	rm -rf $(BIN) $(WEB_DIST) release logs coverage
+	rm -rf $(BIN) $(WEB_DIST) release logs coverage data/logs
 
 serve: build
 	./$(BIN) serve
