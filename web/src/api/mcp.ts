@@ -1,20 +1,20 @@
 import { del, get, post, put } from '@/api/request'
 
+// 字段与后端 wire 格式一致（snake_case），不经 adapter 转换。
 export interface MCPTokenInfo {
     prefix: string
-    createdAt?: string
-    lastUsedAt?: string
+    created_at?: string
+    last_used_at?: string
 }
 
 export interface MCPSettings {
     enabled: boolean
     tokens: MCPTokenInfo[]
-    updatedAt?: string
+    updated_at?: string
 }
 
 export interface MCPTokenResponse {
     token: string
-    tokenPrefix: string
 }
 
 export interface UpdateMCPSettingsInput {

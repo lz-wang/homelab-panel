@@ -130,7 +130,7 @@ function TokenRow({
                 </IconButton>
             </Stack>
             <Typography variant="caption" color="text.secondary">
-                创建：{formatTime(token.createdAt)} · 最近使用：{formatTime(token.lastUsedAt)}
+                创建：{formatTime(token.created_at)} · 最近使用：{formatTime(token.last_used_at)}
             </Typography>
         </Stack>
     )
@@ -142,7 +142,7 @@ export function MCPSettingsPanel() {
     const notify = useNotify()
 
     const [settings, setSettings] = useState<MCPSettings | null>(null)
-    const [tokenDialog, setTokenDialog] = useState<{ token: string; prefix: string } | null>(null)
+    const [tokenDialog, setTokenDialog] = useState<string | null>(null)
 
     const refresh = useCallback(async () => {
         const response = await getMCPSettings()
@@ -176,7 +176,7 @@ export function MCPSettingsPanel() {
             errorMessage: (res) => `生成失败:${res.msg}`,
         })
         if (response?.code === API_SUCCESS_CODE) {
-            setTokenDialog({ token: response.data.token, prefix: response.data.tokenPrefix })
+            setTokenDialog(response.data.token)
             void refresh()
         }
     }
@@ -281,8 +281,7 @@ export function MCPSettingsPanel() {
 
             <TokenRevealDialog
                 open={tokenDialog !== null}
-                token={tokenDialog?.token ?? ''}
-                prefix={tokenDialog?.prefix ?? ''}
+                token={tokenDialog ?? ''}
                 onCopy={(text) => copyText(text, 'Token 已复制')}
                 onClose={() => setTokenDialog(null)}
             />
@@ -293,28 +292,17 @@ export function MCPSettingsPanel() {
 function TokenRevealDialog({
     open,
     token,
-    prefix,
     onCopy,
     onClose,
 }: {
     open: boolean
     token: string
-    prefix: string
     onCopy: (text: string) => void
     onClose: () => void
 }) {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>
-                Token 已生成
-                <IconButton
-                    aria-label="复制"
-                    onClick={() => onCopy(token)}
-                    sx={{ position: 'absolute', right: 12, top: 12 }}
-                >
-                    <ContentCopyIcon />
-                </IconButton>
-            </DialogTitle>
+            <DialogTitle>Token 已生成</DialogTitle>
             <DialogContent>
                 <Stack spacing={2} sx={{ mt: 1 }}>
                     <Alert severity="warning">
@@ -340,9 +328,6 @@ function TokenRevealDialog({
                             },
                         }}
                     />
-                    <Typography variant="body2" color="text.secondary">
-                        前缀：<code>{prefix}</code>
-                    </Typography>
                 </Stack>
             </DialogContent>
             <DialogActions>
@@ -354,7 +339,13 @@ function TokenRevealDialog({
     )
 }
 
-function ClientConfigs({ endpoint, onCopy }: { endpoint: string; onCopy: (text: string) => void }) {
+function ClientConfigs({
+    endpoint,
+    onCopy,
+}: {
+    endpoint: string
+    onCopy: (text: string, hint?: string) => void
+}) {
     const envHint = 'export HOMELAB_PANEL_MCP_TOKEN="<粘贴你的 token>"'
     const tabs = [
         { label: 'Codex', value: codexConfig(endpoint) },
@@ -367,15 +358,26 @@ function ClientConfigs({ endpoint, onCopy }: { endpoint: string; onCopy: (text: 
     return (
         <Section title="客户端配置">
             <Typography variant="body2" color="text.secondary">
-                先在终端设置环境变量，再切换 tab 复制所用客户端的配置。token
-                仅通过环境变量传递，不写入配置文件。
+                先在终端设置环境变量，再切换 tab 复制所用客户端的配置。
             </Typography>
             <TextField
                 value={envHint}
                 fullWidth
                 size="small"
                 slotProps={{
-                    input: { readOnly: true, sx: { fontFamily: 'monospace', fontSize: 12 } },
+                    input: {
+                        readOnly: true,
+                        sx: { fontFamily: 'monospace', fontSize: 12 },
+                        endAdornment: (
+                            <IconButton
+                                aria-label="复制环境变量"
+                                edge="end"
+                                onClick={() => onCopy(envHint, '环境变量已复制')}
+                            >
+                                <ContentCopyIcon />
+                            </IconButton>
+                        ),
+                    },
                 }}
             />
             <Tabs value={active} onChange={(_, value) => setActive(value)}>
