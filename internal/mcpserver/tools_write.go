@@ -16,7 +16,7 @@ func auditToolCall(ctx context.Context, tool, targetType string, targetID int, s
 		tool, targetType, targetID, success, RemoteAddrFromContext(ctx))
 }
 
-// registerWriteTools 注册 4 个写入工具。已通过 MCP 鉴权即可调用。
+// registerWriteTools 注册 5 个写入工具。已通过 MCP 鉴权即可调用。
 func registerWriteTools(s *mcp.Server, panelSvc *panel.Service) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "homelab_panel_rename_group",
@@ -34,6 +34,24 @@ func registerWriteTools(s *mcp.Server, panelSvc *panel.Service) {
 		}
 		auditToolCall(ctx, "homelab_panel_rename_group", "group", group.ID, true)
 		return nil, RenameGroupOutput{Group: *group}, nil
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "homelab_panel_create_group",
+		Title:       "Create HomeLab Panel group",
+		Description: "Create a new group. The group id is allocated by the server.",
+		Annotations: &mcp.ToolAnnotations{
+			ReadOnlyHint:    false,
+			DestructiveHint: ptr(false),
+			IdempotentHint:  false,
+		},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, in CreateGroupInput) (*mcp.CallToolResult, CreateGroupOutput, error) {
+		group, err := panelSvc.CreateGroup(ctx, toPanelGroupInput(in))
+		if err != nil {
+			return nil, CreateGroupOutput{}, err
+		}
+		auditToolCall(ctx, "homelab_panel_create_group", "group", group.ID, true)
+		return nil, CreateGroupOutput{Group: *group}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{

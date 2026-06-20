@@ -53,4 +53,3 @@ func (s *Server) registerRoutes() {
 	s.router.GET("/uploads/*filepath", h.Upload)
 	s.router.NoRoute(h.Static)
 }
-

@@ -2,6 +2,7 @@ package panel
 
 import (
 	"fmt"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -22,9 +23,9 @@ const (
 
 // validOpenMethods 是允许的 open_method 枚举，与 handlers/panel.go 保持一致。
 var validOpenMethods = map[string]bool{
-	"current":  true,
-	"new_tab":  true,
-	"iframe":   true,
+	"current": true,
+	"new_tab": true,
+	"iframe":  true,
 }
 
 func isValidOpenMethod(value string) bool {
@@ -42,6 +43,63 @@ func validateGroupName(name string) error {
 	}
 	if runeLen(name) > maxGroupName {
 		return fmt.Errorf("group name too long (max %d characters)", maxGroupName)
+	}
+	return nil
+}
+
+// validIconColors 是前端编辑器「字体颜色」仅有的两个选项：白与黑。
+var validIconColors = map[string]bool{
+	"#FFFFFF": true,
+	"#000000": true,
+}
+
+// validIconBackgroundColors 与前端 ColorSwatchPicker 的快选调色板一致：
+// 19 种 Material 主色 + 白/黑，共 21 个。agent 仅可从中选择背景色，
+// 不得使用其它颜色（含「更多」对话框里的色阶）。
+var validIconBackgroundColors = map[string]bool{
+	"#F44336": true, // Red
+	"#E91E63": true, // Pink
+	"#9C27B0": true, // Purple
+	"#673AB7": true, // Deep Purple
+	"#3F51B5": true, // Indigo
+	"#2196F3": true, // Blue
+	"#03A9F4": true, // Light Blue
+	"#00BCD4": true, // Cyan
+	"#009688": true, // Teal
+	"#4CAF50": true, // Green
+	"#8BC34A": true, // Light Green
+	"#CDDC39": true, // Lime
+	"#FFEB3B": true, // Yellow
+	"#FFC107": true, // Amber
+	"#FF9800": true, // Orange
+	"#FF5722": true, // Deep Orange
+	"#795548": true, // Brown
+	"#9E9E9E": true, // Grey
+	"#607D8B": true, // Blue Grey
+	"#FFFFFF": true, // White
+	"#000000": true, // Black
+}
+
+// normalizeHex 将颜色十六进制串归一化为大写，便于与预设集合做大小写不敏感比较。
+func normalizeHex(v string) string {
+	return strings.ToUpper(v)
+}
+
+func isValidIconColor(v string) bool {
+	return validIconColors[normalizeHex(v)]
+}
+
+func isValidIconBackgroundColor(v string) bool {
+	return validIconBackgroundColors[normalizeHex(v)]
+}
+
+// validateGroupInput 校验创建分组输入：name 合法、sort 非负。
+func validateGroupInput(input GroupInput) error {
+	if err := validateGroupName(input.Name); err != nil {
+		return err
+	}
+	if input.Sort < 0 {
+		return fmt.Errorf("sort must be non-negative")
 	}
 	return nil
 }
@@ -84,6 +142,7 @@ func validateAppPatch(p AppPatch) error {
 	}
 	return nil
 }
+
 // Title、URL 必填且非空；open_method 仅允许枚举值或空（空时由调用方补默认）。
 func validateAppInput(in AppInput) error {
 	if in.Title == "" {
@@ -117,12 +176,20 @@ func validateAppInput(in AppInput) error {
 }
 
 // validateAppIcon 校验图标子字段。
+// color 仅允许白/黑，background_color 仅允许 21 个预设色，与前端编辑器快选调色板一致；
+// 空值视为不设置，跳过校验。
 func validateAppIcon(icon AppIcon) error {
 	if runeLen(icon.Text) > maxIconText {
 		return fmt.Errorf("icon text too long (max %d characters)", maxIconText)
 	}
 	if runeLen(icon.Src) > maxIconSrc {
 		return fmt.Errorf("icon src too long (max %d characters)", maxIconSrc)
+	}
+	if icon.Color != "" && !isValidIconColor(icon.Color) {
+		return fmt.Errorf("invalid icon color %q: must be #FFFFFF or #000000", icon.Color)
+	}
+	if icon.BackgroundColor != "" && !isValidIconBackgroundColor(icon.BackgroundColor) {
+		return fmt.Errorf("invalid icon background_color %q: must be one of the 21 preset colors", icon.BackgroundColor)
 	}
 	return nil
 }

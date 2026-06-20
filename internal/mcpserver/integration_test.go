@@ -67,9 +67,9 @@ func newMCPTestServer(t *testing.T) (*data.Store, *httptest.Server, string) {
 func connectMCP(t *testing.T, url, token string) *mcp.ClientSession {
 	t.Helper()
 	transport := &mcp.StreamableClientTransport{
-		Endpoint:              url,
-		HTTPClient:            &http.Client{Transport: &bearerRT{token: token, base: http.DefaultTransport}},
-		DisableStandaloneSSE:  true,
+		Endpoint:             url,
+		HTTPClient:           &http.Client{Transport: &bearerRT{token: token, base: http.DefaultTransport}},
+		DisableStandaloneSSE: true,
 	}
 	client := mcp.NewClient(&mcp.Implementation{Name: "test-client", Version: "test"}, nil)
 	sess, err := client.Connect(context.Background(), transport, nil)
@@ -120,8 +120,8 @@ func TestMCPReadTools(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListTools: %v", err)
 	}
-	if len(tools.Tools) != 8 {
-		t.Errorf("tools count = %d, want 8", len(tools.Tools))
+	if len(tools.Tools) != 9 {
+		t.Errorf("tools count = %d, want 9", len(tools.Tools))
 	}
 
 	// list_groups：不含应用。
@@ -199,6 +199,26 @@ func TestMCPWriteFlow(t *testing.T) {
 	group := structuredMap(t, res)["group"].(map[string]any)
 	if group["name"] != "Infrastructure" {
 		t.Errorf("renamed group = %v", group["name"])
+	}
+
+	// create_group：服务端分配 id，sort 追加到末尾。
+	res = callTool(t, sess, "homelab_panel_create_group", map[string]any{"name": "Network"})
+	group = structuredMap(t, res)["group"].(map[string]any)
+	newGroupID, ok := group["id"].(float64)
+	if !ok || newGroupID == 0 {
+		t.Fatalf("created group id not allocated: %v", group["id"])
+	}
+	if group["sort"].(float64) != 2 { // 种子里仅 1 个分组 sort=1
+		t.Errorf("append sort = %v, want 2", group["sort"])
+	}
+
+	// create_app 非法背景色 → tool error（禁止非预设色）。
+	res = callTool(t, sess, "homelab_panel_create_app", map[string]any{
+		"group_id": 1, "title": "Bad", "url": "https://x",
+		"icon": map[string]any{"background_color": "#E57373"},
+	})
+	if !res.IsError {
+		t.Error("non preset background color should be a tool error")
 	}
 
 	// replace_app。

@@ -74,6 +74,12 @@ type AppPatch struct {
 	Sort        *int
 }
 
+// GroupInput 用于 CreateGroup 的分组输入。
+type GroupInput struct {
+	Name string
+	Sort int
+}
+
 // 业务错误。MCP 工具把这些作为 tool error 返回给客户端。
 var (
 	ErrGroupNotFound = errors.New("group not found")

@@ -228,6 +228,83 @@ func TestRenameGroup(t *testing.T) {
 	}
 }
 
+func TestCreateGroup(t *testing.T) {
+	store := seedStore(t)
+	svc := NewService(store)
+	ctx := context.Background()
+
+	// 追加到末尾：sort = max(2)+1 = 3，id 由服务端分配。
+	created, err := svc.CreateGroup(ctx, GroupInput{Name: "Network"})
+	if err != nil {
+		t.Fatalf("CreateGroup: %v", err)
+	}
+	if created.ID == 0 {
+		t.Error("server must allocate a non-zero id")
+	}
+	if created.Sort != 3 {
+		t.Errorf("append sort = %d, want 3", created.Sort)
+	}
+	if groupNameByID(store.Snapshot(), created.ID) != "Network" {
+		t.Error("created group not persisted")
+	}
+
+	// 显式 sort 被保留。
+	g, err := svc.CreateGroup(ctx, GroupInput{Name: "Pinned", Sort: 7})
+	if err != nil {
+		t.Fatalf("CreateGroup explicit sort: %v", err)
+	}
+	if g.Sort != 7 {
+		t.Errorf("explicit sort = %d, want 7", g.Sort)
+	}
+
+	// 缺 name 报错。
+	if _, err := svc.CreateGroup(ctx, GroupInput{Name: ""}); err == nil {
+		t.Error("empty name should error")
+	}
+	// 负 sort 报错。
+	if _, err := svc.CreateGroup(ctx, GroupInput{Name: "X", Sort: -1}); err == nil {
+		t.Error("negative sort should error")
+	}
+}
+
+func TestCreateAppIconColors(t *testing.T) {
+	svc := NewService(seedStore(t))
+	ctx := context.Background()
+
+	// 合法预设色（含小写）通过。
+	if _, err := svc.CreateApp(ctx, AppInput{
+		GroupID: 1, Title: "Ok", URL: "https://x",
+		Icon: AppIcon{Color: "#ffffff", BackgroundColor: "#2196f3"},
+	}); err != nil {
+		t.Fatalf("valid preset colors should pass: %v", err)
+	}
+
+	// 非法文字色（非白/黑）报错。
+	if _, err := svc.CreateApp(ctx, AppInput{
+		GroupID: 1, Title: "Bad", URL: "https://x",
+		Icon: AppIcon{Color: "#FF0000"},
+	}); err == nil {
+		t.Error("non preset text color should error")
+	}
+
+	// 非法背景色（red 300 属「更多」色阶，非快选预设）报错。
+	if _, err := svc.CreateApp(ctx, AppInput{
+		GroupID: 1, Title: "Bad", URL: "https://x",
+		Icon: AppIcon{BackgroundColor: "#E57373"},
+	}); err == nil {
+		t.Error("non preset background color should error")
+	}
+}
+
+func groupNameByID(snap data.StoreData, id int) string {
+	for _, g := range snap.Panel.Groups {
+		if g.ID == id {
+			return g.Name
+		}
+	}
+	return ""
+}
+
 func appTitleByID(snap data.StoreData, id int) string {
 	for _, it := range snap.Panel.Items {
 		if it.ID == id {

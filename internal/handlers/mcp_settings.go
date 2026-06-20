@@ -20,9 +20,9 @@ type mcpTokenInfo struct {
 
 // mcpSettingsResponse 是 MCP 设置的只读视图。
 type mcpSettingsResponse struct {
-	Enabled    bool           `json:"enabled"`
-	Tokens     []mcpTokenInfo `json:"tokens"`
-	UpdatedAt  *time.Time     `json:"updated_at,omitempty"`
+	Enabled   bool           `json:"enabled"`
+	Tokens    []mcpTokenInfo `json:"tokens"`
+	UpdatedAt *time.Time     `json:"updated_at,omitempty"`
 }
 
 // mcpTokenResponse 仅在生成 token 时返回明文一次。

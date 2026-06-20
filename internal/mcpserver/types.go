@@ -15,8 +15,8 @@ type AppIcon struct {
 	ItemType        int    `json:"item_type,omitempty" jsonschema:"icon item type (0 plain text, 1 image, 2 iconify, 3 mixed)"`
 	Src             string `json:"src,omitempty" jsonschema:"image url or data url for image icons"`
 	Text            string `json:"text,omitempty" jsonschema:"iconify icon name or text label"`
-	Color           string `json:"color,omitempty" jsonschema:"foreground color"`
-	BackgroundColor string `json:"background_color,omitempty" jsonschema:"icon background color"`
+	Color           string `json:"color,omitempty" jsonschema:"foreground (text) color; must be #FFFFFF or #000000 (case-insensitive)"`
+	BackgroundColor string `json:"background_color,omitempty" jsonschema:"icon background color; must be one of the 21 presets (case-insensitive): #F44336 #E91E63 #9C27B0 #673AB7 #3F51B5 #2196F3 #03A9F4 #00BCD4 #009688 #4CAF50 #8BC34A #CDDC39 #FFEB3B #FFC107 #FF9800 #FF5722 #795548 #9E9E9E #607D8B #FFFFFF #000000"`
 }
 
 // ---- 只读输入 ----
@@ -40,6 +40,11 @@ type GetAppInput struct {
 type RenameGroupInput struct {
 	GroupID int    `json:"group_id" jsonschema:"target group id"`
 	Name    string `json:"name" jsonschema:"new group name"`
+}
+
+type CreateGroupInput struct {
+	Name string `json:"name" jsonschema:"new group name (required)"`
+	Sort int    `json:"sort,omitempty" jsonschema:"optional sort order, non-negative integer; omit to append at the end"`
 }
 
 type CreateAppInput struct {
@@ -99,6 +104,10 @@ type GetAppOutput struct {
 }
 
 type RenameGroupOutput struct {
+	Group panel.GroupSummary `json:"group"`
+}
+
+type CreateGroupOutput struct {
 	Group panel.GroupSummary `json:"group"`
 }
 

@@ -112,6 +112,40 @@ func (s *Service) RenameGroup(_ context.Context, groupID int, name string) (*Gro
 	return result, nil
 }
 
+// CreateGroup 新建分组，ID 由服务端分配。sort 为 0 时追加到现有分组末尾
+// （max sort + 1，无分组时为 1）。返回更新后的精简视图。
+func (s *Service) CreateGroup(_ context.Context, input GroupInput) (*GroupSummary, error) {
+	if err := validateGroupInput(input); err != nil {
+		return nil, err
+	}
+
+	var result *GroupSummary
+	err := s.store.Save(func(d *data.StoreData) error {
+		now := time.Now()
+		id := d.NextID.Group
+		sort := input.Sort
+		if sort == 0 {
+			sort = nextGroupSort(d.Panel.Groups)
+		}
+		g := data.Group{
+			ID:        id,
+			Name:      input.Name,
+			Sort:      sort,
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+		d.Panel.Groups = append(d.Panel.Groups, g)
+		d.NextID.Group = id + 1
+		summary := toGroupSummary(g)
+		result = &summary
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // CreateApp 在指定分组下新建应用，ID 由服务端分配。
 func (s *Service) CreateApp(_ context.Context, input AppInput) (*AppDetail, error) {
 	if err := validateAppInput(input); err != nil {
@@ -258,6 +292,17 @@ func groupExists(groups []data.Group, id int) bool {
 		}
 	}
 	return false
+}
+
+// nextGroupSort 返回追加到末尾的 sort 值：现有最大 sort + 1，无分组时为 1。
+func nextGroupSort(groups []data.Group) int {
+	maxSort := 0
+	for _, g := range groups {
+		if g.Sort > maxSort {
+			maxSort = g.Sort
+		}
+	}
+	return maxSort + 1
 }
 
 func matchesApp(re *regexp.Regexp, it data.Item) bool {

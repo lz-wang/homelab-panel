@@ -54,6 +54,11 @@ func toPanelPatchInput(in PatchAppInput) panel.AppPatch {
 	}
 }
 
+// toPanelGroupInput 将创建分组的 MCP 入参转为 panel.GroupInput。
+func toPanelGroupInput(in CreateGroupInput) panel.GroupInput {
+	return panel.GroupInput{Name: in.Name, Sort: in.Sort}
+}
+
 // iconToPanel 将 MCP 图标 DTO 转为 panel.AppIcon；nil 视为空图标。
 func iconToPanel(icon *AppIcon) panel.AppIcon {
 	if icon == nil {
