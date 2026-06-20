@@ -41,7 +41,7 @@ const defaultIconColor = '#FFFFFF'
 
 const defaultIcon: ItemIconType = {
     itemType: 3,
-    text: 'mdi:application-outline',
+    text: 'mdi:server-network',
     src: '',
     color: defaultIconColor,
     backgroundColor: defaultIconBackgroundColor,
