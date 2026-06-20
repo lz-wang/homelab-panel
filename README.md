@@ -43,6 +43,7 @@ POST /api/v1/mcp
 | `homelab_panel_search_apps` | Regex search by title / description / icon |
 | `homelab_panel_get_app` | Full app detail by id |
 | `homelab_panel_rename_group` | Rename a group |
+| `homelab_panel_create_group` | Create a group (server allocates the id) |
 | `homelab_panel_create_app` | Create an app (server allocates the id) |
 | `homelab_panel_replace_app` | Replace an app's full config |
 | `homelab_panel_patch_app` | Patch selected app fields |
@@ -69,6 +70,5 @@ The settings page also provides ready-to-copy blocks for Codex
 
 - Authentication uses an MCP bearer token, **not** the admin session JWT.
   All tools are available once authenticated.
-- Per token+IP rate limits apply (overall 60/min, writes 10/min, search 20/min),
-  plus a 1 MiB request body cap and an Origin check on the endpoint.
+- A 1 MiB request body cap and an Origin check guard the endpoint.
 - Tools never return admin credentials, token hashes, or internal store state.

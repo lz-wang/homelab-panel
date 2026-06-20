@@ -20,6 +20,9 @@ import (
 //go:embed web/dist/*
 var webFS embed.FS
 
+//go:embed go.mod
+var goModContent string
+
 var version = "dev"
 
 func main() {
@@ -89,6 +92,7 @@ func runServe(c *cli.Context) error {
 		DataDir: c.String("dir"),
 		Version: version,
 		WebFS:   staticFS,
+		GoMod:   goModContent,
 	}
 
 	// 与 app.Config.dataDir() 一致：空值兜底 ./data，确保日志与 store 落在同一目录。

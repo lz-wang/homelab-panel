@@ -14,6 +14,7 @@ func (s *Server) registerRoutes() {
 		DataDir: s.config.dataDir(),
 		Version: s.config.Version,
 		WebFS:   s.config.WebFS,
+		GoMod:   s.config.GoMod,
 	})
 
 	api := s.router.Group("/api/v1")

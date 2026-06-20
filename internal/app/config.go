@@ -7,6 +7,7 @@ type Config struct {
 	DataDir string
 	Version string
 	WebFS   fs.FS
+	GoMod   string
 }
 
 func (c Config) address() string {

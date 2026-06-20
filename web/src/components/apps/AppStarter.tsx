@@ -2,6 +2,7 @@ import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import CableIcon from '@mui/icons-material/Cable'
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined'
 import ImportExportIcon from '@mui/icons-material/ImportExport'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import TableViewIcon from '@mui/icons-material/TableView'
 import Box from '@mui/material/Box'
@@ -15,6 +16,7 @@ import Stack from '@mui/material/Stack'
 import { alpha } from '@mui/material/styles'
 import { useEffect, useState } from 'react'
 
+import { AboutPanel } from '@/components/apps/AboutPanel'
 import { GroupManager } from '@/components/apps/GroupManager'
 import { ImportExportPanel } from '@/components/apps/ImportExportPanel'
 import { MCPSettingsPanel } from '@/components/apps/MCPSettingsPanel'
@@ -55,6 +57,7 @@ const apps = [
         component: ImportExport,
     },
     { key: 'mcp', name: 'MCP设置', icon: <CableIcon />, component: MCPSettingsPanel },
+    { key: 'about', name: '关于', icon: <InfoOutlinedIcon />, component: AboutPanel },
 ]
 
 interface Props {

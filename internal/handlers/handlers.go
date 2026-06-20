@@ -12,6 +12,7 @@ type Deps struct {
 	DataDir string
 	Version string
 	WebFS   fs.FS
+	GoMod   string
 }
 
 type Handler struct {
@@ -19,6 +20,7 @@ type Handler struct {
 	DataDir string
 	Version string
 	WebFS   fs.FS
+	GoMod   string
 	tokens  *TokenManager
 }
 
@@ -28,6 +30,7 @@ func NewHandler(deps Deps) *Handler {
 		DataDir: deps.DataDir,
 		Version: deps.Version,
 		WebFS:   deps.WebFS,
+		GoMod:   deps.GoMod,
 		tokens:  NewTokenManager(deps.Store, 30*24*time.Hour),
 	}
 }
