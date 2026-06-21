@@ -81,7 +81,9 @@ describe('normalizeApiError', () => {
     })
 
     it('maps ERR_CANCELED to a cancelled message', () => {
-        expect(normalizeApiError({ isAxiosError: true, code: 'ERR_CANCELED' }).msg).toBe('请求已取消')
+        expect(normalizeApiError({ isAxiosError: true, code: 'ERR_CANCELED' }).msg).toBe(
+            '请求已取消',
+        )
     })
 
     it('maps a response-less axios error to a generic network message', () => {
