@@ -65,5 +65,10 @@ export default defineConfig({
                 inline: [/@mui\//],
             },
         },
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'text-summary', 'html', 'json'],
+            reportsDirectory: '../coverage/frontend',
+        },
     },
 })

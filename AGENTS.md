@@ -40,6 +40,8 @@ make all
 make fmt
 make check
 make test
+make test-backend
+make test-frontend
 make clean
 make serve
 ```
