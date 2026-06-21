@@ -70,20 +70,39 @@ CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .
 
 ## Validation expectations
 
-Choose validation proportional to the change:
+After every code change, run the whole-project frontend + backend fix/check/test
+gate before handing work back:
 
-- Frontend UI/config changes:
+```bash
+make fmt
+make check
+make test
+git diff --check
+```
+
+This is required even for frontend-only or backend-only code changes. `make fmt`
+is the fix step: it runs backend `gofmt` and frontend `npm run lint:fix`.
+`make check` runs the frontend build/type/lint checks and backend vet checks.
+`make test` runs both backend and frontend tests with coverage.
+
+If a whole-project command fails, diagnose with the narrower commands below, fix
+the cause, then rerun the whole-project gate above:
+
+- Frontend:
+  - `cd web && npm run lint:fix`
   - `cd web && npm run lint`
+  - `cd web && npm run type-check`
   - `cd web && npm run build`
-  - `git diff --check`
-- Frontend logic changes:
-  - add `cd web && npm run test` when tests cover the touched area
-- Backend changes:
+  - `cd web && npm run test`
+- Backend:
+  - `gofmt -w main.go internal`
   - `go vet ./...`
   - `go test ./...`
-  - build the binary when behavior, embedding, or startup code changes
-- Cross-cutting changes:
-  - prefer `make check` or `make test`
+  - `go mod verify`
+  - `CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .`
+
+For docs-only changes, `git diff --check` is usually enough unless the docs also
+change commands, CI, or code examples that should be verified.
 
 Do not proactively run full browser/E2E validation unless the user asks for it or the change is specifically about rendered behavior. If you do run a local server and sandboxing blocks port binding, request escalation rather than changing the implementation.
 
