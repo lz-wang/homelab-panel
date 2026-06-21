@@ -21,6 +21,7 @@ import Typography from '@mui/material/Typography'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { changePassword } from '@/api/admin'
+import { getList } from '@/api/files'
 import { AppIcon } from '@/components/common/AppIcon'
 import { ColorSwatchPicker } from '@/components/common/ColorSwatchPicker'
 import { useConfirm } from '@/components/common/ConfirmProvider'
@@ -28,7 +29,7 @@ import { useNotify } from '@/components/common/NotifyProvider'
 import { useApiAction } from '@/hooks/useApiAction'
 import { t } from '@/locales'
 import { builtinBackgrounds, defaultPanelConfig, usePanelStore } from '@/store/panel'
-import type { ItemInfo, PanelConfig } from '@/types/panel'
+import type { FileInfo, ItemInfo, PanelConfig } from '@/types/panel'
 import { cleanGroup, cleanItem, type HomelabPanelExportV1, isExportV1 } from '@/utils/exportFormat'
 import { FaviconCropDialog } from './FaviconCropDialog'
 
@@ -185,7 +186,6 @@ function FaviconSettingSection({ value, onPatch, onClear }: FaviconSettingSectio
                         width: 32,
                         height: 32,
                         borderRadius: 0.5,
-                        bgcolor: 'background.paper',
                         objectFit: 'contain',
                     }}
                 />
@@ -325,6 +325,106 @@ function SettingsSaveButton({ saving, onSave }: { saving: boolean; onSave: () =>
     )
 }
 
+function isImageUrl(url: string) {
+    return /\.(?:png|jpe?g|gif|webp|svg|ico)(?:\?.*)?$/i.test(url)
+}
+
+interface BackgroundSettingSectionProps {
+    value: string | undefined
+    onPatch: (src: string) => void
+}
+
+// 页面背景选择：内置背景 + 文件管理中已上传的图片，均可直接选取。
+// 上传仍在「文件管理」中进行，这里仅加载并展示已上传图片供选取。
+function BackgroundSettingSection({ value, onPatch }: BackgroundSettingSectionProps) {
+    const [uploaded, setUploaded] = useState<FileInfo[]>([])
+
+    useEffect(() => {
+        let cancelled = false
+
+        getList().then((res) => {
+            if (!cancelled && res.code === 0) {
+                setUploaded(res.data.list.filter((file) => isImageUrl(file.src)))
+            }
+        })
+
+        return () => {
+            cancelled = true
+        }
+    }, [])
+
+    const options = [
+        ...builtinBackgrounds.map((bg) => ({
+            key: `builtin-${bg.src}`,
+            src: bg.src,
+            label: bg.label,
+        })),
+        ...uploaded.map((file) => ({
+            key: `file-${file.id}`,
+            src: file.src,
+            label: file.fileName,
+        })),
+    ]
+
+    return (
+        <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                页面背景
+            </Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    gap: 1,
+                    overflowX: 'auto',
+                    pb: 0.5,
+                    '&::-webkit-scrollbar': { height: 4 },
+                    '&::-webkit-scrollbar-thumb': {
+                        borderRadius: 2,
+                        bgcolor: 'divider',
+                    },
+                }}
+            >
+                {options.map((option) => {
+                    const selected = value === option.src
+
+                    return (
+                        <ButtonBase
+                            key={option.key}
+                            aria-label={option.label}
+                            onClick={() => onPatch(option.src)}
+                            sx={{
+                                position: 'relative',
+                                flexShrink: 0,
+                                width: 120,
+                                aspectRatio: '16 / 9',
+                                overflow: 'hidden',
+                                borderRadius: 1,
+                                border: selected ? '2px solid' : '1px solid',
+                                borderColor: selected ? 'primary.main' : 'divider',
+                                background: `url(${option.src}) center / cover no-repeat`,
+                                boxShadow: selected ? 2 : 0,
+                            }}
+                        >
+                            {selected && (
+                                <CheckCircleIcon
+                                    color="primary"
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 4,
+                                        right: 4,
+                                        bgcolor: 'background.paper',
+                                        borderRadius: '50%',
+                                    }}
+                                />
+                            )}
+                        </ButtonBase>
+                    )
+                })}
+            </Box>
+        </Box>
+    )
+}
+
 export function PageSettingsPanel() {
     const { form, patch, handleSave, saving } = useSettingsForm()
 
@@ -344,69 +444,10 @@ export function PageSettingsPanel() {
                     onClear={() => patch({ faviconSrc: '' })}
                 />
 
-                <Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        页面背景
-                        <Typography
-                            component="span"
-                            variant="caption"
-                            color="text.disabled"
-                            sx={{ ml: 0.5 }}
-                        >
-                            （自定义背景请先在文件管理中上传）
-                        </Typography>
-                    </Typography>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            gap: 1,
-                            overflowX: 'auto',
-                            pb: 0.5,
-                            '&::-webkit-scrollbar': { height: 4 },
-                            '&::-webkit-scrollbar-thumb': {
-                                borderRadius: 2,
-                                bgcolor: 'divider',
-                            },
-                        }}
-                    >
-                        {builtinBackgrounds.map((background) => {
-                            const selected = form.backgroundImageSrc === background.src
-
-                            return (
-                                <ButtonBase
-                                    key={background.src}
-                                    aria-label={background.label}
-                                    onClick={() => patch({ backgroundImageSrc: background.src })}
-                                    sx={{
-                                        position: 'relative',
-                                        flexShrink: 0,
-                                        width: 120,
-                                        aspectRatio: '16 / 9',
-                                        overflow: 'hidden',
-                                        borderRadius: 1,
-                                        border: selected ? '2px solid' : '1px solid',
-                                        borderColor: selected ? 'primary.main' : 'divider',
-                                        background: `url(${background.src}) center / cover no-repeat`,
-                                        boxShadow: selected ? 2 : 0,
-                                    }}
-                                >
-                                    {selected && (
-                                        <CheckCircleIcon
-                                            color="primary"
-                                            sx={{
-                                                position: 'absolute',
-                                                top: 4,
-                                                right: 4,
-                                                bgcolor: 'background.paper',
-                                                borderRadius: '50%',
-                                            }}
-                                        />
-                                    )}
-                                </ButtonBase>
-                            )
-                        })}
-                    </Box>
-                </Box>
+                <BackgroundSettingSection
+                    value={form.backgroundImageSrc}
+                    onPatch={(src) => patch({ backgroundImageSrc: src })}
+                />
 
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
                     <Box sx={{ flex: 1 }}>
