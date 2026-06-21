@@ -77,7 +77,7 @@ jobs:
         run: |
           npm run lint
           npm run build
-          npm run test
+          npm run test:coverage
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -86,8 +86,27 @@ jobs:
 
       - name: Run Go checks
         run: |
-          go vet ./...
-          go test -v ./...
+          mkdir -p coverage
+          go vet . ./internal/...
+          go test -v -covermode=atomic -coverprofile=coverage/backend.out . ./internal/...
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: web/coverage/lcov.info
+          flags: frontend
+          name: frontend
+          fail_ci_if_error: true
+
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/backend.out
+          flags: backend
+          name: backend
+          fail_ci_if_error: true
 
   build:
     # Node 24 based official actions require runner v2.327.1 or later.
@@ -168,6 +187,7 @@ jobs:
           PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
           PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
           HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          CODECOV_REPORT_URL: ${{ github.server_url == 'https://github.com' && format('https://app.codecov.io/gh/{0}/commit/{1}', github.repository, github.sha) || '' }}
         run: |
           if [ -z "${PUSHOVER_TOKEN}" ] || [ -z "${PUSHOVER_USER}" ]; then
             echo "Pushover secrets are not configured; skipping notification."
@@ -192,6 +212,7 @@ jobs:
           <u>分支</u>: <i>${{ github.ref_name }}</i>
           <u>触发人</u>: <i>${{ github.actor }}</i>
           <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看运行详情</a>
+          <a href="${CODECOV_REPORT_URL}">查看 Codecov 测试覆盖率报告</a>
           <u>提交内容</u>:
           ${HEAD_COMMIT_MESSAGE:-workflow_dispatch}
           EOF
