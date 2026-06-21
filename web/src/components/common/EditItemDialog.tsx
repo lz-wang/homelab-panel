@@ -1,3 +1,5 @@
+import CheckIcon from '@mui/icons-material/Check'
+import CloseIcon from '@mui/icons-material/Close'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
@@ -471,11 +473,11 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                         />
                     </Stack>
                 </DialogContent>
-                <DialogActions>
+                <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: 3 }}>
                     {item?.id && (
                         <Stack direction="row" spacing={1} sx={{ mr: 'auto' }}>
                             <Button
-                                variant="text"
+                                variant="outlined"
                                 color="primary"
                                 startIcon={<ContentCopyIcon />}
                                 loading={copying}
@@ -485,7 +487,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                                 复制
                             </Button>
                             <Button
-                                variant="text"
+                                variant="outlined"
                                 color="error"
                                 startIcon={<DeleteIcon />}
                                 loading={deleting}
@@ -497,13 +499,20 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                         </Stack>
                     )}
                     <Button
-                        variant="text"
+                        variant="outlined"
+                        startIcon={<CloseIcon />}
                         disabled={saving || copying || deleting}
                         onClick={onClose}
                     >
                         {t('common.cancel')}
                     </Button>
-                    <Button loading={saving} disabled={copying || deleting} onClick={handleSave}>
+                    <Button
+                        variant="contained"
+                        startIcon={<CheckIcon />}
+                        loading={saving}
+                        disabled={copying || deleting}
+                        onClick={handleSave}
+                    >
                         {t('common.confirm')}
                     </Button>
                 </DialogActions>
