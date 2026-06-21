@@ -12,11 +12,11 @@ import { usePanelStore } from '@/store/panel'
 import { cleanGroup, cleanItem, type HomelabPanelExportV1, isExportV1 } from '@/utils/exportFormat'
 
 function downloadJson(data: HomelabPanelExportV1) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `homelab-panel-${data.exportedAt.slice(0, 10)}.json`
+    link.download = `homelab-panel-${data.exportedAt.slice(0, 19).replace(/:/g, '-')}.json`
     link.click()
     URL.revokeObjectURL(url)
 }

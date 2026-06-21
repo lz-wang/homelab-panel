@@ -88,7 +88,7 @@ func (s *Store) persist() error {
 	if err := os.MkdirAll(filepath.Dir(s.path), 0o755); err != nil {
 		return fmt.Errorf("create data dir: %w", err)
 	}
-	raw, err := json.MarshalIndent(s.data, "", "  ")
+	raw, err := json.MarshalIndent(s.data, "", "    ")
 	if err != nil {
 		return fmt.Errorf("marshal store: %w", err)
 	}
