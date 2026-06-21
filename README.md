@@ -1,6 +1,6 @@
 # homelab-panel
 
-[![codecov](https://codecov.io/gh/lz-wang/homelab-panel/graph/badge.svg)](https://app.codecov.io/gh/lz-wang/homelab-panel)
+[![codecov](https://codecov.io/gh/lz-wang/homelab-panel/graph/badge.svg?token=2jDdgRukgN)](https://codecov.io/gh/lz-wang/homelab-panel)
 
 A single-binary Go service with an embedded React (MUI + Vite) frontend that
 renders a personal homelab dashboard: groups of apps, custom backgrounds, a
