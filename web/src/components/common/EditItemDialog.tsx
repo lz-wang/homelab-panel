@@ -293,19 +293,19 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                         <Box sx={{ display: 'flex', justifyContent: 'center', pb: 5 }}>
                             <Box
                                 sx={{
-                                    width: { xs: '100%', sm: 220 },
-                                    maxWidth: 240,
-                                    height: 64,
+                                    width: { xs: '100%', sm: 260 },
+                                    maxWidth: 288,
+                                    height: 80,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 2,
-                                    px: 2.5,
+                                    gap: 2.5,
+                                    px: 3,
                                     borderRadius: 3,
                                     bgcolor: selectedBackgroundColor,
                                     color: selectedIconColor,
                                 }}
                             >
-                                <IconifyIcon icon={form.icon?.text} size={30} />
+                                <IconifyIcon icon={form.icon?.text} size={38} />
                                 <Box sx={{ minWidth: 0 }}>
                                     <Typography variant="subtitle1" noWrap sx={{ fontWeight: 700 }}>
                                         {previewTitle}
