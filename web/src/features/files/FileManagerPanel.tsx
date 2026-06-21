@@ -22,6 +22,7 @@ import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
 import type { FileInfo } from '@/types/panel'
+import { copyToClipboard } from '@/utils/clipboard'
 
 interface Props {
     selectable?: boolean
@@ -192,8 +193,9 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
     }
 
     async function copyUrl(url: string) {
-        await navigator.clipboard.writeText(url)
-        notify.success('已复制 URL')
+        const ok = await copyToClipboard(url)
+        if (ok) notify.success('已复制 URL')
+        else notify.error('复制失败，请手动选择复制')
     }
 
     return (

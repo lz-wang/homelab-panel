@@ -31,6 +31,7 @@ import { API_SUCCESS_CODE } from '@/api/apiResult'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { useApiAction } from '@/hooks/useApiAction'
+import { copyToClipboard } from '@/utils/clipboard'
 
 function mcpEndpoint() {
     return `${window.location.origin}/api/v1/mcp`
@@ -154,12 +155,9 @@ export function MCPSettingsPanel() {
     }, [refresh])
 
     async function copyText(text: string, hint = '已复制') {
-        try {
-            await navigator.clipboard.writeText(text)
-            notify.success(hint)
-        } catch {
-            notify.error('复制失败，请手动选择复制')
-        }
+        const ok = await copyToClipboard(text)
+        if (ok) notify.success(hint)
+        else notify.error('复制失败，请手动选择复制')
     }
 
     async function updateEnabled(value: boolean) {
