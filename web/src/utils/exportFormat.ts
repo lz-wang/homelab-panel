@@ -24,7 +24,6 @@ export function cleanItem(item: ItemInfo, itemIconGroupId: number): ItemInfo {
         title: item.title,
         url: item.url,
         description: item.description,
-        openMethod: item.openMethod,
         sort: item.sort,
         itemIconGroupId,
     }

@@ -140,7 +140,6 @@ describe('panel store', () => {
             title: 'Example',
             url: 'https://example.com/',
             description: '',
-            openMethod: 2,
             icon: {
                 itemType: 3,
                 text: 'mdi:application-outline',

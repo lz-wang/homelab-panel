@@ -31,7 +31,6 @@ export interface PanelItemWire {
     url: string
     description?: string
     icon: PanelItemIconWire | null
-    open_method: string
     sort?: number
 }
 
@@ -55,7 +54,6 @@ export function toFrontendItem(w: PanelItemWire): ItemInfo {
         title: w.title ?? '',
         url: w.url ?? '',
         description: w.description ?? '',
-        openMethod: toFrontendOpenMethod(w.open_method),
         sort: w.sort,
         itemIconGroupId: w.group_id,
     }
@@ -69,21 +67,8 @@ export function toBackendItem(it: ItemInfo): PanelItemWire {
         url: it.url,
         description: it.description ?? '',
         icon: it.icon ? (keysToSnake(it.icon) as PanelItemIconWire) : null,
-        open_method: toBackendOpenMethod(it.openMethod),
         sort: it.sort,
     }
-}
-
-export function toFrontendOpenMethod(value?: string): number {
-    if (value === 'current') return 1
-    if (value === 'iframe') return 3
-    return 2
-}
-
-export function toBackendOpenMethod(value?: number): string {
-    if (value === 1) return 'current'
-    if (value === 3) return 'iframe'
-    return 'new_tab'
 }
 
 export interface FrontendPanel {

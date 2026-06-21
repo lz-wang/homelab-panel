@@ -42,8 +42,8 @@ func TestNormalizeAssignsIDsAndPreservesCreatedAt(t *testing.T) {
 			{Name: "g2"},        // 新增
 		},
 		Items: []itemInput{
-			{GroupID: 1, Title: "i1", URL: "https://a", OpenMethod: "new_tab"},
-			{GroupID: 2, Title: "i2", URL: "https://b", OpenMethod: "new_tab"},
+			{GroupID: 1, Title: "i1", URL: "https://a"},
+			{GroupID: 2, Title: "i2", URL: "https://b"},
 		},
 	}
 
@@ -67,7 +67,7 @@ func TestNormalizeRejectsDanglingGroupRef(t *testing.T) {
 	snap := store.Snapshot()
 	req := panelRequest{
 		Groups: []groupInput{{Name: "g1"}},
-		Items:  []itemInput{{GroupID: 999, Title: "i1", URL: "https://a", OpenMethod: "new_tab"}},
+		Items:  []itemInput{{GroupID: 999, Title: "i1", URL: "https://a"}},
 	}
 	_, err := normalizePanel(req, snap, snap.NextID)
 	if err != errItemGroupDangling {
@@ -89,7 +89,7 @@ func TestNormalizeRejectsMissingItemTitle(t *testing.T) {
 	snap := store.Snapshot()
 	req := panelRequest{
 		Groups: []groupInput{{Name: "g1"}},
-		Items:  []itemInput{{GroupID: 1, Title: "", URL: "https://a", OpenMethod: "new_tab"}},
+		Items:  []itemInput{{GroupID: 1, Title: "", URL: "https://a"}},
 	}
 	if _, err := normalizePanel(req, snap, snap.NextID); err != errItemTitleRequired {
 		t.Fatalf("expected errItemTitleRequired, got %v", err)
@@ -101,22 +101,10 @@ func TestNormalizeRejectsMissingItemURL(t *testing.T) {
 	snap := store.Snapshot()
 	req := panelRequest{
 		Groups: []groupInput{{Name: "g1"}},
-		Items:  []itemInput{{GroupID: 1, Title: "i1", URL: "", OpenMethod: "new_tab"}},
+		Items:  []itemInput{{GroupID: 1, Title: "i1", URL: ""}},
 	}
 	if _, err := normalizePanel(req, snap, snap.NextID); err != errItemURLRequired {
 		t.Fatalf("expected errItemURLRequired, got %v", err)
-	}
-}
-
-func TestNormalizeRejectsInvalidOpenMethod(t *testing.T) {
-	store := mustStore(t)
-	snap := store.Snapshot()
-	req := panelRequest{
-		Groups: []groupInput{{Name: "g1"}},
-		Items:  []itemInput{{GroupID: 1, Title: "i1", URL: "https://a", OpenMethod: "bogus"}},
-	}
-	if _, err := normalizePanel(req, snap, snap.NextID); err != errOpenMethodInvalid {
-		t.Fatalf("expected errOpenMethodInvalid, got %v", err)
 	}
 }
 
@@ -148,7 +136,7 @@ func TestUpdatePanelStatusCodes(t *testing.T) {
 	// 悬空 groupId → 409
 	w := doPut(panelRequest{
 		Groups: []groupInput{{Name: "g1"}},
-		Items:  []itemInput{{GroupID: 999, Title: "i1", URL: "https://a", OpenMethod: "new_tab"}},
+		Items:  []itemInput{{GroupID: 999, Title: "i1", URL: "https://a"}},
 	})
 	if w.Code != http.StatusConflict {
 		t.Fatalf("dangling groupId: expected 409, got %d (body=%s)", w.Code, w.Body.String())
@@ -157,7 +145,7 @@ func TestUpdatePanelStatusCodes(t *testing.T) {
 	// 缺 title → 400
 	w = doPut(panelRequest{
 		Groups: []groupInput{{Name: "g1"}},
-		Items:  []itemInput{{GroupID: 1, Title: "", URL: "https://a", OpenMethod: "new_tab"}},
+		Items:  []itemInput{{GroupID: 1, Title: "", URL: "https://a"}},
 	})
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("missing title: expected 400, got %d (body=%s)", w.Code, w.Body.String())
@@ -167,7 +155,7 @@ func TestUpdatePanelStatusCodes(t *testing.T) {
 	w = doPut(panelRequest{
 		SiteName: "Lab",
 		Groups:   []groupInput{{Name: "g1"}},
-		Items:    []itemInput{{GroupID: 1, Title: "i1", URL: "https://a", OpenMethod: "new_tab"}},
+		Items:    []itemInput{{GroupID: 1, Title: "i1", URL: "https://a"}},
 	})
 	if w.Code != http.StatusOK {
 		t.Fatalf("valid: expected 200, got %d (body=%s)", w.Code, w.Body.String())

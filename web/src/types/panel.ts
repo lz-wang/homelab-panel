@@ -6,7 +6,6 @@ export interface ItemInfo extends InfoBase {
     url: string
     sort?: number
     description?: string
-    openMethod: number
     itemIconGroupId?: number
 }
 

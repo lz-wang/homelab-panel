@@ -20,19 +20,19 @@ func TestPanelRequestUsesSnakeCaseJSONKeys(t *testing.T) {
 		SearchEngine: json.RawMessage(`{}`),
 		Groups:       []groupInput{{ID: 1, Name: "g"}},
 		Items: []itemInput{
-			{GroupID: 1, Title: "i", URL: "https://a", LANURL: "http://lan", OpenMethod: "new_tab"},
+			{GroupID: 1, Title: "i", URL: "https://a"},
 		},
 	})
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
 	got := string(raw)
-	for _, k := range []string{`"site_name"`, `"search_engine"`, `"group_id"`, `"lan_url"`, `"open_method"`} {
+	for _, k := range []string{`"site_name"`, `"search_engine"`, `"group_id"`} {
 		if !strings.Contains(got, k) {
 			t.Errorf("expected %s in panelRequest JSON, got: %s", k, got)
 		}
 	}
-	for _, k := range []string{`"siteName"`, `"searchEngine"`, `"groupId"`, `"lanUrl"`, `"openMethod"`} {
+	for _, k := range []string{`"siteName"`, `"searchEngine"`, `"groupId"`} {
 		if strings.Contains(got, k) {
 			t.Errorf("camelCase %s should not appear, got: %s", k, got)
 		}

@@ -51,10 +51,8 @@ type CreateAppInput struct {
 	GroupID     int      `json:"group_id" jsonschema:"target group id"`
 	Title       string   `json:"title" jsonschema:"app title"`
 	URL         string   `json:"url" jsonschema:"app url"`
-	LANURL      string   `json:"lan_url,omitempty" jsonschema:"optional lan url"`
 	Description string   `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
-	OpenMethod  string   `json:"open_method,omitempty" jsonschema:"how to open the app: current, new_tab or iframe"`
 	Sort        int      `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
 }
 
@@ -64,10 +62,8 @@ type ReplaceAppInput struct {
 	GroupID     int      `json:"group_id" jsonschema:"target group id"`
 	Title       string   `json:"title" jsonschema:"app title"`
 	URL         string   `json:"url" jsonschema:"app url"`
-	LANURL      string   `json:"lan_url,omitempty" jsonschema:"optional lan url"`
 	Description string   `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
-	OpenMethod  string   `json:"open_method,omitempty" jsonschema:"how to open the app: current, new_tab or iframe"`
 	Sort        int      `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
 }
 
@@ -78,10 +74,8 @@ type PatchAppInput struct {
 	GroupID     *int     `json:"group_id,omitempty" jsonschema:"target group id"`
 	Title       *string  `json:"title,omitempty" jsonschema:"app title"`
 	URL         *string  `json:"url,omitempty" jsonschema:"app url"`
-	LANURL      *string  `json:"lan_url,omitempty" jsonschema:"optional lan url"`
 	Description *string  `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
-	OpenMethod  *string  `json:"open_method,omitempty" jsonschema:"how to open the app: current, new_tab or iframe"`
 	Sort        *int     `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
 }
 

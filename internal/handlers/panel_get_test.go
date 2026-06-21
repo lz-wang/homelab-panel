@@ -22,8 +22,8 @@ func TestGetPanel(t *testing.T) {
 		t.Fatalf("expected 200, got %d (body=%s)", w.Code, w.Body.String())
 	}
 	var resp struct {
-		SiteName string          `json:"site_name"`
-		Config   json.RawMessage `json:"config"`
+		SiteName string            `json:"site_name"`
+		Config   json.RawMessage   `json:"config"`
 		Groups   []json.RawMessage `json:"groups"`
 		Items    []json.RawMessage `json:"items"`
 	}

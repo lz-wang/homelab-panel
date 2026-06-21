@@ -67,10 +67,8 @@ type Item struct {
 	GroupID     int       `json:"group_id"`
 	Title       string    `json:"title"`
 	URL         string    `json:"url"`
-	LANURL      string    `json:"lan_url,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Icon        *ItemIcon `json:"icon"`
-	OpenMethod  string    `json:"open_method"`
 	Sort        int       `json:"sort"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`

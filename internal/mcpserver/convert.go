@@ -13,10 +13,8 @@ func toPanelCreateInput(in CreateAppInput) panel.AppInput {
 		GroupID:     in.GroupID,
 		Title:       in.Title,
 		URL:         in.URL,
-		LANURL:      in.LANURL,
 		Description: in.Description,
 		Icon:        iconToPanel(in.Icon),
-		OpenMethod:  in.OpenMethod,
 		Sort:        in.Sort,
 	}
 }
@@ -27,10 +25,8 @@ func toPanelReplaceInput(in ReplaceAppInput) panel.AppInput {
 		GroupID:     in.GroupID,
 		Title:       in.Title,
 		URL:         in.URL,
-		LANURL:      in.LANURL,
 		Description: in.Description,
 		Icon:        iconToPanel(in.Icon),
-		OpenMethod:  in.OpenMethod,
 		Sort:        in.Sort,
 	}
 }
@@ -46,10 +42,8 @@ func toPanelPatchInput(in PatchAppInput) panel.AppPatch {
 		GroupID:     in.GroupID,
 		Title:       in.Title,
 		URL:         in.URL,
-		LANURL:      in.LANURL,
 		Description: in.Description,
 		Icon:        icon,
-		OpenMethod:  in.OpenMethod,
 		Sort:        in.Sort,
 	}
 }

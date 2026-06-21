@@ -24,7 +24,6 @@ const contextMenu: HomeContextMenuState = {
         icon: null,
         title: '应用',
         url: 'https://example.com',
-        openMethod: 2,
         itemIconGroupId: 1,
     },
 }

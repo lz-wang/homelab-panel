@@ -164,10 +164,8 @@ func (s *Service) CreateApp(_ context.Context, input AppInput) (*AppDetail, erro
 			GroupID:     input.GroupID,
 			Title:       input.Title,
 			URL:         input.URL,
-			LANURL:      input.LANURL,
 			Description: input.Description,
 			Icon:        toDataIconPtr(input.Icon),
-			OpenMethod:  normalizeOpenMethod(input.OpenMethod),
 			Sort:        input.Sort,
 			CreatedAt:   now,
 			UpdatedAt:   now,
@@ -203,10 +201,8 @@ func (s *Service) ReplaceApp(_ context.Context, id int, input AppInput) (*AppDet
 					GroupID:     input.GroupID,
 					Title:       input.Title,
 					URL:         input.URL,
-					LANURL:      input.LANURL,
 					Description: input.Description,
 					Icon:        toDataIconPtr(input.Icon),
-					OpenMethod:  normalizeOpenMethod(input.OpenMethod),
 					Sort:        input.Sort,
 					CreatedAt:   created,
 					UpdatedAt:   time.Now(),
@@ -256,17 +252,11 @@ func (s *Service) PatchApp(_ context.Context, id int, patch AppPatch) (*AppDetai
 		if patch.URL != nil {
 			it.URL = *patch.URL
 		}
-		if patch.LANURL != nil {
-			it.LANURL = *patch.LANURL
-		}
 		if patch.Description != nil {
 			it.Description = *patch.Description
 		}
 		if patch.Icon != nil {
 			it.Icon = toDataIconPtr(*patch.Icon)
-		}
-		if patch.OpenMethod != nil {
-			it.OpenMethod = normalizeOpenMethod(*patch.OpenMethod)
 		}
 		if patch.Sort != nil {
 			it.Sort = *patch.Sort
@@ -358,10 +348,8 @@ func toAppDetail(it data.Item) AppDetail {
 		GroupID:     it.GroupID,
 		Title:       it.Title,
 		URL:         it.URL,
-		LANURL:      it.LANURL,
 		Description: it.Description,
 		Icon:        fromDataIcon(it.Icon),
-		OpenMethod:  it.OpenMethod,
 		Sort:        it.Sort,
 		CreatedAt:   it.CreatedAt,
 		UpdatedAt:   it.UpdatedAt,

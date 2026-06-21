@@ -36,7 +36,7 @@ func newMCPTestServer(t *testing.T) (*data.Store, *httptest.Server, string) {
 		d.Panel.Groups = []data.Group{{ID: 1, Name: "Infra", Sort: 1, CreatedAt: now, UpdatedAt: now}}
 		d.Panel.Items = []data.Item{{
 			ID: 10, GroupID: 1, Title: "Proxmox", URL: "https://pve.local",
-			OpenMethod: "new_tab", Sort: 1, CreatedAt: now, UpdatedAt: now,
+			Sort: 1, CreatedAt: now, UpdatedAt: now,
 		}}
 		d.NextID = data.NextID{Group: 2, Item: 11, File: 1}
 		return nil

@@ -32,21 +32,16 @@ type itemInput struct {
 	GroupID     int            `json:"group_id"`
 	Title       string         `json:"title"`
 	URL         string         `json:"url"`
-	LANURL      string         `json:"lan_url"`
 	Description string         `json:"description"`
 	Icon        *data.ItemIcon `json:"icon"`
-	OpenMethod  string         `json:"open_method"`
 	Sort        int            `json:"sort"`
 }
-
-var validOpenMethods = map[string]bool{"current": true, "new_tab": true, "iframe": true}
 
 var (
 	errGroupNameRequired = errors.New("group name is required")
 	errItemTitleRequired = errors.New("item title is required")
 	errItemURLRequired   = errors.New("item url is required")
 	errItemGroupDangling = errors.New("item references unknown group")
-	errOpenMethodInvalid = errors.New("invalid openMethod")
 )
 
 func (h *Handler) GetPanel(c *gin.Context) {
@@ -153,13 +148,6 @@ func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (
 		if it.URL == "" {
 			return data.Panel{}, errItemURLRequired
 		}
-		if it.OpenMethod != "" && !validOpenMethods[it.OpenMethod] {
-			return data.Panel{}, errOpenMethodInvalid
-		}
-		openMethod := it.OpenMethod
-		if openMethod == "" {
-			openMethod = "new_tab"
-		}
 		if !groupIDSet[it.GroupID] {
 			return data.Panel{}, errItemGroupDangling
 		}
@@ -180,10 +168,8 @@ func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (
 			GroupID:     it.GroupID,
 			Title:       it.Title,
 			URL:         it.URL,
-			LANURL:      it.LANURL,
 			Description: it.Description,
 			Icon:        it.Icon,
-			OpenMethod:  openMethod,
 			Sort:        sort,
 			CreatedAt:   created,
 			UpdatedAt:   now,

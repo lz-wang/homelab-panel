@@ -52,16 +52,14 @@ func TestToPanelCreateInput(t *testing.T) {
 		GroupID:     1,
 		Title:       "t",
 		URL:         "u",
-		LANURL:      "lan",
 		Description: "d",
 		Icon:        &AppIcon{ItemType: 3, Text: "mdi:git", Color: "#FFFFFF", BackgroundColor: "#2196F3"},
-		OpenMethod:  "new_tab",
 		Sort:        5,
 	}
 	got := toPanelCreateInput(in)
 	want := panel.AppInput{
-		GroupID: 1, Title: "t", URL: "u", LANURL: "lan",
-		Description: "d", OpenMethod: "new_tab", Sort: 5,
+		GroupID: 1, Title: "t", URL: "u",
+		Description: "d", Sort: 5,
 		Icon: panel.AppIcon{ItemType: 3, Text: "mdi:git", Color: "#FFFFFF", BackgroundColor: "#2196F3"},
 	}
 	if got != want {

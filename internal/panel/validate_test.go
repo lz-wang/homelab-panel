@@ -23,9 +23,7 @@ func TestValidateAppInput(t *testing.T) {
 		{"empty url", func(a AppInput) AppInput { a.URL = ""; return a }, "url is required"},
 		{"title too long", func(a AppInput) AppInput { a.Title = strings.Repeat("x", maxAppTitle+1); return a }, "title too long"},
 		{"url too long", func(a AppInput) AppInput { a.URL = strings.Repeat("x", maxAppURL+1); return a }, "url too long"},
-		{"lan_url too long", func(a AppInput) AppInput { a.LANURL = strings.Repeat("x", maxAppLANURL+1); return a }, "lan_url too long"},
 		{"description too long", func(a AppInput) AppInput { a.Description = strings.Repeat("x", maxDescription+1); return a }, "description too long"},
-		{"invalid open_method", func(a AppInput) AppInput { a.OpenMethod = "bogus"; return a }, "invalid open_method"},
 		{"negative sort", func(a AppInput) AppInput { a.Sort = -1; return a }, "sort must be non-negative"},
 	}
 	for _, c := range cases {
@@ -35,10 +33,6 @@ func TestValidateAppInput(t *testing.T) {
 				t.Fatalf("got %v, want containing %q", err, c.wantSub)
 			}
 		})
-	}
-
-	if err := validateAppInput(AppInput{Title: "t", URL: "u", OpenMethod: "new_tab", Icon: AppIcon{}}); err != nil {
-		t.Fatalf("valid open_method should pass: %v", err)
 	}
 }
 
@@ -58,17 +52,8 @@ func TestValidateAppPatch(t *testing.T) {
 	if err := validateAppPatch(AppPatch{Title: strPtr(strings.Repeat("x", maxAppTitle+1))}); err == nil {
 		t.Fatal("too-long title should fail")
 	}
-	if err := validateAppPatch(AppPatch{LANURL: strPtr(strings.Repeat("x", maxAppLANURL+1))}); err == nil {
-		t.Fatal("too-long lan_url should fail")
-	}
 	if err := validateAppPatch(AppPatch{Description: strPtr(strings.Repeat("x", maxDescription+1))}); err == nil {
 		t.Fatal("too-long description should fail")
-	}
-	if err := validateAppPatch(AppPatch{OpenMethod: strPtr("bad")}); err == nil {
-		t.Fatal("invalid open_method should fail")
-	}
-	if err := validateAppPatch(AppPatch{OpenMethod: strPtr("")}); err != nil {
-		t.Fatalf("empty open_method should pass: %v", err)
 	}
 	if err := validateAppPatch(AppPatch{Sort: intPtr(-1)}); err == nil {
 		t.Fatal("negative sort should fail")
@@ -99,15 +84,6 @@ func TestValidateAppIcon(t *testing.T) {
 	}
 	if err := validateAppIcon(AppIcon{Src: strings.Repeat("x", maxIconSrc+1)}); err == nil {
 		t.Fatal("too-long icon src should fail")
-	}
-}
-
-func TestNormalizeOpenMethod(t *testing.T) {
-	if got := normalizeOpenMethod(""); got != defaultOpenValue {
-		t.Errorf("empty → %q, want %q", got, defaultOpenValue)
-	}
-	if got := normalizeOpenMethod("iframe"); got != "iframe" {
-		t.Errorf("non-empty passthrough: got %q", got)
 	}
 }
 

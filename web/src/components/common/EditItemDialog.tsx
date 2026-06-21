@@ -61,7 +61,6 @@ const defaultItem: ItemInfo = {
     title: '',
     url: '',
     description: '',
-    openMethod: 2,
 }
 
 type GroupOption = ItemIconGroup & { inputValue?: string }
@@ -152,7 +151,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                     color: form.icon?.color ?? defaultIcon.color,
                     backgroundColor: form.icon?.backgroundColor ?? defaultIcon.backgroundColor,
                 },
-                openMethod: 2,
                 url: normalizeUrl(form.url),
             })
 

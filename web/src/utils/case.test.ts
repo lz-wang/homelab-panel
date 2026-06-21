@@ -10,15 +10,15 @@ describe('keysToSnake', () => {
     })
 
     it('converts nested objects and arrays', () => {
-        const input = { group: { itemIconGroupId: 1 }, items: [{ openMethod: 'new_tab' }] }
+        const input = { group: { itemIconGroupId: 1 }, items: [{ isActive: true }] }
         expect(keysToSnake(input)).toEqual({
             group: { item_icon_group_id: 1 },
-            items: [{ open_method: 'new_tab' }],
+            items: [{ is_active: true }],
         })
     })
 
-    it('handles the lanUrl boundary', () => {
-        expect(keysToSnake({ lanUrl: 'http://x' })).toEqual({ lan_url: 'http://x' })
+    it('handles the trailing-capital boundary', () => {
+        expect(keysToSnake({ apiUrl: 'http://x' })).toEqual({ api_url: 'http://x' })
     })
 
     it('does not mutate the input', () => {

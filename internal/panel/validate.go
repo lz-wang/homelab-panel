@@ -8,29 +8,16 @@ import (
 
 // 字段长度上限（见 plan-1.md Phase 4.4）。
 const (
-	maxGroupName     = 64
-	maxAppTitle      = 128
-	maxAppURL        = 2048
-	maxAppLANURL     = 2048
-	maxDescription   = 512
-	maxIconText      = 128
-	maxIconSrc       = 2048
-	maxPatternLen    = 256
-	defaultLimit     = 20
-	maxLimit         = 100
-	defaultOpenValue = "new_tab"
+	maxGroupName   = 64
+	maxAppTitle    = 128
+	maxAppURL      = 2048
+	maxDescription = 512
+	maxIconText    = 128
+	maxIconSrc     = 2048
+	maxPatternLen  = 256
+	defaultLimit   = 20
+	maxLimit       = 100
 )
-
-// validOpenMethods 是允许的 open_method 枚举，与 handlers/panel.go 保持一致。
-var validOpenMethods = map[string]bool{
-	"current": true,
-	"new_tab": true,
-	"iframe":  true,
-}
-
-func isValidOpenMethod(value string) bool {
-	return validOpenMethods[value]
-}
 
 func runeLen(s string) int {
 	return utf8.RuneCountInString(s)
@@ -123,14 +110,8 @@ func validateAppPatch(p AppPatch) error {
 			return fmt.Errorf("item url too long (max %d characters)", maxAppURL)
 		}
 	}
-	if p.LANURL != nil && runeLen(*p.LANURL) > maxAppLANURL {
-		return fmt.Errorf("item lan_url too long (max %d characters)", maxAppLANURL)
-	}
 	if p.Description != nil && runeLen(*p.Description) > maxDescription {
 		return fmt.Errorf("item description too long (max %d characters)", maxDescription)
-	}
-	if p.OpenMethod != nil && *p.OpenMethod != "" && !isValidOpenMethod(*p.OpenMethod) {
-		return fmt.Errorf("invalid open_method %q", *p.OpenMethod)
 	}
 	if p.Icon != nil {
 		if err := validateAppIcon(*p.Icon); err != nil {
@@ -143,7 +124,7 @@ func validateAppPatch(p AppPatch) error {
 	return nil
 }
 
-// Title、URL 必填且非空；open_method 仅允许枚举值或空（空时由调用方补默认）。
+// Title、URL 必填且非空。
 func validateAppInput(in AppInput) error {
 	if in.Title == "" {
 		return fmt.Errorf("item title is required")
@@ -157,14 +138,8 @@ func validateAppInput(in AppInput) error {
 	if runeLen(in.URL) > maxAppURL {
 		return fmt.Errorf("item url too long (max %d characters)", maxAppURL)
 	}
-	if runeLen(in.LANURL) > maxAppLANURL {
-		return fmt.Errorf("item lan_url too long (max %d characters)", maxAppLANURL)
-	}
 	if runeLen(in.Description) > maxDescription {
 		return fmt.Errorf("item description too long (max %d characters)", maxDescription)
-	}
-	if in.OpenMethod != "" && !isValidOpenMethod(in.OpenMethod) {
-		return fmt.Errorf("invalid open_method %q", in.OpenMethod)
 	}
 	if in.Sort < 0 {
 		return fmt.Errorf("sort must be non-negative")
@@ -192,14 +167,6 @@ func validateAppIcon(icon AppIcon) error {
 		return fmt.Errorf("invalid icon background_color %q: must be one of the 21 preset colors", icon.BackgroundColor)
 	}
 	return nil
-}
-
-// normalizeOpenMethod 将空 open_method 补为默认值 new_tab。
-func normalizeOpenMethod(value string) string {
-	if value == "" {
-		return defaultOpenValue
-	}
-	return value
 }
 
 // validateSearchPattern 校验正则 pattern 长度。

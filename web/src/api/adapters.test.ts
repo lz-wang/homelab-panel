@@ -23,11 +23,9 @@ describe('toBackendItem', () => {
             icon: null,
             title: 't',
             url: 'u',
-            openMethod: 2,
             itemIconGroupId: 3,
         })
         expect(wire.group_id).toBe(3)
-        expect(wire.open_method).toBe('new_tab')
     })
 })
 
@@ -52,10 +50,8 @@ describe('toFrontendItem', () => {
             title: 't',
             url: 'u',
             icon: null,
-            open_method: 'iframe',
         })
         expect(fe.itemIconGroupId).toBe(5)
-        expect(fe.openMethod).toBe(3)
     })
 })
 
@@ -76,7 +72,6 @@ describe('icon wire casing', () => {
             icon,
             title: 't',
             url: 'u',
-            openMethod: 2,
             itemIconGroupId: 1,
         })
         expect(wire.icon).toEqual({
@@ -101,7 +96,6 @@ describe('icon wire casing', () => {
                 background_color: '#2196F3',
                 src: '',
             },
-            open_method: 'new_tab',
         })
         expect(fe.icon).toEqual({
             itemType: 3,
@@ -118,7 +112,6 @@ describe('icon wire casing', () => {
             icon,
             title: 't',
             url: 'u',
-            openMethod: 2,
             itemIconGroupId: 1,
         })
         const back = toFrontendItem({
@@ -126,7 +119,6 @@ describe('icon wire casing', () => {
             title: 't',
             url: 'u',
             icon: wire.icon,
-            open_method: 'new_tab',
         })
         expect(back.icon?.itemType).toBe(3)
         expect(back.icon?.backgroundColor).toBe('#2196F3')

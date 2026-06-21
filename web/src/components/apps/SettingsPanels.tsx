@@ -114,7 +114,6 @@ const appCardPreviewItem: ItemInfo = {
     title: 'GitHub',
     description: 'Hello world',
     url: 'https://github.com',
-    openMethod: 2,
 }
 
 function currentViewportWidth() {

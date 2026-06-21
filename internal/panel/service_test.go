@@ -23,9 +23,9 @@ func seedStore(t *testing.T) *data.Store {
 			{ID: 2, Name: "Media", Sort: 2, CreatedAt: now, UpdatedAt: now},
 		}
 		d.Panel.Items = []data.Item{
-			{ID: 10, GroupID: 1, Title: "Proxmox", URL: "https://pve", Description: "virtualization", Sort: 1, Icon: &data.ItemIcon{Text: "mdi:server"}, OpenMethod: "new_tab", CreatedAt: now, UpdatedAt: now},
-			{ID: 11, GroupID: 1, Title: "Grafana", URL: "https://grafana", Sort: 2, Icon: &data.ItemIcon{}, OpenMethod: "new_tab", CreatedAt: now, UpdatedAt: now},
-			{ID: 20, GroupID: 2, Title: "Jellyfin", URL: "https://jf", Sort: 1, Icon: &data.ItemIcon{}, OpenMethod: "new_tab", CreatedAt: now, UpdatedAt: now},
+			{ID: 10, GroupID: 1, Title: "Proxmox", URL: "https://pve", Description: "virtualization", Sort: 1, Icon: &data.ItemIcon{Text: "mdi:server"}, CreatedAt: now, UpdatedAt: now},
+			{ID: 11, GroupID: 1, Title: "Grafana", URL: "https://grafana", Sort: 2, Icon: &data.ItemIcon{}, CreatedAt: now, UpdatedAt: now},
+			{ID: 20, GroupID: 2, Title: "Jellyfin", URL: "https://jf", Sort: 1, Icon: &data.ItemIcon{}, CreatedAt: now, UpdatedAt: now},
 		}
 		d.NextID = data.NextID{Group: 3, Item: 21, File: 1}
 		return nil
@@ -176,12 +176,6 @@ func TestPatchApp(t *testing.T) {
 	}
 	if patched.URL != "https://pve" {
 		t.Errorf("url should be unchanged: %q", patched.URL)
-	}
-
-	// open_method 非法报错。
-	bad := "explode"
-	if _, err := svc.PatchApp(ctx, 10, AppPatch{OpenMethod: &bad}); err == nil {
-		t.Error("invalid open_method should error")
 	}
 
 	// 不存在的 app 报错。
