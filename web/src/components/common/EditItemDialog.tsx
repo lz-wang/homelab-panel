@@ -6,7 +6,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Dialog from '@mui/material/Dialog'
+import Dialog, { type DialogProps } from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
@@ -18,7 +18,7 @@ import RadioGroup from '@mui/material/RadioGroup'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
@@ -68,6 +68,10 @@ type GroupOption = ItemIconGroup & { inputValue?: string }
 
 const filterGroups = createFilterOptions<GroupOption>()
 
+// 卡片单击打开编辑后，短时间内忽略落在遮罩上的关闭动作，
+// 避免习惯性双击的第二次点击落在遮罩上把刚打开的弹窗立即关闭。
+const backdropDismissGuardMs = 300
+
 export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }: Props) {
     const notify = useNotify()
     const confirm = useConfirm()
@@ -81,6 +85,21 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     const [copying, setCopying] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const [creatingGroup, setCreatingGroup] = useState(false)
+    const openTimeRef = useRef(0)
+
+    useEffect(() => {
+        if (open) openTimeRef.current = Date.now()
+    }, [open])
+
+    const handleDialogClose: NonNullable<DialogProps['onClose']> = (_event, reason) => {
+        if (
+            reason === 'backdropClick' &&
+            Date.now() - openTimeRef.current < backdropDismissGuardMs
+        ) {
+            return
+        }
+        onClose()
+    }
 
     useEffect(() => {
         if (!open) return
@@ -277,7 +296,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
         <>
             <Dialog
                 open={open}
-                onClose={copying || deleting || saving ? undefined : onClose}
+                onClose={copying || deleting || saving ? undefined : handleDialogClose}
                 maxWidth={false}
                 fullWidth
                 slotProps={{

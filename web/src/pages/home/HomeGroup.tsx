@@ -8,7 +8,6 @@ import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { useEffect, useRef } from 'react'
 
 import { AppIcon } from '@/components/common/AppIcon'
 import { t } from '@/locales'
@@ -17,9 +16,6 @@ import type { PanelConfig, ItemInfo } from '@/types/panel'
 import type { ItemGroup } from './types'
 
 const groupTitleColor = '#fff'
-
-// 编辑模式下单击导航需要延迟，以便双击能取消单击并改为打开编辑。
-const singleClickNavDelayMs = 250
 
 const groupActionIconSx = {
     color: groupTitleColor,
@@ -65,14 +61,6 @@ export function HomeGroup({
     onContextMenu,
 }: Props) {
     const sorting = Boolean(group.sortStatus) && !isSearchActive
-    const pendingClickRef = useRef<number | null>(null)
-
-    // 组件卸载时清理挂起的单击定时器，避免在已卸载后触发导航。
-    useEffect(() => {
-        return () => {
-            if (pendingClickRef.current) window.clearTimeout(pendingClickRef.current)
-        }
-    }, [])
 
     return (
         <Box
@@ -139,26 +127,12 @@ export function HomeGroup({
                         onClick={() => {
                             if (sorting) return
 
-                            // 编辑模式下延迟单击导航，让随后的双击有机会取消它并改为打开编辑。
+                            // 编辑模式：单击直接进入编辑；浏览模式：单击导航。
                             if (canManage) {
-                                if (pendingClickRef.current)
-                                    window.clearTimeout(pendingClickRef.current)
-                                pendingClickRef.current = window.setTimeout(() => {
-                                    pendingClickRef.current = null
-                                    onItemClick(sourceGroupIndex, item)
-                                }, singleClickNavDelayMs)
+                                onItemEdit(item)
                             } else {
                                 onItemClick(sourceGroupIndex, item)
                             }
-                        }}
-                        onDoubleClick={() => {
-                            if (sorting || !canManage) return
-
-                            if (pendingClickRef.current) {
-                                window.clearTimeout(pendingClickRef.current)
-                                pendingClickRef.current = null
-                            }
-                            onItemEdit(item)
                         }}
                         onContextMenu={(event) => onContextMenu(event, item, sorting)}
                     >
