@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 	<meta charset="UTF-8">
 	<link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -12,14 +12,14 @@
 <script>
 	// 首屏背景跟随已存储的颜色模式（key 与 main.tsx 的 modeStorageKey 一致），
 	// 避免 loading 屏与最终 MUI 模式不一致的闪烁。
-	(function () {
+	(() => {
 		try {
-			var mode = localStorage.getItem('homelab-color-mode') || 'system';
-			var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+			const mode = localStorage.getItem('homelab-color-mode') || 'system';
+			const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
 			if (mode === 'dark' || (mode === 'system' && prefersDark)) {
 				document.documentElement.style.backgroundColor = '#121212';
 			}
-		} catch (e) {}
+		} catch {}
 	})();
 </script>
 </head>

@@ -81,8 +81,8 @@ git diff --check
 ```
 
 This is required even for frontend-only or backend-only code changes. `make fmt`
-is the fix step: it runs backend `gofmt` and frontend `npm run lint:fix`.
-`make check` runs the frontend build/type/lint checks and backend vet checks.
+is the fix step: it runs backend `gofmt` and frontend Biome write checks.
+`make check` runs the frontend build/type/Biome checks and backend vet checks.
 `make test` runs both backend and frontend tests with coverage.
 
 If a whole-project command fails, diagnose with the narrower commands below, fix
@@ -109,10 +109,9 @@ Do not proactively run full browser/E2E validation unless the user asks for it o
 ## Frontend conventions
 
 - npm with `web/package-lock.json` is the dependency source of truth.
-- Formatting is Prettier-driven through `web/.prettierrc.json`.
+- Formatting and linting are Biome-driven through `web/biome.json`.
 - Frontend TypeScript/TSX uses 4-space indentation.
-- ESLint is configured with flat config in `web/eslint.config.mjs`.
-- Keep `npm run lint` clean; it includes Prettier format checking.
+- Keep `npm run lint` clean; it runs Biome checks.
 - Prefer existing API adapter seams in `web/src/api/*`, especially `web/src/api/adapters.ts`, when backend contracts change.
 - Keep React/MUI UI changes localized and avoid unrelated styling churn.
 - MUI `Tooltip` always renders below the anchor — use `placement="bottom"` consistently.

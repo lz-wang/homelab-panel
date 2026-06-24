@@ -12,7 +12,9 @@ vi.mock('@mui/material/Menu', () => ({
 
 vi.mock('@mui/material/MenuItem', () => ({
     default: ({ children, onClick }: { children: ReactNode; onClick: () => void }) => (
-        <button onClick={onClick}>{children}</button>
+        <button type="button" onClick={onClick}>
+            {children}
+        </button>
     ),
 }))
 

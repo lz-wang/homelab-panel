@@ -18,11 +18,11 @@ import { HomeContextMenu, type HomeContextMenuState } from './home/HomeContextMe
 import { HomeFloatingActions } from './home/HomeFloatingActions'
 import { HomeGroup } from './home/HomeGroup'
 import { HomeHeader } from './home/HomeHeader'
+import type { ItemGroup } from './home/types'
 import { useHomeActions } from './home/useHomeActions'
 import { useHomeData } from './home/useHomeData'
 import { useHomeSearch } from './home/useHomeSearch'
 import { useHomeSort } from './home/useHomeSort'
-import type { ItemGroup } from './home/types'
 
 // 浏览模式（已登录管理员临时切到只读）是否开启，持久化以在刷新后保持。
 const BROWSING_AS_GUEST_KEY = 'homelab-panel:browsing-as-guest'
@@ -74,6 +74,7 @@ export default function Home() {
         loadPanel()
     }, [loadPanel])
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: panelDataVersion intentionally forces public list reloads after edits.
     useEffect(() => {
         loadList()
     }, [loadList, panelDataVersion])

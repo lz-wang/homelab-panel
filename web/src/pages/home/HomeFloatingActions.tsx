@@ -10,9 +10,9 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import Fab from '@mui/material/Fab'
 import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
+import type { Theme } from '@mui/material/styles'
 import { useColorScheme } from '@mui/material/styles'
 import Tooltip from '@mui/material/Tooltip'
-import type { Theme } from '@mui/material/styles'
 
 type ColorMode = 'system' | 'light' | 'dark'
 

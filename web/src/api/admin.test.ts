@@ -6,8 +6,8 @@ vi.mock('@/api/request', () => ({
     put: vi.fn(),
 }))
 
-import { del, post, put } from '@/api/request'
 import { changePassword, login, logout } from '@/api/admin'
+import { del, post, put } from '@/api/request'
 
 describe('admin api', () => {
     it('login posts the password to /admin/session', () => {

@@ -18,16 +18,15 @@ import Tabs from '@mui/material/Tabs'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useCallback, useEffect, useState } from 'react'
-
+import { API_SUCCESS_CODE } from '@/api/apiResult'
 import {
-    type MCPSettings,
-    type MCPTokenInfo,
     deleteMCPToken,
     generateMCPToken,
     getMCPSettings,
+    type MCPSettings,
+    type MCPTokenInfo,
     updateMCPSettings,
 } from '@/api/mcp'
-import { API_SUCCESS_CODE } from '@/api/apiResult'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { useApiAction } from '@/hooks/useApiAction'
@@ -70,13 +69,15 @@ function claudeCodeCommand(endpoint: string) {
 }
 
 function mcpJsonConfig(endpoint: string) {
+    const tokenPlaceholder = '$' + '{HOMELAB_PANEL_MCP_TOKEN}'
+
     return JSON.stringify(
         {
             mcpServers: {
                 'homelab-panel': {
                     type: 'http',
                     url: endpoint,
-                    headers: { Authorization: 'Bearer ${HOMELAB_PANEL_MCP_TOKEN}' },
+                    headers: { Authorization: `Bearer ${tokenPlaceholder}` },
                 },
             },
         },

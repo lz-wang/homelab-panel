@@ -1,4 +1,4 @@
-import { toBackendPanel, toFrontendPanel, type PanelWire } from '@/api/adapters'
+import { type PanelWire, toBackendPanel, toFrontendPanel } from '@/api/adapters'
 import { get, put } from '@/api/request'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
 

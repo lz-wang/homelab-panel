@@ -1,9 +1,9 @@
 import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useEffect, useState, type ReactNode } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
-import { getAbout, type AboutDep, type AboutInfo } from '@/api/about'
+import { type AboutDep, type AboutInfo, getAbout } from '@/api/about'
 
 // 前端运行时依赖（取自 package.json dependencies）对应的 GitHub 仓库。
 // 同一仓库的多个 npm 包（如 @emotion/react 与 @emotion/styled）已合并为一条。

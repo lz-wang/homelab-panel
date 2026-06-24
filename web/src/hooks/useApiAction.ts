@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { type ApiResponse, API_SUCCESS_CODE } from '@/api/apiResult'
+import { API_SUCCESS_CODE, type ApiResponse } from '@/api/apiResult'
 import { useNotify } from '@/components/common/NotifyProvider'
 
 type MessageBuilder<T> = string | ((response: ApiResponse<T>) => string)

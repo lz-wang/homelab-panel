@@ -97,6 +97,7 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
         loadFiles()
     }, [loadFiles])
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: reset pagination when any filter input changes.
     useEffect(() => {
         setPage(1)
     }, [keyword, kindFilter, pageSize])

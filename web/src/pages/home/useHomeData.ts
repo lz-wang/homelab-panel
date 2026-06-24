@@ -32,7 +32,7 @@ export function useHomeData() {
             const groups: ItemGroup[] = res.data.groups.map((group) => ({
                 ...group,
                 hoverStatus: false,
-                items: res.data!.items.filter((item) => item.itemIconGroupId === group.id),
+                items: res.data.items.filter((item) => item.itemIconGroupId === group.id),
             }))
 
             setItems(groups)

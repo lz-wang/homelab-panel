@@ -1,4 +1,4 @@
-import { type Area } from 'react-easy-crop'
+import type { Area } from 'react-easy-crop'
 
 // Favicon export is rendered to a fixed square so it stays crisp at 16/32/48 px.
 const FAVICON_OUTPUT_SIZE = 128

@@ -1,9 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-import { type ApiResponse, API_SUCCESS_CODE } from '@/api/apiResult'
 import type { FrontendPanel } from '@/api/adapters'
-import { getPanel, savePanel, type PanelDocument } from '@/api/panel'
+import { API_SUCCESS_CODE, type ApiResponse } from '@/api/apiResult'
+import { getPanel, type PanelDocument, savePanel } from '@/api/panel'
 import type { ItemIconGroup, ItemInfo, PanelConfig } from '@/types/panel'
 
 // 背景图置于 public/backgrounds，Vite 以根路径静态提供（dev 与 build 一致）。

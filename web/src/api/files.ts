@@ -38,7 +38,9 @@ export function uploadImg(file: File) {
 
 export function uploadFiles(files: File[]) {
     const data = new FormData()
-    files.forEach((file) => data.append('files[]', file))
+    files.forEach((file) => {
+        data.append('files[]', file)
+    })
     return post<BackendFile[]>({ url: '/files', data }).then((res) => {
         const uploaded = res.code === 0 ? res.data.map(toFrontendFile) : []
         return {

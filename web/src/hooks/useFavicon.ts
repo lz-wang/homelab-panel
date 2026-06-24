@@ -36,7 +36,7 @@ export function useFavicon() {
         if (type) link.type = type
         else link.removeAttribute('type')
 
-        if (!custom || !custom.startsWith('/uploads/')) return
+        if (!custom?.startsWith('/uploads/')) return
 
         let cancelled = false
         // cache: 'no-cache' so a file deleted after first load is actually seen as 404

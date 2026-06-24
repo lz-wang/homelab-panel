@@ -10,6 +10,12 @@ vi.mock('@mui/material/Tooltip', () => ({
     ),
 }))
 
+function clickTooltipButton(title: string) {
+    const button = screen.getByTitle(title).querySelector('button')
+    if (!button) throw new Error(`Button not found for tooltip: ${title}`)
+    fireEvent.click(button)
+}
+
 describe('HomeFloatingActions', () => {
     it('未登录时只显示登录按钮', () => {
         const onLogin = vi.fn()
@@ -28,7 +34,7 @@ describe('HomeFloatingActions', () => {
             />,
         )
 
-        fireEvent.click(screen.getByTitle('登录').querySelector('button')!)
+        clickTooltipButton('登录')
 
         expect(onLogin).toHaveBeenCalledTimes(1)
         expect(screen.queryByTitle('设置')).not.toBeInTheDocument()
@@ -51,9 +57,9 @@ describe('HomeFloatingActions', () => {
             />,
         )
 
-        fireEvent.click(screen.getByTitle('设置').querySelector('button')!)
-        fireEvent.click(screen.getByTitle('切换到浏览模式').querySelector('button')!)
-        fireEvent.click(screen.getByTitle('登出').querySelector('button')!)
+        clickTooltipButton('设置')
+        clickTooltipButton('切换到浏览模式')
+        clickTooltipButton('登出')
 
         expect(onOpenSettings).toHaveBeenCalledTimes(1)
         expect(onToggleBrowseMode).toHaveBeenCalledTimes(1)

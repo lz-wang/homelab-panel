@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography'
 
 import { AppIcon } from '@/components/common/AppIcon'
 import { t } from '@/locales'
-import type { PanelConfig, ItemInfo } from '@/types/panel'
+import type { ItemInfo, PanelConfig } from '@/types/panel'
 
 import type { ItemGroup } from './types'
 

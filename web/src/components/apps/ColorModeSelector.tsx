@@ -1,9 +1,9 @@
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness'
+import { useColorScheme } from '@mui/material/styles'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import { useColorScheme } from '@mui/material/styles'
 import type { ReactNode } from 'react'
 
 export type ColorMode = 'system' | 'light' | 'dark'

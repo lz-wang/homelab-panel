@@ -15,7 +15,13 @@ import { ConfirmProvider } from './components/common/ConfirmProvider'
 import { NotifyProvider } from './components/common/NotifyProvider'
 import { theme } from './theme/theme'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root')
+
+if (!rootElement) {
+    throw new Error('Root element #root was not found')
+}
+
+ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
         <InitColorSchemeScript
             attribute="data-mui-color-scheme"
