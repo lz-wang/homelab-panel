@@ -32,6 +32,7 @@ type itemInput struct {
 	GroupID     int            `json:"group_id"`
 	Title       string         `json:"title"`
 	URL         string         `json:"url"`
+	BackupURL   string         `json:"backup_url"`
 	Description string         `json:"description"`
 	Icon        *data.ItemIcon `json:"icon"`
 	Sort        int            `json:"sort"`
@@ -168,6 +169,7 @@ func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (
 			GroupID:     it.GroupID,
 			Title:       it.Title,
 			URL:         it.URL,
+			BackupURL:   it.BackupURL,
 			Description: it.Description,
 			Icon:        it.Icon,
 			Sort:        sort,

@@ -51,6 +51,7 @@ type CreateAppInput struct {
 	GroupID     int      `json:"group_id" jsonschema:"target group id"`
 	Title       string   `json:"title" jsonschema:"app title"`
 	URL         string   `json:"url" jsonschema:"app url"`
+	BackupURL   string   `json:"backup_url,omitempty" jsonschema:"optional backup url opened on right-click in browse mode"`
 	Description string   `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
 	Sort        int      `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
@@ -62,6 +63,7 @@ type ReplaceAppInput struct {
 	GroupID     int      `json:"group_id" jsonschema:"target group id"`
 	Title       string   `json:"title" jsonschema:"app title"`
 	URL         string   `json:"url" jsonschema:"app url"`
+	BackupURL   string   `json:"backup_url,omitempty" jsonschema:"optional backup url opened on right-click in browse mode"`
 	Description string   `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
 	Sort        int      `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
@@ -74,6 +76,7 @@ type PatchAppInput struct {
 	GroupID     *int     `json:"group_id,omitempty" jsonschema:"target group id"`
 	Title       *string  `json:"title,omitempty" jsonschema:"app title"`
 	URL         *string  `json:"url,omitempty" jsonschema:"app url"`
+	BackupURL   *string  `json:"backup_url,omitempty" jsonschema:"optional backup url opened on right-click in browse mode; empty string clears it"`
 	Description *string  `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
 	Sort        *int     `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`

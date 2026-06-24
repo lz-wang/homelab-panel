@@ -40,6 +40,12 @@ export function useHomeActions({
         openPage(getItemUrl(item))
     }
 
+    function handleOpenBackupUrl(item: ItemInfo) {
+        const url = item.backupUrl?.trim()
+        if (url) openPage(url)
+        else notify.info('此应用无备用链接')
+    }
+
     async function handleDelete(item: ItemInfo) {
         if (!canManage || !item.id) return
 
@@ -153,6 +159,7 @@ export function useHomeActions({
         getItemUrl,
         openPage,
         handleItemClick,
+        handleOpenBackupUrl,
         handleDelete,
         handleCopyItem,
         handleEditItem,

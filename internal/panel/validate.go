@@ -110,6 +110,9 @@ func validateAppPatch(p AppPatch) error {
 			return fmt.Errorf("item url too long (max %d characters)", maxAppURL)
 		}
 	}
+	if p.BackupURL != nil && *p.BackupURL != "" && runeLen(*p.BackupURL) > maxAppURL {
+		return fmt.Errorf("item backup_url too long (max %d characters)", maxAppURL)
+	}
 	if p.Description != nil && runeLen(*p.Description) > maxDescription {
 		return fmt.Errorf("item description too long (max %d characters)", maxDescription)
 	}
@@ -137,6 +140,9 @@ func validateAppInput(in AppInput) error {
 	}
 	if runeLen(in.URL) > maxAppURL {
 		return fmt.Errorf("item url too long (max %d characters)", maxAppURL)
+	}
+	if runeLen(in.BackupURL) > maxAppURL {
+		return fmt.Errorf("item backup_url too long (max %d characters)", maxAppURL)
 	}
 	if runeLen(in.Description) > maxDescription {
 		return fmt.Errorf("item description too long (max %d characters)", maxDescription)

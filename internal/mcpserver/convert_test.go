@@ -52,13 +52,14 @@ func TestToPanelCreateInput(t *testing.T) {
 		GroupID:     1,
 		Title:       "t",
 		URL:         "u",
+		BackupURL:   "bu",
 		Description: "d",
 		Icon:        &AppIcon{ItemType: 3, Text: "mdi:git", Color: "#FFFFFF", BackgroundColor: "#2196F3"},
 		Sort:        5,
 	}
 	got := toPanelCreateInput(in)
 	want := panel.AppInput{
-		GroupID: 1, Title: "t", URL: "u",
+		GroupID: 1, Title: "t", URL: "u", BackupURL: "bu",
 		Description: "d", Sort: 5,
 		Icon: panel.AppIcon{ItemType: 3, Text: "mdi:git", Color: "#FFFFFF", BackgroundColor: "#2196F3"},
 	}
@@ -68,8 +69,8 @@ func TestToPanelCreateInput(t *testing.T) {
 }
 
 func TestToPanelReplaceInput(t *testing.T) {
-	got := toPanelReplaceInput(ReplaceAppInput{ID: 7, GroupID: 2, Title: "r", URL: "ru", Sort: 9})
-	if got.GroupID != 2 || got.Title != "r" || got.URL != "ru" || got.Sort != 9 {
+	got := toPanelReplaceInput(ReplaceAppInput{ID: 7, GroupID: 2, Title: "r", URL: "ru", BackupURL: "rbu", Sort: 9})
+	if got.GroupID != 2 || got.Title != "r" || got.URL != "ru" || got.BackupURL != "rbu" || got.Sort != 9 {
 		t.Errorf("toPanelReplaceInput fields not mapped: %+v", got)
 	}
 }
@@ -85,16 +86,20 @@ func TestToPanelPatchInput(t *testing.T) {
 	t.Run("pointers and icon mapped", func(t *testing.T) {
 		title := "t"
 		url := "u"
+		bak := "bu"
 		sort := 3
 		icon := AppIcon{ItemType: 2, Src: "https://x/a.png"}
 		got := toPanelPatchInput(PatchAppInput{
-			ID: 2, Title: &title, URL: &url, Sort: &sort, Icon: &icon,
+			ID: 2, Title: &title, URL: &url, BackupURL: &bak, Sort: &sort, Icon: &icon,
 		})
 		if got.Title == nil || *got.Title != "t" {
 			t.Errorf("title not mapped: %+v", got.Title)
 		}
 		if got.URL == nil || *got.URL != "u" {
 			t.Errorf("url not mapped: %+v", got.URL)
+		}
+		if got.BackupURL == nil || *got.BackupURL != "bu" {
+			t.Errorf("backup_url not mapped: %+v", got.BackupURL)
 		}
 		if got.Sort == nil || *got.Sort != 3 {
 			t.Errorf("sort not mapped: %+v", got.Sort)

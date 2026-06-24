@@ -60,6 +60,7 @@ const defaultItem: ItemInfo = {
     icon: defaultIcon,
     title: '',
     url: '',
+    backupUrl: '',
     description: '',
 }
 
@@ -122,6 +123,9 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
         if (!isValidUrl(url)) return '链接无效'
 
+        const backupUrl = form.backupUrl?.trim() ? normalizeUrl(form.backupUrl) : ''
+        if (backupUrl && !isValidUrl(backupUrl)) return '备用链接无效'
+
         if (!form.itemIconGroupId) return '必须选择分组'
 
         if (!form.icon?.text?.trim()) return 'Iconify 图标不能为空'
@@ -152,6 +156,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                     backgroundColor: form.icon?.backgroundColor ?? defaultIcon.backgroundColor,
                 },
                 url: normalizeUrl(form.url),
+                backupUrl: form.backupUrl?.trim() ? normalizeUrl(form.backupUrl) : '',
             })
 
             if (res.code === 0) {
@@ -468,6 +473,15 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                             onChange={(event) => setForm({ ...form, url: event.target.value })}
                             fullWidth
                             required
+                        />
+                        <TextField
+                            label="备用链接"
+                            placeholder="浏览模式下右键卡片打开此链接（可选）"
+                            value={form.backupUrl ?? ''}
+                            onChange={(event) =>
+                                setForm({ ...form, backupUrl: event.target.value })
+                            }
+                            fullWidth
                         />
                     </Stack>
                 </DialogContent>

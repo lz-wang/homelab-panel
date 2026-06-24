@@ -23,9 +23,11 @@ describe('toBackendItem', () => {
             icon: null,
             title: 't',
             url: 'u',
+            backupUrl: 'bu',
             itemIconGroupId: 3,
         })
         expect(wire.group_id).toBe(3)
+        expect(wire.backup_url).toBe('bu')
     })
 })
 
@@ -49,9 +51,11 @@ describe('toFrontendItem', () => {
             group_id: 5,
             title: 't',
             url: 'u',
+            backup_url: 'bu',
             icon: null,
         })
         expect(fe.itemIconGroupId).toBe(5)
+        expect(fe.backupUrl).toBe('bu')
     })
 })
 

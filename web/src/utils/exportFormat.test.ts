@@ -18,6 +18,7 @@ describe('export format utilities', () => {
                     id: 10,
                     title: 'NAS',
                     url: 'https://nas.local',
+                    backupUrl: 'https://nas-bak.local',
                     description: 'storage',
                     sort: 5,
                     itemIconGroupId: 1,
@@ -28,6 +29,7 @@ describe('export format utilities', () => {
         ).toEqual({
             title: 'NAS',
             url: 'https://nas.local',
+            backupUrl: 'https://nas-bak.local',
             description: 'storage',
             sort: 5,
             itemIconGroupId: 9,

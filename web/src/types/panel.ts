@@ -4,6 +4,7 @@ export interface ItemInfo extends InfoBase {
     icon: ItemIcon | null
     title: string
     url: string
+    backupUrl?: string
     sort?: number
     description?: string
     itemIconGroupId?: number

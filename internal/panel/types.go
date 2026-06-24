@@ -37,6 +37,7 @@ type AppDetail struct {
 	GroupID     int       `json:"group_id"`
 	Title       string    `json:"title"`
 	URL         string    `json:"url"`
+	BackupURL   string    `json:"backup_url,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Icon        AppIcon   `json:"icon"`
 	Sort        int       `json:"sort"`
@@ -49,6 +50,7 @@ type AppInput struct {
 	GroupID     int
 	Title       string
 	URL         string
+	BackupURL   string
 	Description string
 	Icon        AppIcon
 	Sort        int
@@ -63,6 +65,7 @@ type AppPatch struct {
 	GroupID     *int
 	Title       *string
 	URL         *string
+	BackupURL   *string
 	Description *string
 	Icon        *AppIcon
 	Sort        *int

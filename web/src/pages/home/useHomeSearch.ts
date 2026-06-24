@@ -17,6 +17,7 @@ export function useHomeSearch(items: ItemGroup[]) {
                     (item) =>
                         item.title.toLowerCase().includes(value) ||
                         item.url.toLowerCase().includes(value) ||
+                        item.backupUrl?.toLowerCase().includes(value) ||
                         item.description?.toLowerCase().includes(value),
                 ),
             }))

@@ -50,6 +50,7 @@ export default function Home() {
         addItemIconGroupId,
         creatingFirstGroup,
         handleItemClick,
+        handleOpenBackupUrl,
         handleDelete,
         handleCopyItem,
         handleEditItem,
@@ -117,14 +118,22 @@ export default function Home() {
     }
 
     function handleContextMenu(event: React.MouseEvent, item: ItemInfo, sorting?: boolean) {
-        if (sorting || !canManage) return
+        if (sorting) return
 
+        // 编辑模式：右键打开编辑/复制/删除菜单（保持原行为）。
+        if (canManage) {
+            event.preventDefault()
+            setContextMenu({
+                mouseX: event.clientX,
+                mouseY: event.clientY,
+                item,
+            })
+            return
+        }
+
+        // 浏览模式：右键打开备用链接；无则顶部通知。
         event.preventDefault()
-        setContextMenu({
-            mouseX: event.clientX,
-            mouseY: event.clientY,
-            item,
-        })
+        handleOpenBackupUrl(item)
     }
 
     async function handleLogout() {

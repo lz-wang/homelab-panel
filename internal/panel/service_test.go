@@ -23,7 +23,7 @@ func seedStore(t *testing.T) *data.Store {
 			{ID: 2, Name: "Media", Sort: 2, CreatedAt: now, UpdatedAt: now},
 		}
 		d.Panel.Items = []data.Item{
-			{ID: 10, GroupID: 1, Title: "Proxmox", URL: "https://pve", Description: "virtualization", Sort: 1, Icon: &data.ItemIcon{Text: "mdi:server"}, CreatedAt: now, UpdatedAt: now},
+			{ID: 10, GroupID: 1, Title: "Proxmox", URL: "https://pve", BackupURL: "https://pve-mirror", Description: "virtualization", Sort: 1, Icon: &data.ItemIcon{Text: "mdi:server"}, CreatedAt: now, UpdatedAt: now},
 			{ID: 11, GroupID: 1, Title: "Grafana", URL: "https://grafana", Sort: 2, Icon: &data.ItemIcon{}, CreatedAt: now, UpdatedAt: now},
 			{ID: 20, GroupID: 2, Title: "Jellyfin", URL: "https://jf", Sort: 1, Icon: &data.ItemIcon{}, CreatedAt: now, UpdatedAt: now},
 		}
@@ -97,6 +97,12 @@ func TestSearchApps(t *testing.T) {
 		t.Fatalf("search icon text = %v", items)
 	}
 
+	// 匹配 backup_url。
+	items, _ = svc.SearchApps(ctx, "mirror", false, 0)
+	if len(items) != 1 || items[0].Title != "Proxmox" {
+		t.Fatalf("search backup_url = %v", items)
+	}
+
 	// limit 截断。
 	items, _ = svc.SearchApps(ctx, ".", false, 1)
 	if len(items) != 1 {
@@ -124,6 +130,9 @@ func TestGetApp(t *testing.T) {
 	if app.Title != "Proxmox" || app.Icon.Text != "mdi:server" {
 		t.Errorf("app = %+v", app)
 	}
+	if app.BackupURL != "https://pve-mirror" {
+		t.Errorf("backup_url = %q, want https://pve-mirror", app.BackupURL)
+	}
 
 	if _, err := svc.GetApp(ctx, 999); !errors.Is(err, ErrAppNotFound) {
 		t.Errorf("missing app err = %v, want ErrAppNotFound", err)
@@ -135,12 +144,15 @@ func TestCreateApp(t *testing.T) {
 	svc := NewService(store)
 	ctx := context.Background()
 
-	created, err := svc.CreateApp(ctx, AppInput{GroupID: 1, Title: "NewApp", URL: "https://new"})
+	created, err := svc.CreateApp(ctx, AppInput{GroupID: 1, Title: "NewApp", URL: "https://new", BackupURL: "https://new-bak"})
 	if err != nil {
 		t.Fatalf("CreateApp: %v", err)
 	}
 	if created.ID == 0 {
 		t.Error("server must allocate a non-zero id")
+	}
+	if created.BackupURL != "https://new-bak" {
+		t.Errorf("created backup_url = %q, want https://new-bak", created.BackupURL)
 	}
 	if appTitleByID(store.Snapshot(), created.ID) != "NewApp" {
 		t.Error("created app not persisted")
@@ -178,6 +190,26 @@ func TestPatchApp(t *testing.T) {
 		t.Errorf("url should be unchanged: %q", patched.URL)
 	}
 
+	// 设置 backup_url。
+	bak := "https://bak"
+	patched, err = svc.PatchApp(ctx, 10, AppPatch{BackupURL: &bak})
+	if err != nil {
+		t.Fatalf("PatchApp backup_url: %v", err)
+	}
+	if patched.BackupURL != "https://bak" {
+		t.Errorf("backup_url = %q, want https://bak", patched.BackupURL)
+	}
+
+	// 清空 backup_url。
+	emptyBak := ""
+	patched, err = svc.PatchApp(ctx, 10, AppPatch{BackupURL: &emptyBak})
+	if err != nil {
+		t.Fatalf("PatchApp clear backup_url: %v", err)
+	}
+	if patched.BackupURL != "" {
+		t.Errorf("backup_url should be cleared: %q", patched.BackupURL)
+	}
+
 	// 不存在的 app 报错。
 	if _, err := svc.PatchApp(ctx, 999, AppPatch{Title: &title}); !errors.Is(err, ErrAppNotFound) {
 		t.Errorf("missing app err = %v, want ErrAppNotFound", err)
@@ -189,12 +221,15 @@ func TestReplaceApp(t *testing.T) {
 	svc := NewService(store)
 	ctx := context.Background()
 
-	replaced, err := svc.ReplaceApp(ctx, 10, AppInput{GroupID: 1, Title: "PVE", URL: "https://pve2"})
+	replaced, err := svc.ReplaceApp(ctx, 10, AppInput{GroupID: 1, Title: "PVE", URL: "https://pve2", BackupURL: "https://pve2-bak"})
 	if err != nil {
 		t.Fatalf("ReplaceApp: %v", err)
 	}
 	if replaced.Title != "PVE" || replaced.URL != "https://pve2" {
 		t.Errorf("replaced = %+v", replaced)
+	}
+	if replaced.BackupURL != "https://pve2-bak" {
+		t.Errorf("replaced backup_url = %q, want https://pve2-bak", replaced.BackupURL)
 	}
 	if replaced.Description != "" {
 		t.Errorf("description should be cleared after full replace: %q", replaced.Description)

@@ -164,6 +164,7 @@ func (s *Service) CreateApp(_ context.Context, input AppInput) (*AppDetail, erro
 			GroupID:     input.GroupID,
 			Title:       input.Title,
 			URL:         input.URL,
+			BackupURL:   input.BackupURL,
 			Description: input.Description,
 			Icon:        toDataIconPtr(input.Icon),
 			Sort:        input.Sort,
@@ -201,6 +202,7 @@ func (s *Service) ReplaceApp(_ context.Context, id int, input AppInput) (*AppDet
 					GroupID:     input.GroupID,
 					Title:       input.Title,
 					URL:         input.URL,
+					BackupURL:   input.BackupURL,
 					Description: input.Description,
 					Icon:        toDataIconPtr(input.Icon),
 					Sort:        input.Sort,
@@ -252,6 +254,9 @@ func (s *Service) PatchApp(_ context.Context, id int, patch AppPatch) (*AppDetai
 		if patch.URL != nil {
 			it.URL = *patch.URL
 		}
+		if patch.BackupURL != nil {
+			it.BackupURL = *patch.BackupURL
+		}
 		if patch.Description != nil {
 			it.Description = *patch.Description
 		}
@@ -302,6 +307,9 @@ func matchesApp(re *regexp.Regexp, it data.Item) bool {
 	if it.Description != "" && re.MatchString(it.Description) {
 		return true
 	}
+	if it.BackupURL != "" && re.MatchString(it.BackupURL) {
+		return true
+	}
 	if it.Icon != nil && it.Icon.Text != "" && re.MatchString(it.Icon.Text) {
 		return true
 	}
@@ -348,6 +356,7 @@ func toAppDetail(it data.Item) AppDetail {
 		GroupID:     it.GroupID,
 		Title:       it.Title,
 		URL:         it.URL,
+		BackupURL:   it.BackupURL,
 		Description: it.Description,
 		Icon:        fromDataIcon(it.Icon),
 		Sort:        it.Sort,

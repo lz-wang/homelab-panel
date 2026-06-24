@@ -14,6 +14,11 @@ func TestValidateAppInput(t *testing.T) {
 		t.Fatalf("valid input should pass: %v", err)
 	}
 
+	// 可选 backup_url：空通过，合法值通过。
+	if err := validateAppInput(AppInput{Title: "t", URL: "u", BackupURL: "https://b", Icon: AppIcon{}}); err != nil {
+		t.Fatalf("optional backup_url should pass: %v", err)
+	}
+
 	cases := []struct {
 		name    string
 		mutate  func(AppInput) AppInput
@@ -23,6 +28,7 @@ func TestValidateAppInput(t *testing.T) {
 		{"empty url", func(a AppInput) AppInput { a.URL = ""; return a }, "url is required"},
 		{"title too long", func(a AppInput) AppInput { a.Title = strings.Repeat("x", maxAppTitle+1); return a }, "title too long"},
 		{"url too long", func(a AppInput) AppInput { a.URL = strings.Repeat("x", maxAppURL+1); return a }, "url too long"},
+		{"backup_url too long", func(a AppInput) AppInput { a.BackupURL = strings.Repeat("x", maxAppURL+1); return a }, "backup_url too long"},
 		{"description too long", func(a AppInput) AppInput { a.Description = strings.Repeat("x", maxDescription+1); return a }, "description too long"},
 		{"negative sort", func(a AppInput) AppInput { a.Sort = -1; return a }, "sort must be non-negative"},
 	}
@@ -60,6 +66,16 @@ func TestValidateAppPatch(t *testing.T) {
 	}
 	if err := validateAppPatch(AppPatch{Icon: &AppIcon{Color: "#FF0000"}}); err == nil {
 		t.Fatal("invalid icon color should fail")
+	}
+	// backup_url：缺省不改、空串清空（均合法），超长报错。
+	if err := validateAppPatch(AppPatch{BackupURL: strPtr("")}); err != nil {
+		t.Fatalf("empty backup_url (clear) should pass: %v", err)
+	}
+	if err := validateAppPatch(AppPatch{BackupURL: strPtr("https://b")}); err != nil {
+		t.Fatalf("valid backup_url should pass: %v", err)
+	}
+	if err := validateAppPatch(AppPatch{BackupURL: strPtr(strings.Repeat("x", maxAppURL+1))}); err == nil {
+		t.Fatal("too-long backup_url should fail")
 	}
 }
 

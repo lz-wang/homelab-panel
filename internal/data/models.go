@@ -67,6 +67,7 @@ type Item struct {
 	GroupID     int       `json:"group_id"`
 	Title       string    `json:"title"`
 	URL         string    `json:"url"`
+	BackupURL   string    `json:"backup_url,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Icon        *ItemIcon `json:"icon"`
 	Sort        int       `json:"sort"`

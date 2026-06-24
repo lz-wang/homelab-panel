@@ -29,6 +29,7 @@ export interface PanelItemWire {
     group_id: number
     title: string
     url: string
+    backup_url?: string
     description?: string
     icon: PanelItemIconWire | null
     sort?: number
@@ -53,6 +54,7 @@ export function toFrontendItem(w: PanelItemWire): ItemInfo {
         icon: w.icon ? (keysToCamel(w.icon) as ItemIcon) : null,
         title: w.title ?? '',
         url: w.url ?? '',
+        backupUrl: w.backup_url ?? '',
         description: w.description ?? '',
         sort: w.sort,
         itemIconGroupId: w.group_id,
@@ -65,6 +67,7 @@ export function toBackendItem(it: ItemInfo): PanelItemWire {
         group_id: it.itemIconGroupId ?? 0,
         title: it.title,
         url: it.url,
+        backup_url: it.backupUrl ?? '',
         description: it.description ?? '',
         icon: it.icon ? (keysToSnake(it.icon) as PanelItemIconWire) : null,
         sort: it.sort,

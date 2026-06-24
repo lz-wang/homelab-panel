@@ -23,6 +23,7 @@ export function cleanItem(item: ItemInfo, itemIconGroupId: number): ItemInfo {
         icon: item.icon,
         title: item.title,
         url: item.url,
+        backupUrl: item.backupUrl,
         description: item.description,
         sort: item.sort,
         itemIconGroupId,
