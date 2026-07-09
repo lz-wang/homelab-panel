@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom'
 import { login } from '@/api/admin'
 import { API_SUCCESS_CODE } from '@/api/apiResult'
 import { useApiAction } from '@/hooks/useApiAction'
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 
 export default function Login() {
@@ -22,6 +22,7 @@ export default function Login() {
     const setInitialized = useAuthStore((s) => s.setInitialized)
     const [password, setPassword] = useState('')
     const { loading, run } = useApiAction()
+    const { t } = useTranslation()
 
     async function handleSubmit() {
         const res = await run(() => login(password), {

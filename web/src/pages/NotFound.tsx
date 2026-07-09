@@ -4,8 +4,11 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useNavigate } from 'react-router-dom'
 
+import { useTranslation } from '@/locales'
+
 export default function NotFound() {
     const navigate = useNavigate()
+    const { t } = useTranslation()
 
     return (
         <Box
@@ -20,7 +23,7 @@ export default function NotFound() {
                 <Typography variant="h2" color="white" sx={{ fontWeight: 700 }}>
                     404
                 </Typography>
-                <Button onClick={() => navigate('/')}>返回首页</Button>
+                <Button onClick={() => navigate('/')}>{t('home.backHome')}</Button>
             </Stack>
         </Box>
     )

@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography'
 import { type ReactNode, useEffect, useState } from 'react'
 
 import { type AboutDep, type AboutInfo, getAbout } from '@/api/about'
+import { useTranslation } from '@/locales'
 
 // 前端运行时依赖（取自 package.json dependencies）对应的 GitHub 仓库。
 // 同一仓库的多个 npm 包（如 @emotion/react 与 @emotion/styled）已合并为一条。
@@ -55,6 +56,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 export function AboutPanel() {
     const [info, setInfo] = useState<AboutInfo | null>(null)
+    const { t } = useTranslation()
 
     useEffect(() => {
         let active = true
@@ -68,7 +70,7 @@ export function AboutPanel() {
 
     return (
         <Stack spacing={3}>
-            <Field label="仓库">
+            <Field label={t('about.repo')}>
                 <Link
                     href={info?.repo ?? 'https://github.com/lz-wang/homelab-panel'}
                     target="_blank"
@@ -78,7 +80,7 @@ export function AboutPanel() {
                 </Link>
             </Field>
 
-            <Field label="作者">
+            <Field label={t('about.author')}>
                 <Link
                     href={info?.author?.url ?? 'https://github.com/lz-wang'}
                     target="_blank"
@@ -88,15 +90,15 @@ export function AboutPanel() {
                 </Link>
             </Field>
 
-            <Field label="版本">
+            <Field label={t('about.version')}>
                 <Typography variant="body2">{info?.version || '-'}</Typography>
             </Field>
 
-            <Field label="前端组件">
+            <Field label={t('about.frontend')}>
                 <DepLinks deps={frontendDeps} />
             </Field>
 
-            <Field label="后端组件">
+            <Field label={t('about.backend')}>
                 <DepLinks deps={info?.backend_deps ?? []} />
             </Field>
         </Stack>

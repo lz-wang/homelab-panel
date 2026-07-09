@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { API_SUCCESS_CODE, type ApiResponse } from '@/api/apiResult'
 import { useNotify } from '@/components/common/NotifyProvider'
+import { t } from '@/locales'
 
 type MessageBuilder<T> = string | ((response: ApiResponse<T>) => string)
 
@@ -38,7 +39,7 @@ export function useApiAction() {
 
                 return response
             } catch {
-                notify.error('请求失败')
+                notify.error(t('errors.requestFail'))
                 return null
             } finally {
                 setLoading(false)

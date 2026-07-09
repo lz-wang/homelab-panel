@@ -12,6 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle'
 import Divider from '@mui/material/Divider'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import MenuItem from '@mui/material/MenuItem'
+import Select from '@mui/material/Select'
 import Slider from '@mui/material/Slider'
 import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
@@ -27,7 +28,8 @@ import { ColorSwatchPicker } from '@/components/common/ColorSwatchPicker'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { useApiAction } from '@/hooks/useApiAction'
-import { t } from '@/locales'
+import { LANGUAGES, useTranslation } from '@/locales'
+import { useLocaleStore } from '@/store/locale'
 import { builtinBackgrounds, defaultPanelConfig, usePanelStore } from '@/store/panel'
 import type { FileInfo, ItemInfo, PanelConfig } from '@/types/panel'
 import { cleanGroup, cleanItem, type HomelabPanelExportV1, isExportV1 } from '@/utils/exportFormat'
@@ -93,14 +95,6 @@ function normalizeForm(config: PanelConfig): PanelConfig {
     }
 }
 
-const appCardAspectRatioOptions = [
-    { label: '自动', value: 'auto' },
-    { label: '16:9', value: '16 / 9' },
-    { label: '2:1', value: '2 / 1' },
-    { label: '5:2', value: '5 / 2' },
-    { label: '3:1', value: '3 / 1' },
-]
-
 const appCardGridMinWidth = 200
 const appCardGridGap = 18
 const homeContentHorizontalPadding = 32
@@ -162,6 +156,7 @@ function FaviconSettingSection({ value, onPatch, onClear }: FaviconSettingSectio
     const [imageSrc, setImageSrc] = useState<string | null>(null)
     const [remoteOpen, setRemoteOpen] = useState(false)
     const previewSrc = value?.trim() ? value : '/favicon.svg'
+    const { t } = useTranslation()
 
     function handleFile(file: File) {
         const reader = new FileReader()
@@ -175,7 +170,7 @@ function FaviconSettingSection({ value, onPatch, onClear }: FaviconSettingSectio
     return (
         <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                网站图标
+                {t('settings.faviconSection')}
             </Typography>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
                 <Box
@@ -190,7 +185,7 @@ function FaviconSettingSection({ value, onPatch, onClear }: FaviconSettingSectio
                     }}
                 />
                 <Button component="label" startIcon={<CloudUploadIcon />} variant="outlined">
-                    上传图片
+                    {t('settings.uploadImage')}
                     <input
                         type="file"
                         accept="image/*"
@@ -207,11 +202,11 @@ function FaviconSettingSection({ value, onPatch, onClear }: FaviconSettingSectio
                     variant="outlined"
                     onClick={() => setRemoteOpen(true)}
                 >
-                    远程图标
+                    {t('settings.remoteIcon')}
                 </Button>
                 {value?.trim() && (
                     <Button onClick={onClear} color="error">
-                        移除自定义图标
+                        {t('settings.removeCustomIcon')}
                     </Button>
                 )}
             </Stack>
@@ -256,6 +251,7 @@ function RemoteFaviconDialog({
     onConfirm,
 }: RemoteFaviconDialogProps) {
     const [url, setUrl] = useState(initialValue)
+    const { t } = useTranslation()
 
     useEffect(() => {
         if (open) setUrl(initialValue)
@@ -263,10 +259,10 @@ function RemoteFaviconDialog({
 
     return (
         <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
-            <DialogTitle>远程图标地址</DialogTitle>
+            <DialogTitle>{t('settings.remoteIconDialogTitle')}</DialogTitle>
             <Stack spacing={2} sx={{ px: 3, pb: 3 }}>
                 <TextField
-                    label="图标 URL"
+                    label={t('settings.iconUrlLabel')}
                     placeholder="https://example.com/favicon.ico"
                     value={url}
                     onChange={(event) => setUrl(event.target.value)}
@@ -274,9 +270,9 @@ function RemoteFaviconDialog({
                     fullWidth
                 />
                 <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
-                    <Button onClick={onCancel}>取消</Button>
+                    <Button onClick={onCancel}>{t('common.cancel')}</Button>
                     <Button variant="contained" onClick={() => onConfirm(url.trim())}>
-                        确定
+                        {t('settings.ok')}
                     </Button>
                 </Stack>
             </Stack>
@@ -290,6 +286,7 @@ function useSettingsForm() {
     const [form, setForm] = useState<PanelConfig>(() => normalizeForm(panelConfig))
     const { loading: saving, run } = useApiAction()
     const initialFaviconRef = useRef(panelConfig.faviconSrc)
+    const { t } = useTranslation()
 
     useEffect(() => {
         setForm(normalizeForm(panelConfig))
@@ -303,7 +300,7 @@ function useSettingsForm() {
         const faviconChanged = initialFaviconRef.current !== form.faviconSrc
         await run(async () => setPanelConfig(form), {
             successMessage: faviconChanged
-                ? '网站图标已保存，刷新页面以查看效果'
+                ? t('settings.faviconSavedHint')
                 : t('common.saveSuccess'),
             errorMessage: (response) => `${t('common.saveFail')}:${response.msg}`,
         })
@@ -316,6 +313,8 @@ function useSettingsForm() {
 }
 
 function SettingsSaveButton({ saving, onSave }: { saving: boolean; onSave: () => void }) {
+    const { t } = useTranslation()
+
     return (
         <Stack direction="row" sx={{ justifyContent: 'flex-end' }}>
             <Button startIcon={<SaveIcon />} loading={saving} onClick={onSave}>
@@ -338,6 +337,7 @@ interface BackgroundSettingSectionProps {
 // 上传仍在「文件管理」中进行，这里仅加载并展示已上传图片供选取。
 function BackgroundSettingSection({ value, onPatch }: BackgroundSettingSectionProps) {
     const [uploaded, setUploaded] = useState<FileInfo[]>([])
+    const { t } = useTranslation()
 
     useEffect(() => {
         let cancelled = false
@@ -357,7 +357,7 @@ function BackgroundSettingSection({ value, onPatch }: BackgroundSettingSectionPr
         ...builtinBackgrounds.map((bg) => ({
             key: `builtin-${bg.src}`,
             src: bg.src,
-            label: bg.label,
+            label: t(bg.labelKey),
         })),
         ...uploaded.map((file) => ({
             key: `file-${file.id}`,
@@ -369,7 +369,7 @@ function BackgroundSettingSection({ value, onPatch }: BackgroundSettingSectionPr
     return (
         <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                页面背景
+                {t('settings.pageBackground')}
             </Typography>
             <Box
                 sx={{
@@ -427,12 +427,13 @@ function BackgroundSettingSection({ value, onPatch }: BackgroundSettingSectionPr
 
 export function PageSettingsPanel() {
     const { form, patch, handleSave, saving } = useSettingsForm()
+    const { t } = useTranslation()
 
     return (
         <Stack spacing={3}>
-            <Section title="页面布局">
+            <Section title={t('settings.layoutSection')}>
                 <TextField
-                    label="面板标题"
+                    label={t('settings.panelTitle')}
                     value={form.logoText ?? ''}
                     onChange={(event) => patch({ logoText: event.target.value })}
                     fullWidth
@@ -452,7 +453,7 @@ export function PageSettingsPanel() {
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
                     <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                            背景模糊
+                            {t('settings.bgBlur')}
                         </Typography>
                         <Slider
                             min={0}
@@ -464,7 +465,7 @@ export function PageSettingsPanel() {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                            背景遮罩
+                            {t('settings.bgMask')}
                         </Typography>
                         <Slider
                             min={0}
@@ -490,21 +491,21 @@ export function PageSettingsPanel() {
                     }}
                 >
                     <TextField
-                        label="顶部边距 (%)"
+                        label={t('settings.marginTop')}
                         type="number"
                         value={form.marginTop ?? 3}
                         onChange={(event) => patch({ marginTop: Number(event.target.value) })}
                         {...marginInputProps(0, 30)}
                     />
                     <TextField
-                        label="底部边距 (%)"
+                        label={t('settings.marginBottom')}
                         type="number"
                         value={form.marginBottom ?? 2}
                         onChange={(event) => patch({ marginBottom: Number(event.target.value) })}
                         {...marginInputProps(0, 30)}
                     />
                     <TextField
-                        label="横向边距 (%)"
+                        label={t('settings.marginX')}
                         type="number"
                         value={form.marginX ?? 5}
                         onChange={(event) => patch({ marginX: Number(event.target.value) })}
@@ -515,21 +516,21 @@ export function PageSettingsPanel() {
 
             <Divider />
 
-            <Section title="面板显示">
+            <Section title={t('settings.displaySection')}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     <BoolField
                         checked={form.clockShow ?? true}
-                        label="显示时钟"
+                        label={t('settings.showClock')}
                         onChange={(checked) => patch({ clockShow: checked })}
                     />
                     <BoolField
                         checked={form.clockShowSecond ?? false}
-                        label="显示秒数"
+                        label={t('settings.showSeconds')}
                         onChange={(checked) => patch({ clockShowSecond: checked })}
                     />
                     <BoolField
                         checked={form.searchBoxShow ?? false}
-                        label="显示搜索框"
+                        label={t('settings.showSearch')}
                         onChange={(checked) => patch({ searchBoxShow: checked })}
                     />
                 </Box>
@@ -543,15 +544,23 @@ export function PageSettingsPanel() {
 export function AppSettingsPanel() {
     const { form, patch, handleSave, saving } = useSettingsForm()
     const viewportWidth = useViewportWidth()
+    const { t } = useTranslation()
     const appCardAspectRatio =
         form.appCardAspectRatio && form.appCardAspectRatio !== 'auto'
             ? form.appCardAspectRatio
             : undefined
     const previewCardWidth = appCardAutoWidth(viewportWidth, form.marginX)
+    const appCardAspectRatioOptions = [
+        { label: t('common.auto'), value: 'auto' },
+        { label: '16:9', value: '16 / 9' },
+        { label: '2:1', value: '2 / 1' },
+        { label: '5:2', value: '5 / 2' },
+        { label: '3:1', value: '3 / 1' },
+    ]
 
     return (
         <Stack spacing={3}>
-            <Section title="应用卡片预览">
+            <Section title={t('settings.cardPreviewSection')}>
                 <Box
                     sx={{
                         p: 2,
@@ -575,16 +584,16 @@ export function AppSettingsPanel() {
 
             <Divider />
 
-            <Section title="应用显示">
+            <Section title={t('settings.appDisplaySection')}>
                 <BoolField
                     checked={form.iconTextInfoShowDescription ?? false}
-                    label="显示描述"
+                    label={t('settings.showDesc')}
                     onChange={(checked) => patch({ iconTextInfoShowDescription: checked })}
                 />
 
                 <Box>
                     <Typography variant="body2" color="text.secondary">
-                        应用卡片圆角
+                        {t('settings.cardRadius')}
                     </Typography>
                     <Slider
                         min={0}
@@ -598,7 +607,7 @@ export function AppSettingsPanel() {
 
                 <TextField
                     select
-                    label="应用卡片长宽比例"
+                    label={t('settings.cardRatio')}
                     value={form.appCardAspectRatio ?? 'auto'}
                     onChange={(event) => patch({ appCardAspectRatio: event.target.value })}
                     fullWidth
@@ -611,7 +620,7 @@ export function AppSettingsPanel() {
                 </TextField>
 
                 <ColorSwatchPicker
-                    label="默认颜色"
+                    label={t('settings.defaultColor')}
                     value={form.appCardDefaultColor ?? '#2196F3'}
                     onChange={(value) => patch({ appCardDefaultColor: value })}
                 />
@@ -627,6 +636,7 @@ function ChangePasswordSection() {
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const { loading: saving, run } = useApiAction()
+    const { t } = useTranslation()
 
     const mismatch = Boolean(newPassword && confirmPassword && newPassword !== confirmPassword)
 
@@ -641,7 +651,7 @@ function ChangePasswordSection() {
         if (!oldPassword || !newPassword || !confirmPassword || mismatch) return
 
         const res = await run(async () => changePassword(oldPassword, newPassword), {
-            successMessage: '密码修改成功',
+            successMessage: t('settings.passwordChanged'),
             errorMessage: (response) => `${t('common.saveFail')}:${response.msg}`,
         })
         if (res?.code === 0) {
@@ -651,21 +661,21 @@ function ChangePasswordSection() {
 
     return (
         <>
-            <Section title="修改密码">
+            <Section title={t('settings.passwordSection')}>
                 <Button
                     startIcon={<ManageAccountsIcon />}
                     onClick={handleOpen}
                     sx={{ width: 'fit-content' }}
                 >
-                    修改密码
+                    {t('settings.passwordSection')}
                 </Button>
             </Section>
 
             <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
-                <DialogTitle>修改密码</DialogTitle>
+                <DialogTitle>{t('settings.passwordSection')}</DialogTitle>
                 <Stack spacing={2} sx={{ px: 3, pb: 3 }}>
                     <TextField
-                        label="当前密码"
+                        label={t('settings.currentPassword')}
                         type="password"
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
@@ -673,7 +683,7 @@ function ChangePasswordSection() {
                         autoComplete="current-password"
                     />
                     <TextField
-                        label="新密码"
+                        label={t('settings.newPassword')}
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
@@ -681,12 +691,12 @@ function ChangePasswordSection() {
                         autoComplete="new-password"
                     />
                     <TextField
-                        label="确认新密码"
+                        label={t('settings.confirmPassword')}
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         error={mismatch}
-                        helperText={mismatch ? '两次输入的密码不一致' : ''}
+                        helperText={mismatch ? t('settings.passwordMismatch') : ''}
                         fullWidth
                         autoComplete="new-password"
                     />
@@ -712,6 +722,7 @@ type FrontendBackupResult = { data: HomelabPanelExportV1 } | { data?: never; err
 function BackupRestoreSection() {
     const notify = useNotify()
     const confirm = useConfirm()
+    const { t } = useTranslation()
     const load = usePanelStore((s) => s.load)
     const panelConfig = usePanelStore((s) => s.panelConfig)
     const groups = usePanelStore((s) => s.groups)
@@ -744,12 +755,12 @@ function BackupRestoreSection() {
             const fallback = buildFrontendBackup()
 
             if ('error' in fallback) {
-                notify.error(`备份失败:${fallback.error}`)
+                notify.error(t('settings.backupFail', { msg: fallback.error }))
                 return
             }
 
             downloadJson(fallback.data)
-            notify.success('备份成功')
+            notify.success(t('settings.backupSuccess'))
         } finally {
             setExporting(false)
         }
@@ -757,10 +768,9 @@ function BackupRestoreSection() {
 
     async function importData(data: HomelabPanelExportV1) {
         const ok = await confirm({
-            title: '恢复配置',
-            content:
-                '恢复会保存面板配置，并将备份中的分组和图标作为新数据添加。当前版本使用前端顺序恢复，不会清空现有数据。',
-            confirmText: '恢复',
+            title: t('settings.restoreDialogTitle'),
+            content: t('settings.restoreDialogContent'),
+            confirmText: t('settings.restoreBtn'),
             cancelText: t('common.cancel'),
         })
 
@@ -772,7 +782,7 @@ function BackupRestoreSection() {
             const configRes = await setPanelConfig(data.panel)
 
             if (configRes.code !== 0) {
-                notify.error(`恢复面板配置失败:${configRes.msg}`)
+                notify.error(t('settings.restoreConfigFail', { msg: configRes.msg }))
                 return
             }
 
@@ -780,7 +790,7 @@ function BackupRestoreSection() {
                 const groupRes = await upsertGroup(cleanGroup(entry.group))
 
                 if (groupRes.code !== 0) {
-                    notify.error(`恢复分组失败:${groupRes.msg}`)
+                    notify.error(t('settings.restoreGroupFail', { msg: groupRes.msg }))
                     return
                 }
 
@@ -795,14 +805,14 @@ function BackupRestoreSection() {
                     const itemRes = await addItems(entryItems)
 
                     if (itemRes.code !== 0) {
-                        notify.error(`恢复图标失败:${itemRes.msg}`)
+                        notify.error(t('settings.restoreIconFail', { msg: itemRes.msg }))
                         return
                     }
                 }
             }
 
             await load()
-            notify.success('恢复成功')
+            notify.success(t('settings.restoreSuccess'))
         } finally {
             setImporting(false)
             if (inputRef.current) inputRef.current.value = ''
@@ -816,31 +826,28 @@ function BackupRestoreSection() {
             const data = JSON.parse(await file.text()) as unknown
 
             if (!isExportV1(data)) {
-                notify.error('文件格式不正确')
+                notify.error(t('settings.fileFormatError'))
                 return
             }
 
             await importData(data)
         } catch {
-            notify.error('文件解析失败')
+            notify.error(t('settings.fileParseError'))
         }
     }
 
     return (
         <>
-            <Section title="配置备份恢复">
+            <Section title={t('settings.backupSection')}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <Tooltip
-                        title="当前备份包含面板配置、分组和图标；不包含用户、密码和文件。"
-                        placement="bottom"
-                    >
+                    <Tooltip title={t('settings.backupHintTitle')} placement="bottom">
                         <span>
                             <Button
                                 startIcon={<CloudDownloadIcon />}
                                 loading={exporting}
                                 onClick={handleExport}
                             >
-                                备份
+                                {t('settings.backupBtn')}
                             </Button>
                         </span>
                     </Tooltip>
@@ -850,7 +857,7 @@ function BackupRestoreSection() {
                         loading={importing}
                         onClick={() => inputRef.current?.click()}
                     >
-                        恢复
+                        {t('settings.restoreBtn')}
                     </Button>
                 </Stack>
             </Section>
@@ -865,9 +872,38 @@ function BackupRestoreSection() {
     )
 }
 
+function LanguageSection() {
+    const { t } = useTranslation()
+    const lang = useLocaleStore((s) => s.lang)
+    const setLang = useLocaleStore((s) => s.setLang)
+
+    return (
+        <Stack spacing={1}>
+            <Typography sx={{ fontWeight: 600 }}>{t('settings.language')}</Typography>
+            <Select
+                value={lang}
+                onChange={(e) => setLang(e.target.value as typeof lang)}
+                size="small"
+                sx={{ maxWidth: 240 }}
+            >
+                {LANGUAGES.map((l) => (
+                    <MenuItem key={l.code} value={l.code}>
+                        {l.label}
+                    </MenuItem>
+                ))}
+            </Select>
+            <Typography variant="body2" color="text.secondary">
+                {t('settings.languageHint')}
+            </Typography>
+        </Stack>
+    )
+}
+
 export function MiscSettingsPanel() {
     return (
         <Stack spacing={3}>
+            <LanguageSection />
+            <Divider />
             <ChangePasswordSection />
             <Divider />
             <BackupRestoreSection />

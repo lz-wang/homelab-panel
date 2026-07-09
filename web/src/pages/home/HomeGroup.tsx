@@ -10,7 +10,7 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 import { AppIcon } from '@/components/common/AppIcon'
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 import type { ItemInfo, PanelConfig } from '@/types/panel'
 
 import type { ItemGroup } from './types'
@@ -61,6 +61,7 @@ export function HomeGroup({
     onContextMenu,
 }: Props) {
     const sorting = Boolean(group.sortStatus) && !isSearchActive
+    const { t } = useTranslation()
 
     return (
         <Box

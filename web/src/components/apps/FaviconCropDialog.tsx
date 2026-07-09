@@ -10,6 +10,7 @@ import Cropper, { type Area } from 'react-easy-crop'
 
 import { uploadImg } from '@/api/files'
 import { useNotify } from '@/components/common/NotifyProvider'
+import { useTranslation } from '@/locales'
 import { getCroppedImgBlob } from '@/utils/faviconCrop'
 
 interface FaviconCropDialogProps {
@@ -24,6 +25,7 @@ export function FaviconCropDialog({ imageSrc, onCancel, onConfirm }: FaviconCrop
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
     const [uploading, setUploading] = useState(false)
     const notify = useNotify()
+    const { t } = useTranslation()
 
     const onCropComplete = useCallback((_area: Area, areaPixels: Area) => {
         setCroppedAreaPixels(areaPixels)
@@ -35,13 +37,13 @@ export function FaviconCropDialog({ imageSrc, onCancel, onConfirm }: FaviconCrop
         try {
             const blob = await getCroppedImgBlob(imageSrc, croppedAreaPixels)
             if (!blob) {
-                notify.error('裁剪失败')
+                notify.error(t('editItem.cropFail'))
                 return
             }
             const file = new File([blob], 'favicon.png', { type: 'image/png' })
             const res = await uploadImg(file)
             if (res.code !== 0 || !res.data?.imageUrl) {
-                notify.error(`上传失败:${res.msg}`)
+                notify.error(t('editItem.uploadFailMsg', { msg: res.msg }))
                 return
             }
             onConfirm(res.data.imageUrl)
@@ -52,7 +54,7 @@ export function FaviconCropDialog({ imageSrc, onCancel, onConfirm }: FaviconCrop
 
     return (
         <Dialog open onClose={onCancel} maxWidth="sm" fullWidth>
-            <DialogTitle>裁剪图标</DialogTitle>
+            <DialogTitle>{t('settings.cropIconDialogTitle')}</DialogTitle>
             <Stack spacing={2} sx={{ px: 3, pb: 3 }}>
                 <Box
                     sx={{
@@ -74,7 +76,7 @@ export function FaviconCropDialog({ imageSrc, onCancel, onConfirm }: FaviconCrop
                 </Box>
                 <Box>
                     <Typography variant="body2" color="text.secondary">
-                        缩放
+                        {t('settings.zoom')}
                     </Typography>
                     <Slider
                         min={1}
@@ -86,10 +88,10 @@ export function FaviconCropDialog({ imageSrc, onCancel, onConfirm }: FaviconCrop
                 </Box>
                 <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
                     <Button onClick={onCancel} disabled={uploading}>
-                        取消
+                        {t('common.cancel')}
                     </Button>
                     <Button variant="contained" loading={uploading} onClick={handleConfirm}>
-                        确认裁剪
+                        {t('settings.confirmCrop')}
                     </Button>
                 </Stack>
             </Stack>

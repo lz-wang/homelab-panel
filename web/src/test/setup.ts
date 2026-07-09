@@ -1,7 +1,9 @@
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, beforeEach } from 'vitest'
 
 import '@testing-library/jest-dom/vitest'
+
+import { useLocaleStore } from '@/store/locale'
 
 const store = new Map<string, string>()
 const localStorageMock: Storage = {
@@ -18,6 +20,13 @@ const localStorageMock: Storage = {
 Object.defineProperty(globalThis, 'localStorage', {
     value: localStorageMock,
     configurable: true,
+})
+
+beforeEach(() => {
+    // Default UI language for tests is Chinese (the app's primary language),
+    // so assertions on Chinese strings stay valid regardless of the jsdom
+    // navigator.language value.
+    useLocaleStore.setState({ lang: 'zh-CN' })
 })
 
 afterEach(() => {

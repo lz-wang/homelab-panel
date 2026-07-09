@@ -21,7 +21,7 @@ import { useEffect, useState } from 'react'
 
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 import { usePanelStore } from '@/store/panel'
 import type { ItemIconGroup } from '@/types/panel'
 
@@ -41,6 +41,7 @@ function move<T>(list: T[], index: number, direction: -1 | 1) {
 export function GroupManager() {
     const notify = useNotify()
     const confirm = useConfirm()
+    const { t } = useTranslation()
     const storeGroups = usePanelStore((s) => s.groups)
     const upsertGroup = usePanelStore((s) => s.upsertGroup)
     const deleteGroups = usePanelStore((s) => s.deleteGroups)
@@ -62,7 +63,7 @@ export function GroupManager() {
 
     async function handleSaveGroup() {
         if (!title.trim()) {
-            notify.error('分组名称不能为空')
+            notify.error(t('settings.groupNameRequired'))
             return
         }
 
@@ -121,14 +122,14 @@ export function GroupManager() {
         <Stack spacing={2}>
             <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    分组管理
+                    {t('settings.groupManagerTitle')}
                 </Typography>
                 <Stack direction="row" spacing={1}>
                     <Button startIcon={<AddIcon />} onClick={() => openEdit()}>
                         {t('common.add')}
                     </Button>
                     <Button startIcon={<SaveIcon />} loading={savingSort} onClick={handleSaveSort}>
-                        保存排序
+                        {t('common.saveSort')}
                     </Button>
                 </Stack>
             </Stack>
@@ -140,7 +141,7 @@ export function GroupManager() {
                         divider
                         secondaryAction={
                             <Stack direction="row" spacing={0.5}>
-                                <Tooltip title="上移">
+                                <Tooltip title={t('settings.moveUp')}>
                                     <span>
                                         <IconButton
                                             disabled={index === 0}
@@ -152,7 +153,7 @@ export function GroupManager() {
                                         </IconButton>
                                     </span>
                                 </Tooltip>
-                                <Tooltip title="下移">
+                                <Tooltip title={t('settings.moveDown')}>
                                     <span>
                                         <IconButton
                                             disabled={index === groups.length - 1}
@@ -178,14 +179,16 @@ export function GroupManager() {
                         }
                     >
                         <ListItemText
-                            primary={group.title || '未命名分组'}
+                            primary={group.title || t('common.unnamedGroup')}
                             secondary={group.id ? `ID ${group.id}` : undefined}
                         />
                     </ListItem>
                 ))}
             </List>
 
-            {groups.length === 0 && <Typography color="text.secondary">暂无分组</Typography>}
+            {groups.length === 0 && (
+                <Typography color="text.secondary">{t('common.noGroups')}</Typography>
+            )}
 
             <Dialog
                 open={Boolean(editing)}
@@ -196,7 +199,7 @@ export function GroupManager() {
                 <DialogTitle>{editing?.id ? t('common.edit') : t('common.add')}</DialogTitle>
                 <DialogContent>
                     <TextField
-                        label="分组名称"
+                        label={t('settings.groupName')}
                         value={title}
                         onChange={(event) => setTitle(event.target.value)}
                         fullWidth

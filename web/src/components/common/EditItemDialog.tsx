@@ -22,7 +22,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 import { usePanelStore } from '@/store/panel'
 import type { ItemIconGroup, ItemIcon as ItemIconType, ItemInfo } from '@/types/panel'
 import { isValidUrl, normalizeUrl } from '@/utils/url'
@@ -51,11 +51,6 @@ const defaultIcon: ItemIconType = {
 
 const iconifySearchUrl = 'https://icon-sets.iconify.design/'
 
-const iconTextColors = [
-    { label: '白色', value: '#FFFFFF' },
-    { label: '黑色', value: '#000000' },
-]
-
 const defaultItem: ItemInfo = {
     icon: defaultIcon,
     title: '',
@@ -75,6 +70,11 @@ const backdropDismissGuardMs = 300
 export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }: Props) {
     const notify = useNotify()
     const confirm = useConfirm()
+    const { t } = useTranslation()
+    const iconTextColors = [
+        { label: t('editItem.colorWhite'), value: '#FFFFFF' },
+        { label: t('editItem.colorBlack'), value: '#000000' },
+    ]
     const upsertItem = usePanelStore((s) => s.upsertItem)
     const upsertGroup = usePanelStore((s) => s.upsertGroup)
     const deleteItems = usePanelStore((s) => s.deleteItems)
@@ -135,19 +135,19 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
     }
 
     function validateForm() {
-        if (!form.title.trim()) return '标题不能为空'
+        if (!form.title.trim()) return t('editItem.titleRequired')
 
         const url = normalizeUrl(form.url)
-        if (!url) return '链接不能为空'
+        if (!url) return t('editItem.linkRequired')
 
-        if (!isValidUrl(url)) return '链接无效'
+        if (!isValidUrl(url)) return t('editItem.linkInvalid')
 
         const backupUrl = form.backupUrl?.trim() ? normalizeUrl(form.backupUrl) : ''
-        if (backupUrl && !isValidUrl(backupUrl)) return '备用链接无效'
+        if (backupUrl && !isValidUrl(backupUrl)) return t('editItem.backupLinkInvalid')
 
-        if (!form.itemIconGroupId) return '必须选择分组'
+        if (!form.itemIconGroupId) return t('editItem.groupRequired')
 
-        if (!form.icon?.text?.trim()) return 'Iconify 图标不能为空'
+        if (!form.icon?.text?.trim()) return t('editItem.iconRequired')
 
         return ''
     }
@@ -199,11 +199,13 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
             const res = await upsertItem({
                 ...item,
                 id: undefined,
-                title: `${item.title?.trim() || '应用'} 副本`,
+                title: t('common.copySuffix', {
+                    name: item.title?.trim() || t('editItem.previewTitleDefault'),
+                }),
             })
 
             if (res.code === 0) {
-                notify.success('已复制该应用')
+                notify.success(t('home.copiedApp'))
                 onSaved()
                 onClose()
             } else {
@@ -219,7 +221,9 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
         const ok = await confirm({
             title: t('common.delete'),
-            content: t('common.deleteConfirmByName', { name: item.title?.trim() || '该项' }),
+            content: t('common.deleteConfirmByName', {
+                name: item.title?.trim() || t('common.deleteFallbackName'),
+            }),
             confirmText: t('common.delete'),
             cancelText: t('common.cancel'),
         })
@@ -265,7 +269,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
                     if (created?.id) {
                         setForm((prev) => ({ ...prev, itemIconGroupId: created.id }))
-                        notify.success(`已创建分组「${name}」`)
+                        notify.success(t('editItem.groupCreated', { name }))
                     }
                 } else {
                     notify.error(`${t('common.saveFail')}:${res.msg}`)
@@ -289,7 +293,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
     const selectedBackgroundColor = form.icon?.backgroundColor ?? defaultIconBackgroundColor
     const selectedIconColor = form.icon?.color ?? defaultIconColor
-    const previewTitle = form.title.trim() || '应用标题'
+    const previewTitle = form.title.trim() || t('editItem.previewTitleDefault')
     const previewSubtitle = form.description?.trim()
 
     return (
@@ -342,7 +346,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                         <TextField
-                            label="标题"
+                            label={t('editItem.titleLabel')}
                             value={form.title}
                             onChange={(event) => setForm({ ...form, title: event.target.value })}
                             fullWidth
@@ -350,7 +354,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                             sx={{ flex: 1 }}
                         />
                         <TextField
-                            label="描述"
+                            label={t('editItem.descLabel')}
                             value={form.description ?? ''}
                             onChange={(event) =>
                                 setForm({ ...form, description: event.target.value })
@@ -366,7 +370,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                         sx={{ alignItems: { xs: 'stretch', sm: 'flex-start' } }}
                     >
                         <TextField
-                            label="图标"
+                            label={t('editItem.iconLabel')}
                             value={form.icon?.text ?? ''}
                             onChange={(event) =>
                                 patchIcon({ itemType: 3, text: event.target.value, src: '' })
@@ -379,7 +383,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton
-                                                aria-label="打开 Iconify 图标库"
+                                                aria-label={t('editItem.openIconifyAria')}
                                                 component="a"
                                                 href={iconifySearchUrl}
                                                 target="_blank"
@@ -406,7 +410,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                                 ) {
                                     filtered.push({
                                         inputValue: value,
-                                        title: `创建「${value}」`,
+                                        title: t('editItem.createGroupOption', { value }),
                                     })
                                 }
                                 return filtered
@@ -417,13 +421,13 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                             selectOnFocus
                             clearOnBlur
                             handleHomeEndKeys
-                            noOptionsText="输入分组名称可创建新分组"
+                            noOptionsText={t('editItem.noOptionsText')}
                             getOptionLabel={(option) => option.title ?? ''}
                             isOptionEqualToValue={(option, value) =>
                                 Boolean(option.id && option.id === value.id)
                             }
                             renderInput={(params) => (
-                                <TextField {...params} label="分组" required />
+                                <TextField {...params} label={t('editItem.groupLabel')} required />
                             )}
                             sx={{ flex: 1, minWidth: 0 }}
                         />
@@ -435,7 +439,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                         sx={{ alignItems: { xs: 'flex-start', sm: 'center' } }}
                     >
                         <Typography variant="subtitle2" sx={{ minWidth: 88 }}>
-                            字体颜色
+                            {t('editItem.fontColor')}
                         </Typography>
                         <Box sx={{ minWidth: 0 }}>
                             <RadioGroup
@@ -478,21 +482,21 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                     </Stack>
 
                     <ColorSwatchPicker
-                        label="背景颜色"
+                        label={t('editItem.bgColor')}
                         value={selectedBackgroundColor}
                         onChange={(value) => patchIcon({ backgroundColor: value })}
                     />
 
                     <TextField
-                        label="链接"
+                        label={t('editItem.linkLabel')}
                         value={form.url}
                         onChange={(event) => setForm({ ...form, url: event.target.value })}
                         fullWidth
                         required
                     />
                     <TextField
-                        label="备用链接"
-                        placeholder="浏览模式下右键卡片打开此链接（可选）"
+                        label={t('editItem.backupLinkLabel')}
+                        placeholder={t('editItem.backupLinkPlaceholder')}
                         value={form.backupUrl ?? ''}
                         onChange={(event) => setForm({ ...form, backupUrl: event.target.value })}
                         fullWidth
@@ -510,7 +514,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                             disabled={saving || deleting}
                             onClick={handleCopy}
                         >
-                            复制
+                            {t('editItem.copyBtn')}
                         </Button>
                         <Button
                             variant="outlined"

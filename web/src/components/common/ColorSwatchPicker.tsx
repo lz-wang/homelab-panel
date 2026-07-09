@@ -32,6 +32,8 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 
+import { useTranslation } from '@/locales'
+
 interface ColorOption {
     label: string
     value: string
@@ -132,12 +134,16 @@ function ColorSwatchButton({
     selected: boolean
     onSelect: () => void
 }) {
+    const { t } = useTranslation()
     return (
         <Tooltip title={`${color.label} ${color.value}`}>
             <Box
                 component="button"
                 type="button"
-                aria-label={`选择 ${color.label} ${color.value}`}
+                aria-label={t('color.selectColorAria', {
+                    label: color.label,
+                    value: color.value,
+                })}
                 aria-pressed={selected}
                 onClick={onSelect}
                 sx={{
@@ -168,6 +174,7 @@ function ColorSwatchButton({
 }
 
 export function ColorSwatchPicker({ label, value, onChange }: Props) {
+    const { t } = useTranslation()
     const [moreOpen, setMoreOpen] = useState(false)
     const selectedValue = value.toUpperCase()
 
@@ -201,13 +208,13 @@ export function ColorSwatchPicker({ label, value, onChange }: Props) {
                         onClick={() => setMoreOpen(true)}
                         sx={{ minHeight: 34 }}
                     >
-                        更多
+                        {t('common.more')}
                     </Button>
                 </Box>
             </Stack>
 
             <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle>选择更多颜色</DialogTitle>
+                <DialogTitle>{t('color.moreColorsTitle')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ overflowX: 'auto', pt: 1 }}>
                         <Stack spacing={0.75} sx={{ minWidth: 860 }}>
@@ -233,7 +240,11 @@ export function ColorSwatchPicker({ label, value, onChange }: Props) {
                                                 key={`${family.name}-${color.label}`}
                                                 component="button"
                                                 type="button"
-                                                aria-label={`选择 ${family.name} ${color.label} ${color.value}`}
+                                                aria-label={t('color.selectMoreAria', {
+                                                    family: family.name,
+                                                    label: color.label,
+                                                    value: color.value,
+                                                })}
                                                 title={`${family.name} ${color.label} ${color.value}`}
                                                 onClick={() => {
                                                     onChange(color.value)
@@ -279,7 +290,7 @@ export function ColorSwatchPicker({ label, value, onChange }: Props) {
                 </DialogContent>
                 <DialogActions>
                     <Button variant="text" onClick={() => setMoreOpen(false)}>
-                        关闭
+                        {t('common.close')}
                     </Button>
                 </DialogActions>
             </Dialog>

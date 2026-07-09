@@ -8,7 +8,7 @@ import { useRef, useState } from 'react'
 import { uploadImg } from '@/api/files'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { FilePickerDialog } from '@/features/files/FilePickerDialog'
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 
 interface Props {
     label: string
@@ -18,6 +18,7 @@ interface Props {
 
 export function ImageUploadButton({ label, value, onChange }: Props) {
     const notify = useNotify()
+    const { t } = useTranslation()
     const inputRef = useRef<HTMLInputElement | null>(null)
     const [uploading, setUploading] = useState(false)
     const [pickerOpen, setPickerOpen] = useState(false)
@@ -32,12 +33,12 @@ export function ImageUploadButton({ label, value, onChange }: Props) {
 
             if (res.code === 0) {
                 onChange(res.data.imageUrl)
-                notify.success('上传成功')
+                notify.success(t('common.uploadSuccess'))
             } else {
                 notify.error(`${t('common.saveFail')}:${res.msg}`)
             }
         } catch {
-            notify.error('上传失败')
+            notify.error(t('common.uploadFail'))
         } finally {
             setUploading(false)
             if (inputRef.current) inputRef.current.value = ''
@@ -59,7 +60,7 @@ export function ImageUploadButton({ label, value, onChange }: Props) {
                 onClick={() => inputRef.current?.click()}
                 sx={{ minWidth: 120 }}
             >
-                上传
+                {t('common.upload')}
             </Button>
             <Button
                 variant="outlined"
@@ -67,7 +68,7 @@ export function ImageUploadButton({ label, value, onChange }: Props) {
                 onClick={() => setPickerOpen(true)}
                 sx={{ minWidth: 120 }}
             >
-                选择
+                {t('common.choose')}
             </Button>
             <input
                 ref={inputRef}

@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { logout } from '@/api/admin'
 import { AppStarter } from '@/components/apps/AppStarter'
 import { EditItemDialog } from '@/components/common/EditItemDialog'
+import { useTranslation } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
@@ -30,6 +31,7 @@ const BROWSING_AS_GUEST_KEY = 'homelab-panel:browsing-as-guest'
 export default function Home() {
     const navigate = useNavigate()
     const authStore = useAuthStore()
+    const { t } = useTranslation()
     const { panelConfig, panelDataVersion, load: loadPanel } = usePanelStore()
     const { items, setItems, loading, loadList } = useHomeData()
     const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items)
@@ -195,13 +197,13 @@ export default function Home() {
                                 }}
                             >
                                 <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                                    还没有应用
+                                    {t('home.emptyTitle')}
                                 </Typography>
                                 <Typography
                                     variant="body2"
                                     sx={{ mt: 1, mb: 3, color: 'rgba(255,255,255,0.72)' }}
                                 >
-                                    添加第一个应用时会自动创建默认分组，之后可以在设置中调整分组。
+                                    {t('home.emptyHint')}
                                 </Typography>
                                 {canManage ? (
                                     <Button
@@ -210,20 +212,17 @@ export default function Home() {
                                         loading={creatingFirstGroup}
                                         onClick={handleAddFirstItem}
                                     >
-                                        添加第一个应用
+                                        {t('home.addFirstApp')}
                                     </Button>
                                 ) : (
-                                    <Tooltip
-                                        title="请点击右下角登录后，进入编辑模式添加/编辑应用"
-                                        placement="bottom"
-                                    >
+                                    <Tooltip title={t('home.guestHint')} placement="bottom">
                                         <span>
                                             <Button
                                                 variant="contained"
                                                 startIcon={<AddIcon />}
                                                 disabled
                                             >
-                                                添加第一个应用
+                                                {t('home.addFirstApp')}
                                             </Button>
                                         </span>
                                     </Tooltip>

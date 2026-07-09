@@ -1,5 +1,6 @@
 import axios, { type AxiosError } from 'axios'
 
+import { t } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 
 export interface ApiResponse<T = unknown> {
@@ -42,7 +43,7 @@ export function normalizeApiError<T = unknown>(error: unknown): ApiResponse<T> {
     if (!axios.isAxiosError(error)) {
         return {
             code: API_NETWORK_ERROR_CODE,
-            msg: '请求失败',
+            msg: t('errors.requestFail'),
             data: null as T,
         }
     }
@@ -57,7 +58,7 @@ export function normalizeApiError<T = unknown>(error: unknown): ApiResponse<T> {
 
         return {
             code: status || API_HTTP_ERROR_CODE,
-            msg: errorMessage(data) ?? `服务器错误(${status})`,
+            msg: errorMessage(data) ?? t('errors.serverError', { status }),
             data: null as T,
         }
     }
@@ -65,7 +66,7 @@ export function normalizeApiError<T = unknown>(error: unknown): ApiResponse<T> {
     if (axiosError.code === 'ECONNABORTED') {
         return {
             code: API_NETWORK_ERROR_CODE,
-            msg: '请求超时',
+            msg: t('errors.timeout'),
             data: null as T,
         }
     }
@@ -73,14 +74,14 @@ export function normalizeApiError<T = unknown>(error: unknown): ApiResponse<T> {
     if (axiosError.code === 'ERR_CANCELED') {
         return {
             code: API_NETWORK_ERROR_CODE,
-            msg: '请求已取消',
+            msg: t('errors.canceled'),
             data: null as T,
         }
     }
 
     return {
         code: API_NETWORK_ERROR_CODE,
-        msg: '请检查网络或者服务器错误',
+        msg: t('errors.networkHint'),
         data: null as T,
     }
 }

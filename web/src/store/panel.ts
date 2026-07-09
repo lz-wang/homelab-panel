@@ -18,7 +18,7 @@ const appCardRadiusLimits = { min: 0, max: 64 }
 const appCardAspectRatios = new Set(['auto', '16 / 9', '2 / 1', '5 / 2', '3 / 1'])
 const defaultAppCardColor = '#2196F3'
 
-export const builtinBackgrounds = [{ label: '背景', src: backgroundMd }]
+export const builtinBackgrounds = [{ labelKey: 'common.background', src: backgroundMd }]
 
 export function defaultPanelConfig(): PanelConfig {
     return {

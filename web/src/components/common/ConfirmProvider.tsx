@@ -6,6 +6,8 @@ import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import { createContext, useContext, useState } from 'react'
 
+import { useTranslation } from '@/locales'
+
 interface ConfirmOptions {
     title?: string
     content: string
@@ -20,6 +22,7 @@ const ConfirmContext = createContext<(options: ConfirmOptions) => Promise<boolea
 )
 
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
+    const { t } = useTranslation()
     const [options, setOptions] = useState<ConfirmOptions | null>(null)
     const [resolver, setResolver] = useState<Resolver | null>(null)
 
@@ -41,16 +44,16 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
         <ConfirmContext.Provider value={confirm}>
             {children}
             <Dialog open={Boolean(options)} onClose={() => close(false)} maxWidth="xs" fullWidth>
-                <DialogTitle>{options?.title ?? '确认操作'}</DialogTitle>
+                <DialogTitle>{options?.title ?? t('common.operationConfirm')}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>{options?.content}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button variant="text" onClick={() => close(false)}>
-                        {options?.cancelText ?? '取消'}
+                        {options?.cancelText ?? t('common.cancel')}
                     </Button>
                     <Button color="error" onClick={() => close(true)}>
-                        {options?.confirmText ?? '确认'}
+                        {options?.confirmText ?? t('common.confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>

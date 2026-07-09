@@ -7,7 +7,7 @@ import { useRef, useState } from 'react'
 
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 import { usePanelStore } from '@/store/panel'
 import { cleanGroup, cleanItem, type HomelabPanelExportV1, isExportV1 } from '@/utils/exportFormat'
 
@@ -26,6 +26,7 @@ type FrontendBackupResult = { data: HomelabPanelExportV1 } | { data?: never; err
 export function ImportExportPanel() {
     const notify = useNotify()
     const confirm = useConfirm()
+    const { t } = useTranslation()
     const load = usePanelStore((s) => s.load)
     const panelConfig = usePanelStore((s) => s.panelConfig)
     const groups = usePanelStore((s) => s.groups)
@@ -58,12 +59,12 @@ export function ImportExportPanel() {
             const fallback = buildFrontendBackup()
 
             if ('error' in fallback) {
-                notify.error(`备份失败:${fallback.error}`)
+                notify.error(t('settings.backupFail', { msg: fallback.error }))
                 return
             }
 
             downloadJson(fallback.data)
-            notify.success('备份成功')
+            notify.success(t('settings.backupSuccess'))
         } finally {
             setExporting(false)
         }
@@ -71,10 +72,9 @@ export function ImportExportPanel() {
 
     async function importData(data: HomelabPanelExportV1) {
         const ok = await confirm({
-            title: '恢复配置',
-            content:
-                '恢复会保存面板配置，并将备份中的分组和图标作为新数据添加。当前版本使用前端顺序恢复，不会清空现有数据。',
-            confirmText: '导入',
+            title: t('settings.restoreDialogTitle'),
+            content: t('settings.restoreDialogContent'),
+            confirmText: t('settings.restoreDialogImport'),
             cancelText: t('common.cancel'),
         })
 
@@ -86,7 +86,7 @@ export function ImportExportPanel() {
             const configRes = await setPanelConfig(data.panel)
 
             if (configRes.code !== 0) {
-                notify.error(`恢复面板配置失败:${configRes.msg}`)
+                notify.error(t('settings.restoreConfigFail', { msg: configRes.msg }))
                 return
             }
 
@@ -94,7 +94,7 @@ export function ImportExportPanel() {
                 const groupRes = await upsertGroup(cleanGroup(entry.group))
 
                 if (groupRes.code !== 0) {
-                    notify.error(`恢复分组失败:${groupRes.msg}`)
+                    notify.error(t('settings.restoreGroupFail', { msg: groupRes.msg }))
                     return
                 }
 
@@ -110,14 +110,14 @@ export function ImportExportPanel() {
                     const itemRes = await addItems(entryItems)
 
                     if (itemRes.code !== 0) {
-                        notify.error(`恢复图标失败:${itemRes.msg}`)
+                        notify.error(t('settings.restoreIconFail', { msg: itemRes.msg }))
                         return
                     }
                 }
             }
 
             await load()
-            notify.success('恢复成功')
+            notify.success(t('settings.restoreSuccess'))
         } finally {
             setImporting(false)
             if (inputRef.current) inputRef.current.value = ''
@@ -131,28 +131,26 @@ export function ImportExportPanel() {
             const data = JSON.parse(await file.text()) as unknown
 
             if (!isExportV1(data)) {
-                notify.error('文件格式不正确')
+                notify.error(t('settings.fileFormatError'))
                 return
             }
 
             await importData(data)
         } catch {
-            notify.error('文件解析失败')
+            notify.error(t('settings.fileParseError'))
         }
     }
 
     return (
         <Stack spacing={2}>
-            <Alert severity="info">
-                当前备份包含面板配置、分组和图标；不包含用户、密码和文件。恢复会新增分组和图标，不会清空现有数据。
-            </Alert>
+            <Alert severity="info">{t('settings.backupHintTitle')}</Alert>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                 <Button
                     startIcon={<CloudDownloadIcon />}
                     loading={exporting}
                     onClick={handleExport}
                 >
-                    备份
+                    {t('settings.backupBtn')}
                 </Button>
                 <Button
                     variant="outlined"
@@ -160,7 +158,7 @@ export function ImportExportPanel() {
                     loading={importing}
                     onClick={() => inputRef.current?.click()}
                 >
-                    恢复
+                    {t('settings.restoreBtn')}
                 </Button>
             </Stack>
             <input

@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 import type { ItemInfo } from '@/types/panel'
 
 export interface HomeContextMenuState {
@@ -31,6 +31,7 @@ export function HomeContextMenu({
     onCopy,
     onDelete,
 }: Props) {
+    const { t } = useTranslation()
     return (
         <Menu
             open={Boolean(contextMenu)}

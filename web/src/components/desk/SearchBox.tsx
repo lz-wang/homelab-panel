@@ -4,11 +4,14 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useRef, useState } from 'react'
 
+import { useTranslation } from '@/locales'
+
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
 
 const inputColor = '#fff'
 
 export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void }) {
+    const { t } = useTranslation()
     const [value, setValue] = useState('')
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -34,7 +37,7 @@ export function SearchBox({ onSearch }: { onSearch: (keyword: string) => void })
             }}
             fullWidth
             size="small"
-            placeholder="搜索"
+            placeholder={t('search.placeholder')}
             slotProps={{
                 input: {
                     startAdornment: (

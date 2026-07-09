@@ -30,6 +30,8 @@ import {
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
 import { useApiAction } from '@/hooks/useApiAction'
+import { localeTag, useTranslation } from '@/locales'
+import { useLocaleStore } from '@/store/locale'
 import { copyToClipboard } from '@/utils/clipboard'
 
 function mcpEndpoint() {
@@ -40,7 +42,8 @@ function formatTime(value?: string) {
     if (!value) return '—'
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return '—'
-    return date.toLocaleString('zh-CN', { hour12: false })
+    const tag = localeTag(useLocaleStore.getState().lang)
+    return date.toLocaleString(tag, { hour12: false })
 }
 
 // maskPrefix 展示 token 的可识别前缀，并用占位符表示隐藏的 secret 部分（如 abc******）。
@@ -106,6 +109,7 @@ function TokenRow({
     loading: boolean
     onDelete: () => void
 }) {
+    const { t } = useTranslation()
     return (
         <Stack
             spacing={0.5}
@@ -124,7 +128,7 @@ function TokenRow({
                 </Stack>
                 <IconButton
                     size="small"
-                    aria-label="删除 token"
+                    aria-label={t('mcp.deleteTokenAria')}
                     disabled={loading}
                     onClick={onDelete}
                 >
@@ -132,7 +136,10 @@ function TokenRow({
                 </IconButton>
             </Stack>
             <Typography variant="caption" color="text.secondary">
-                创建：{formatTime(token.created_at)} · 最近使用：{formatTime(token.last_used_at)}
+                {t('mcp.tokenMeta', {
+                    created: formatTime(token.created_at),
+                    lastUsed: formatTime(token.last_used_at),
+                })}
             </Typography>
         </Stack>
     )
@@ -142,6 +149,7 @@ export function MCPSettingsPanel() {
     const { loading, run } = useApiAction()
     const confirm = useConfirm()
     const notify = useNotify()
+    const { t } = useTranslation()
 
     const [settings, setSettings] = useState<MCPSettings | null>(null)
     const [tokenDialog, setTokenDialog] = useState<string | null>(null)
@@ -155,24 +163,24 @@ export function MCPSettingsPanel() {
         void refresh()
     }, [refresh])
 
-    async function copyText(text: string, hint = '已复制') {
+    async function copyText(text: string, hint = t('mcp.copied')) {
         const ok = await copyToClipboard(text)
         if (ok) notify.success(hint)
-        else notify.error('复制失败，请手动选择复制')
+        else notify.error(t('mcp.copyFail'))
     }
 
     async function updateEnabled(value: boolean) {
         const response = await run(() => updateMCPSettings({ enabled: value }), {
-            successMessage: '已保存',
-            errorMessage: (res) => `保存失败:${res.msg}`,
+            successMessage: t('mcp.saveSuccess'),
+            errorMessage: (res) => t('mcp.saveFail', { msg: res.msg }),
         })
         if (response?.code === API_SUCCESS_CODE) setSettings(response.data)
     }
 
     async function handleGenerate() {
         const response = await run(() => generateMCPToken(), {
-            successMessage: 'Token 已生成',
-            errorMessage: (res) => `生成失败:${res.msg}`,
+            successMessage: t('mcp.tokenGenerated'),
+            errorMessage: (res) => t('mcp.generateFail', { msg: res.msg }),
         })
         if (response?.code === API_SUCCESS_CODE) {
             setTokenDialog(response.data.token)
@@ -182,13 +190,13 @@ export function MCPSettingsPanel() {
 
     async function handleDeleteToken(prefix: string) {
         const ok = await confirm({
-            title: '删除 Token',
-            content: `确定删除前缀为 ${prefix} 的 Token？该 Token 将立即失效。`,
+            title: t('mcp.deleteTokenTitle'),
+            content: t('mcp.deleteTokenContent', { prefix }),
         })
         if (!ok) return
         const response = await run(() => deleteMCPToken(prefix), {
-            successMessage: 'Token 已删除',
-            errorMessage: (res) => `删除失败:${res.msg}`,
+            successMessage: t('mcp.tokenDeleted'),
+            errorMessage: (res) => t('mcp.deleteFail', { msg: res.msg }),
         })
         if (response?.code === API_SUCCESS_CODE) setSettings(response.data)
     }
@@ -205,7 +213,7 @@ export function MCPSettingsPanel() {
 
     return (
         <Stack spacing={3}>
-            <Section title="MCP 服务">
+            <Section title={t('mcp.sectionService')}>
                 <FormControlLabel
                     control={
                         <Switch
@@ -214,16 +222,16 @@ export function MCPSettingsPanel() {
                             onChange={(event) => updateEnabled(event.target.checked)}
                         />
                     }
-                    label="启用 MCP HTTP 服务"
+                    label={t('mcp.enableMcp')}
                 />
                 {!settings.enabled && (
                     <Typography variant="body2" color="text.secondary">
-                        关闭后 /api/v1/mcp 将拒绝所有请求。
+                        {t('mcp.mcpDisabledHint')}
                     </Typography>
                 )}
             </Section>
 
-            <Section title="接入地址">
+            <Section title={t('mcp.sectionEndpoint')}>
                 <TextField
                     value={endpoint}
                     fullWidth
@@ -233,9 +241,9 @@ export function MCPSettingsPanel() {
                             readOnly: true,
                             endAdornment: (
                                 <IconButton
-                                    aria-label="复制接入地址"
+                                    aria-label={t('mcp.copyEndpointAria')}
                                     edge="end"
-                                    onClick={() => copyText(endpoint, '接入地址已复制')}
+                                    onClick={() => copyText(endpoint, t('mcp.endpointCopied'))}
                                 >
                                     <ContentCopyIcon />
                                 </IconButton>
@@ -253,8 +261,8 @@ export function MCPSettingsPanel() {
                 >
                     <Typography variant="body2" color="text.secondary">
                         {settings.tokens.length > 0
-                            ? `已生成 ${settings.tokens.length} 个 Token，首个生成时自动启用 MCP 服务`
-                            : '尚未生成 Token，生成后将自动启用 MCP 服务'}
+                            ? t('mcp.tokensGeneratedHint', { count: settings.tokens.length })
+                            : t('mcp.noTokensHint')}
                     </Typography>
                     <Button
                         size="small"
@@ -263,7 +271,7 @@ export function MCPSettingsPanel() {
                         disabled={loading}
                         onClick={handleGenerate}
                     >
-                        生成 Token
+                        {t('mcp.generateToken')}
                     </Button>
                 </Stack>
                 {settings.tokens.map((tok) => (
@@ -281,7 +289,7 @@ export function MCPSettingsPanel() {
             <TokenRevealDialog
                 open={tokenDialog !== null}
                 token={tokenDialog ?? ''}
-                onCopy={(text) => copyText(text, 'Token 已复制')}
+                onCopy={(text) => copyText(text, t('mcp.tokenCopied'))}
                 onClose={() => setTokenDialog(null)}
             />
         </Stack>
@@ -299,14 +307,13 @@ function TokenRevealDialog({
     onCopy: (text: string) => void
     onClose: () => void
 }) {
+    const { t } = useTranslation()
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Token 已生成</DialogTitle>
+            <DialogTitle>{t('mcp.tokenDialogTitle')}</DialogTitle>
             <DialogContent>
                 <Stack spacing={2} sx={{ mt: 1 }}>
-                    <Alert severity="warning">
-                        请立即复制并妥善保存，关闭后将无法再次查看明文。
-                    </Alert>
+                    <Alert severity="warning">{t('mcp.tokenDialogHint')}</Alert>
                     <TextField
                         value={token}
                         fullWidth
@@ -318,7 +325,7 @@ function TokenRevealDialog({
                                 sx: { fontFamily: 'monospace' },
                                 endAdornment: (
                                     <IconButton
-                                        aria-label="复制 token"
+                                        aria-label={t('mcp.copyTokenAria')}
                                         onClick={() => onCopy(token)}
                                     >
                                         <ContentCopyIcon />
@@ -331,7 +338,7 @@ function TokenRevealDialog({
             </DialogContent>
             <DialogActions>
                 <Button variant="text" onClick={onClose}>
-                    我已保存
+                    {t('mcp.iSaved')}
                 </Button>
             </DialogActions>
         </Dialog>
@@ -345,7 +352,8 @@ function ClientConfigs({
     endpoint: string
     onCopy: (text: string, hint?: string) => void
 }) {
-    const envHint = 'export HOMELAB_PANEL_MCP_TOKEN="<粘贴你的 token>"'
+    const { t } = useTranslation()
+    const envHint = t('mcp.envHint')
     const tabs = [
         { label: 'Codex', value: codexConfig(endpoint) },
         { label: 'Claude Code', value: claudeCodeCommand(endpoint) },
@@ -355,9 +363,9 @@ function ClientConfigs({
     const current = tabs[active] ?? tabs[0]
 
     return (
-        <Section title="客户端配置">
+        <Section title={t('mcp.sectionClient')}>
             <Typography variant="body2" color="text.secondary">
-                先在终端设置环境变量，再切换 tab 复制所用客户端的配置。
+                {t('mcp.clientHint')}
             </Typography>
             <TextField
                 value={envHint}
@@ -369,9 +377,9 @@ function ClientConfigs({
                         sx: { fontFamily: 'monospace', fontSize: 12 },
                         endAdornment: (
                             <IconButton
-                                aria-label="复制环境变量"
+                                aria-label={t('mcp.copyEnvAria')}
                                 edge="end"
-                                onClick={() => onCopy(envHint, '环境变量已复制')}
+                                onClick={() => onCopy(envHint, t('mcp.envCopied'))}
                             >
                                 <ContentCopyIcon />
                             </IconButton>
@@ -399,7 +407,7 @@ function ClientConfigs({
                 startIcon={<ContentCopyIcon />}
                 onClick={() => onCopy(current.value)}
             >
-                复制配置
+                {t('mcp.copyConfig')}
             </Button>
         </Section>
     )

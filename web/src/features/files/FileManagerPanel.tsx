@@ -20,7 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { deletes, getList, uploadFiles } from '@/api/files'
 import { useConfirm } from '@/components/common/ConfirmProvider'
 import { useNotify } from '@/components/common/NotifyProvider'
-import { t } from '@/locales'
+import { useTranslation } from '@/locales'
 import type { FileInfo } from '@/types/panel'
 import { copyToClipboard } from '@/utils/clipboard'
 
@@ -40,6 +40,7 @@ function isImage(url: string) {
 export function FileManagerPanel({ selectable = false, onSelect }: Props) {
     const notify = useNotify()
     const confirm = useConfirm()
+    const { t } = useTranslation()
     const inputRef = useRef<HTMLInputElement | null>(null)
     const [files, setFiles] = useState<FileInfo[]>([])
     const [loading, setLoading] = useState(false)
@@ -87,11 +88,11 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
             const res = await getList()
 
             if (res.code === 0) setFiles(res.data.list)
-            else notify.error(`文件列表加载失败:${res.msg}`)
+            else notify.error(t('files.listLoadFail', { msg: res.msg }))
         } finally {
             setLoading(false)
         }
-    }, [notify])
+    }, [notify, t])
 
     useEffect(() => {
         loadFiles()
@@ -135,12 +136,12 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
 
             if (res.code === 0) {
                 const successCount = Object.keys(res.data.succMap).length
-                notify.success(`上传成功 ${successCount} 个文件`)
+                notify.success(t('files.uploadSuccess', { count: successCount }))
                 if (res.data.errFiles.length)
-                    notify.error(`上传失败:${res.data.errFiles.join(', ')}`)
+                    notify.error(t('files.uploadFailErr', { files: res.data.errFiles.join(', ') }))
                 await loadFiles()
             } else {
-                notify.error(`上传失败:${res.msg}`)
+                notify.error(t('files.uploadFailMsg', { msg: res.msg }))
             }
         } finally {
             setUploading(false)
@@ -175,7 +176,7 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
 
         const ok = await confirm({
             title: t('common.delete'),
-            content: `确定删除选中的 ${filesToDelete.length} 个文件吗？`,
+            content: t('files.deleteConfirm', { count: filesToDelete.length }),
             confirmText: t('common.delete'),
             cancelText: t('common.cancel'),
         })
@@ -195,8 +196,8 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
 
     async function copyUrl(url: string) {
         const ok = await copyToClipboard(url)
-        if (ok) notify.success('已复制 URL')
-        else notify.error('复制失败，请手动选择复制')
+        if (ok) notify.success(t('files.urlCopied'))
+        else notify.error(t('common.copyFail'))
     }
 
     return (
@@ -207,7 +208,7 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                 sx={{ alignItems: 'center', justifyContent: 'space-between' }}
             >
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    文件管理
+                    {t('files.title')}
                 </Typography>
                 <Stack direction="row" spacing={1}>
                     <Button
@@ -217,7 +218,7 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                         disabled={!selectedIds.length}
                         onClick={handleBatchDelete}
                     >
-                        批量删除
+                        {t('files.batchDelete')}
                     </Button>
                     <Button
                         variant="outlined"
@@ -225,14 +226,14 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                         loading={loading}
                         onClick={loadFiles}
                     >
-                        刷新
+                        {t('common.refresh')}
                     </Button>
                     <Button
                         startIcon={<UploadIcon />}
                         loading={uploading}
                         onClick={() => inputRef.current?.click()}
                     >
-                        上传
+                        {t('common.upload')}
                     </Button>
                 </Stack>
             </Stack>
@@ -243,28 +244,28 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                 sx={{ alignItems: { md: 'center' } }}
             >
                 <TextField
-                    label="搜索文件"
+                    label={t('files.searchPlaceholder')}
                     value={keyword}
                     onChange={(event) => setKeyword(event.target.value)}
                     fullWidth
                     size="small"
                 />
                 <FormControl size="small" sx={{ minWidth: 140 }}>
-                    <InputLabel>类型</InputLabel>
+                    <InputLabel>{t('files.typeLabel')}</InputLabel>
                     <Select
-                        label="类型"
+                        label={t('files.typeLabel')}
                         value={kindFilter}
                         onChange={(event) => setKindFilter(event.target.value as FileKindFilter)}
                     >
-                        <MenuItem value="all">全部</MenuItem>
-                        <MenuItem value="image">图片</MenuItem>
-                        <MenuItem value="other">非图片</MenuItem>
+                        <MenuItem value="all">{t('files.typeAll')}</MenuItem>
+                        <MenuItem value="image">{t('files.typeImage')}</MenuItem>
+                        <MenuItem value="other">{t('files.typeOther')}</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControl size="small" sx={{ minWidth: 120 }}>
-                    <InputLabel>每页</InputLabel>
+                    <InputLabel>{t('files.pageSizeLabel')}</InputLabel>
                     <Select
-                        label="每页"
+                        label={t('files.pageSizeLabel')}
                         value={pageSize}
                         onChange={(event) => setPageSize(Number(event.target.value))}
                     >
@@ -285,7 +286,10 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                     onChange={(event) => toggleCurrentPage(event.target.checked)}
                 />
                 <Typography variant="body2" color="text.secondary">
-                    共 {filteredFiles.length} 个文件，已选择 {selectedIds.length} 个
+                    {t('files.fileCount', {
+                        total: filteredFiles.length,
+                        selected: selectedIds.length,
+                    })}
                 </Typography>
             </Stack>
 
@@ -360,11 +364,11 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                             >
                                 {selectable && (
                                     <Button size="small" onClick={() => onSelect?.(file.src)}>
-                                        选择
+                                        {t('common.choose')}
                                     </Button>
                                 )}
                                 <Box sx={{ flex: 1 }} />
-                                <Tooltip title="复制 URL">
+                                <Tooltip title={t('common.copyUrl')}>
                                     <IconButton size="small" onClick={() => copyUrl(file.src)}>
                                         <ContentCopyIcon fontSize="small" />
                                     </IconButton>
@@ -395,7 +399,7 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
             )}
 
             {!filteredFiles.length && !loading && (
-                <Typography color="text.secondary">暂无文件</Typography>
+                <Typography color="text.secondary">{t('files.empty')}</Typography>
             )}
 
             <input

@@ -1,4 +1,5 @@
 import type { ApiResponse } from '@/api/apiResult'
+import { t } from '@/locales'
 
 export interface SessionStatus {
     ok: boolean
@@ -26,7 +27,7 @@ export async function validateSession(token: string): Promise<ApiResponse<Sessio
 
     return {
         code: response.status,
-        msg: errorMessage(data) ?? `服务器错误(${response.status})`,
+        msg: errorMessage(data) ?? t('errors.serverError', { status: response.status }),
         data: { ok: false },
     }
 }

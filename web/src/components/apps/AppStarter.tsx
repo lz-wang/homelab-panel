@@ -25,6 +25,7 @@ import {
     PageSettingsPanel,
 } from '@/components/apps/SettingsPanels'
 import { FileManagerPanel } from '@/features/files/FileManagerPanel'
+import { useTranslation } from '@/locales'
 
 function Groups() {
     return <GroupManager />
@@ -37,21 +38,26 @@ function Files() {
 const apps = [
     {
         key: 'pageSettings',
-        name: '页面设置',
+        nameKey: 'settings.tabPage',
         icon: <PaletteOutlinedIcon />,
         component: PageSettingsPanel,
     },
     {
         key: 'appSettings',
-        name: '应用设置',
+        nameKey: 'settings.tabApp',
         icon: <AppsOutlinedIcon />,
         component: AppSettingsPanel,
     },
-    { key: 'groups', name: '分组管理', icon: <TableViewIcon />, component: Groups },
-    { key: 'files', name: '文件管理', icon: <FolderOutlinedIcon />, component: Files },
-    { key: 'mcp', name: 'MCP设置', icon: <CableIcon />, component: MCPSettingsPanel },
-    { key: 'misc', name: '其他设置', icon: <TuneIcon />, component: MiscSettingsPanel },
-    { key: 'about', name: '关于', icon: <InfoOutlinedIcon />, component: AboutPanel },
+    { key: 'groups', nameKey: 'settings.tabGroups', icon: <TableViewIcon />, component: Groups },
+    { key: 'files', nameKey: 'settings.tabFiles', icon: <FolderOutlinedIcon />, component: Files },
+    { key: 'mcp', nameKey: 'settings.tabMcp', icon: <CableIcon />, component: MCPSettingsPanel },
+    { key: 'misc', nameKey: 'settings.tabMisc', icon: <TuneIcon />, component: MiscSettingsPanel },
+    {
+        key: 'about',
+        nameKey: 'settings.tabAbout',
+        icon: <InfoOutlinedIcon />,
+        component: AboutPanel,
+    },
 ]
 
 interface Props {
@@ -60,6 +66,7 @@ interface Props {
 }
 
 export function AppStarter({ open, onClose }: Props) {
+    const { t } = useTranslation()
     const [activeKey, setActiveKey] = useState(apps[0].key)
     const active = apps.find((item) => item.key === activeKey) ?? apps[0]
     const ActiveComponent = active.component
@@ -84,7 +91,7 @@ export function AppStarter({ open, onClose }: Props) {
                 },
             }}
         >
-            <DialogTitle>设置</DialogTitle>
+            <DialogTitle>{t('settings.dialogTitle')}</DialogTitle>
             <Stack
                 direction={{ xs: 'column', sm: 'row' }}
                 sx={{ flex: 1, minHeight: { xs: 520, sm: 0 } }}
@@ -111,7 +118,7 @@ export function AppStarter({ open, onClose }: Props) {
                             }}
                         >
                             <ListItemIcon>{app.icon}</ListItemIcon>
-                            <ListItemText primary={app.name} />
+                            <ListItemText primary={t(app.nameKey)} />
                         </ListItemButton>
                     ))}
                 </List>

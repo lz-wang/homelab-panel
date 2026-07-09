@@ -43,7 +43,7 @@ export function useHomeActions({
     function handleOpenBackupUrl(item: ItemInfo) {
         const url = item.backupUrl?.trim()
         if (url) openPage(url)
-        else notify.info('此应用无备用链接')
+        else notify.info(t('home.noBackupLink'))
     }
 
     async function handleDelete(item: ItemInfo) {
@@ -74,11 +74,13 @@ export function useHomeActions({
         const res = await usePanelStore.getState().upsertItem({
             ...item,
             id: undefined,
-            title: `${item.title?.trim() || '应用'} 副本`,
+            title: t('common.copySuffix', {
+                name: item.title?.trim() || t('editItem.previewTitleDefault'),
+            }),
         })
 
         if (res.code === 0) {
-            notify.success('已复制该应用')
+            notify.success(t('home.copiedApp'))
             await loadList()
         } else {
             notify.error(`${t('common.saveFail')}:${res.msg}`)
@@ -124,7 +126,7 @@ export function useHomeActions({
 
         try {
             const res = await usePanelStore.getState().upsertGroup({
-                title: '默认分组',
+                title: t('home.defaultGroup'),
                 sort: 1,
             })
 
@@ -139,7 +141,7 @@ export function useHomeActions({
                 groups[groups.length - 1]?.id
 
             if (!groupId) {
-                notify.error('创建默认分组失败')
+                notify.error(t('home.createDefaultGroupFail'))
                 return
             }
 

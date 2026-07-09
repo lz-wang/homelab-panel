@@ -14,14 +14,11 @@ import type { Theme } from '@mui/material/styles'
 import { useColorScheme } from '@mui/material/styles'
 import Tooltip from '@mui/material/Tooltip'
 
+import { useTranslation } from '@/locales'
+
 type ColorMode = 'system' | 'light' | 'dark'
 
 const colorModeCycle: ColorMode[] = ['system', 'light', 'dark']
-const colorModeLabels: Record<ColorMode, string> = {
-    system: '自动',
-    light: '亮色',
-    dark: '暗色',
-}
 
 function floatingIconButtonSx(theme: Theme) {
     const isDark = theme.palette.mode === 'dark'
@@ -60,7 +57,13 @@ export function HomeFloatingActions({
     onLogout,
 }: Props) {
     const { mode, setMode } = useColorScheme()
+    const { t } = useTranslation()
     const currentMode = (mode ?? 'system') as ColorMode
+    const colorModeLabels: Record<ColorMode, string> = {
+        system: t('colorMode.system'),
+        light: t('colorMode.light'),
+        dark: t('colorMode.dark'),
+    }
 
     function cycleColorMode() {
         const currentIndex = colorModeCycle.indexOf(currentMode)
@@ -101,13 +104,13 @@ export function HomeFloatingActions({
         >
             {canManage && (
                 <>
-                    <Tooltip title="设置" placement="left">
+                    <Tooltip title={t('home.settingsTooltip')} placement="left">
                         <IconButton className="hover-action" size="small" onClick={onOpenSettings}>
                             <SettingsIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
                     <Tooltip
-                        title={browsingAsGuest ? '切换到编辑模式' : '切换到浏览模式'}
+                        title={browsingAsGuest ? t('home.switchToEdit') : t('home.switchToBrowse')}
                         placement="left"
                     >
                         <IconButton
@@ -123,7 +126,7 @@ export function HomeFloatingActions({
                         </IconButton>
                     </Tooltip>
                     <Tooltip
-                        title={`颜色模式：${colorModeLabels[currentMode]}，点击切换`}
+                        title={t('home.colorModeTooltip', { mode: colorModeLabels[currentMode] })}
                         placement="left"
                     >
                         <IconButton className="hover-action" size="small" onClick={cycleColorMode}>
@@ -134,12 +137,12 @@ export function HomeFloatingActions({
                             {currentMode === 'dark' && <DarkModeIcon fontSize="small" />}
                         </IconButton>
                     </Tooltip>
-                    <Tooltip title="登出" placement="left">
+                    <Tooltip title={t('home.logoutTooltip')} placement="left">
                         <IconButton className="hover-action" size="small" onClick={onLogout}>
                             <LogoutIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
-                    <Tooltip title="操作" placement="left">
+                    <Tooltip title={t('home.actionsTooltip')} placement="left">
                         <IconButton size="small" sx={floatingIconButtonSx}>
                             <MoreVertIcon />
                         </IconButton>
@@ -147,7 +150,7 @@ export function HomeFloatingActions({
                 </>
             )}
             {!canManage && (
-                <Tooltip title="登录">
+                <Tooltip title={t('home.loginTooltip')}>
                     <Fab size="small" onClick={onLogin} sx={floatingIconButtonSx}>
                         <LoginIcon />
                     </Fab>
