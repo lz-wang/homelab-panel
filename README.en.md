@@ -217,3 +217,7 @@ MCP tokens are independent from the admin login JWT. Deleting a token prefix inv
 ## Development
 
 For local build, test, cross-compilation, and development commands, see the [Development Guide](docs/development.en.md).
+
+## Acknowledgements
+
+This project is a rewrite based on [hslr-s/sun-panel](https://github.com/hslr-s/sun-panel). Thanks to the original author.

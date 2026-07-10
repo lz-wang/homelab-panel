@@ -217,3 +217,7 @@ MCP token 独立于管理员登录 JWT。删除 token 前缀后，对应 token �
 ## 开发
 
 本地构建、测试、交叉编译和开发命令见 [开发指南](docs/development.md)。
+
+## 致谢
+
+本项目基于 [hslr-s/sun-panel](https://github.com/hslr-s/sun-panel) 项目重写而来，感谢原作者。
