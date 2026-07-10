@@ -11,7 +11,7 @@ BIN := $(APP)
 COVERAGE_DIR := coverage
 BACKEND_COVER := $(COVERAGE_DIR)/backend.out
 # 排除 web/ 目录（含 node_modules 中的第三方 Go 代码，如 flatted/golang），只统计项目自身 Go 覆盖率
-GO_TEST_PACKAGES := $(shell go list ./... | grep -v '/web/')
+GO_TEST_PACKAGES = $(shell go list ./... | grep -v '/web/')
 
 .PHONY: help web build all fmt check test test-backend test-frontend clean serve
 
