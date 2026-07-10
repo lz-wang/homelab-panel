@@ -28,6 +28,10 @@ If CodeGraph reports that a file is not indexed, read that file directly. This i
 
 The frontend is React + MUI + Vite. Do not describe it as Vue in new docs or comments.
 
+## Documentation conventions
+
+- When editing README content, update both the Chinese and English versions together (`README.md` and `README.en.md`, plus matching linked docs when applicable).
+
 ## Common commands
 
 Use root `make` targets when working across backend and frontend:
