@@ -167,4 +167,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.prepare.outputs.version }}
-        run: gh release edit "${VERSION}" --draft=false
+        run: gh release edit "${VERSION}" --draft=false --repo "${GITHUB_REPOSITORY}"
