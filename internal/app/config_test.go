@@ -7,7 +7,7 @@ func TestConfigAddress(t *testing.T) {
 		port string
 		want string
 	}{
-		{"", ":3002"},
+		{"", ":9090"},
 		{"8080", ":8080"},
 	}
 	for _, c := range cases {

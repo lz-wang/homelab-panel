@@ -21,13 +21,13 @@
 
 ```bash
 make build
-./homelab-panel serve --port 3002 --dir ./data
+./homelab-panel serve --port 9090 --dir ./data
 ```
 
 首次启动时，如果指定的数据目录中还没有 `homelab-panel.json`，程序会初始化数据文件并打印一次管理员密码。请立即保存该密码，然后访问：
 
 ```text
-http://<服务器 IP>:3002
+http://<服务器 IP>:9090
 ```
 
 登录后可在设置页面调整面板、修改密码、管理 MCP token。
@@ -37,14 +37,14 @@ http://<服务器 IP>:3002
 `serve` 子命令用于启动 HTTP 服务：
 
 ```bash
-./homelab-panel serve --port 3002 --dir ./data
+./homelab-panel serve --port 9090 --dir ./data
 ```
 
 参数说明：
 
 | 参数 | 默认值 | 说明 |
 | --- | --- | --- |
-| `--port`, `-p` | `3002` | HTTP 监听端口。程序会监听 `:<port>`。 |
+| `--port`, `-p` | `9090` | HTTP 监听端口。程序会监听 `:<port>`。 |
 | `--dir`, `-d` | `./data` | 数据目录，保存主数据文件、上传文件和运行日志。 |
 
 数据目录结构示例：
@@ -137,13 +137,13 @@ Claude Code 示例：
 export HOMELAB_PANEL_MCP_TOKEN="hlpmcp_xxxx..."
 
 claude mcp add --transport http homelab-panel \
-  http://<服务器 IP>:3002/api/v1/mcp \
+  http://<服务器 IP>:9090/api/v1/mcp \
   --header "Authorization: Bearer $HOMELAB_PANEL_MCP_TOKEN"
 ```
 
 Codex 可在 `~/.codex/config.toml` 中配置 HTTP MCP 服务；设置页会提供可复制的配置片段。核心信息是：
 
-- URL：`http://<服务器 IP>:3002/api/v1/mcp`
+- URL：`http://<服务器 IP>:9090/api/v1/mcp`
 - Header：`Authorization: Bearer <MCP token>`
 
 MCP 鉴权独立于管理员登录 JWT。只要 token 有效，Agent 即可使用已开放的 MCP 工具管理面板数据。删除 token 前缀后，对应 token 会立即失效。
@@ -204,7 +204,7 @@ systemctl disable homelab-panel
 journalctl -u homelab-panel -f
 ```
 
-如果使用 80/443 等低端口，通常需要 root 或额外的端口绑定能力。也可以让程序监听 3002，再通过 Nginx/Caddy 反向代理到外部域名。
+如果使用 80/443 等低端口，通常需要 root 或额外的端口绑定能力。也可以让程序监听 9090，再通过 Nginx/Caddy 反向代理到外部域名。
 
 ## 自行构建
 

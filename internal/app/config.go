@@ -12,7 +12,7 @@ type Config struct {
 
 func (c Config) address() string {
 	if c.Port == "" {
-		return ":3002"
+		return ":9090"
 	}
 	return ":" + c.Port
 }

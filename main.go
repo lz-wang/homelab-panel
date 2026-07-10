@@ -39,7 +39,7 @@ func main() {
 						Name:    "port",
 						Aliases: []string{"p"},
 						Usage:   "HTTP listen port",
-						Value:   "3002",
+						Value:   "9090",
 					},
 					&cli.StringFlag{
 						Name:    "dir",
