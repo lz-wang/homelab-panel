@@ -18,8 +18,6 @@ import { useAuthStore } from '@/store/auth'
 export default function Login() {
     const navigate = useNavigate()
     const setToken = useAuthStore((s) => s.setToken)
-    const setAdmin = useAuthStore((s) => s.setAdmin)
-    const setInitialized = useAuthStore((s) => s.setInitialized)
     const [password, setPassword] = useState('')
     const { loading, run } = useApiAction()
     const { t } = useTranslation()
@@ -32,8 +30,6 @@ export default function Login() {
         if (res?.code !== API_SUCCESS_CODE) return
 
         setToken(res.data.token)
-        setAdmin(true)
-        setInitialized(true)
         navigate('/')
     }
 

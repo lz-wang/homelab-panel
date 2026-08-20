@@ -91,7 +91,6 @@ export function handleLoginExpiration(response: ApiResponse) {
 
     loginExpirationHandled = true
     useAuthStore.getState().clearToken()
-    useAuthStore.getState().setAdmin(false)
 
     if (window.location.hash !== '#/login') window.location.hash = '#/login'
 }

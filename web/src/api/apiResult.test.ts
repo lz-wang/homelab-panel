@@ -93,13 +93,13 @@ describe('normalizeApiError', () => {
 
 describe('handleLoginExpiration', () => {
     it('认证失效时清空登录状态', () => {
-        useAuthStore.setState({ token: 'expired-token', isAdmin: true, initialized: true })
+        useAuthStore.setState({ token: 'expired-token', status: 'admin' })
         window.location.hash = '#/'
 
         handleLoginExpiration({ code: 401, msg: 'unauthorized', data: null })
 
         expect(useAuthStore.getState().token).toBeNull()
-        expect(useAuthStore.getState().isAdmin).toBe(false)
+        expect(useAuthStore.getState().status).toBe('guest')
         expect(window.location.hash).toBe('#/login')
     })
 })

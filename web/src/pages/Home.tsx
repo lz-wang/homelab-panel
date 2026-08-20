@@ -40,12 +40,11 @@ export default function Home() {
     } = usePanelStore()
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
-    const [browsingAsGuest, setBrowsingAsGuest] = useState(() => {
-        // 仅登录管理员恢复浏览模式；未登录无意义（本就不能编辑）。
-        const isAdmin = Boolean(authStore.token) && authStore.isAdmin
-        return isAdmin && localStorage.getItem(BROWSING_AS_GUEST_KEY) === '1'
-    })
-    const loggedInAsAdmin = Boolean(authStore.token) && authStore.isAdmin
+    const [browsingAsGuest, setBrowsingAsGuest] = useState(
+        () => localStorage.getItem(BROWSING_AS_GUEST_KEY) === '1',
+    )
+    // checking 期间不显示管理入口；验证完成后 Zustand 更新仅触发少量管理按钮重绘。
+    const loggedInAsAdmin = authStore.status === 'admin'
     const canManage = loggedInAsAdmin && !browsingAsGuest
 
     // 展示数据纯派生自 store：聚合同分组的应用；排序模式由 useHomeSort 以覆写会话叠加。

@@ -19,7 +19,7 @@ describe('Login', () => {
     beforeEach(() => {
         mockNavigate.mockReset()
         localStorage.clear()
-        useAuthStore.setState({ token: null, isAdmin: false, initialized: false })
+        useAuthStore.setState({ token: null, status: 'guest' })
     })
 
     it('点击「仅浏览」跳转首页且不写入登录态', () => {
@@ -30,7 +30,7 @@ describe('Login', () => {
         expect(mockNavigate).toHaveBeenCalledWith('/')
         expect(mockNavigate).toHaveBeenCalledTimes(1)
         expect(useAuthStore.getState().token).toBeNull()
-        expect(useAuthStore.getState().isAdmin).toBe(false)
+        expect(useAuthStore.getState().status).toBe('guest')
     })
 
     it('不再展示 Powered By 页脚文本', () => {

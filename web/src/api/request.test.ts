@@ -22,7 +22,7 @@ vi.mock('axios', () => {
 
 vi.mock('@/store/auth', () => ({
     useAuthStore: {
-        getState: () => ({ token: 'tok-abc', clearToken: vi.fn(), setAdmin: vi.fn() }),
+        getState: () => ({ token: 'tok-abc', status: 'admin', clearToken: vi.fn() }),
     },
 }))
 
