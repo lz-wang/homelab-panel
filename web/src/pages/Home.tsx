@@ -173,7 +173,11 @@ export default function Home() {
                     position: 'absolute',
                     inset: 0,
                     transform: 'scale(1.05)',
-                    filter: `blur(${panelConfig.backgroundBlur ?? 0}px)`,
+                    // blur 为 0 时不创建 filter，避免多余的合成层。
+                    filter:
+                        (panelConfig.backgroundBlur ?? 0) > 0
+                            ? `blur(${panelConfig.backgroundBlur}px)`
+                            : 'none',
                     background: `url(${panelConfig.backgroundImageSrc}) center / cover no-repeat`,
                 }}
             />
