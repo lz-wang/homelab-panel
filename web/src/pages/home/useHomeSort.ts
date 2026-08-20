@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useNotify } from '@/components/common/NotifyProvider'
 import { t } from '@/locales'
@@ -8,47 +8,61 @@ import type { ItemInfo } from '@/types/panel'
 import type { DragState, ItemGroup } from './types'
 import { reorder } from './utils'
 
+// 排序会话：分组进入排序模式后，本地覆写该分组的应用顺序；保存或取消后移除，
+// 展示顺序回到 store 派生的服务器顺序。覆写不改变分组数量与顺序，
+// 因此分组索引在 baseGroups 与合并结果之间保持一致。
+interface SortSession {
+    items: ItemInfo[]
+}
+
 export function useHomeSort({
     canManage,
-    isSearchActive,
-    items,
-    setItems,
+    baseGroups,
 }: {
     canManage: boolean
-    isSearchActive: boolean
-    items: ItemGroup[]
-    setItems: React.Dispatch<React.SetStateAction<ItemGroup[]>>
+    baseGroups: ItemGroup[]
 }) {
     const notify = useNotify()
     const [dragState, setDragState] = useState<DragState | null>(null)
-    const [sortSnapshots, setSortSnapshots] = useState<Record<number, ItemInfo[]>>({})
+    const [sortSessions, setSortSessions] = useState<Record<number, SortSession>>({})
+
+    const groups = useMemo(
+        () =>
+            baseGroups.map((group) => {
+                const session = group.id ? sortSessions[group.id] : undefined
+
+                return session ? { ...group, sortStatus: true, items: session.items } : group
+            }),
+        [baseGroups, sortSessions],
+    )
+
+    function endSortSession(groupId: number) {
+        setSortSessions((prev) => {
+            if (!(groupId in prev)) return prev
+
+            const next = { ...prev }
+            delete next[groupId]
+            return next
+        })
+    }
 
     function setGroupSortStatus(groupIndex: number, sortStatus: boolean) {
-        if (isSearchActive) return
+        const group = baseGroups[groupIndex]
+        if (!group?.id) return
 
-        const group = items[groupIndex]
-
-        if (sortStatus && group?.id) {
-            setSortSnapshots((snapshots) => ({
-                ...snapshots,
-                [group.id as number]: [...(group.items ?? [])],
-            }))
+        if (sortStatus) {
+            const items = group.items ?? []
+            setSortSessions((prev) => ({ ...prev, [group.id as number]: { items } }))
+        } else {
+            endSortSession(group.id)
         }
-
-        setItems((prev) =>
-            prev.map((group, index) => {
-                if (index !== groupIndex) return group
-
-                return { ...group, sortStatus }
-            }),
-        )
     }
 
     async function handleSaveSort(group: ItemGroup) {
         if (!canManage || !group.id || !group.items) return
 
         const reordered = group.items.map((item, index) => ({ ...item, sort: index + 1 }))
-        const others = items.flatMap((g) =>
+        const others = groups.flatMap((g) =>
             g.id === group.id
                 ? []
                 : (g.items ?? []).map((it, index) => ({ ...it, sort: index + 1 })),
@@ -57,14 +71,7 @@ export function useHomeSort({
 
         if (res.code === 0) {
             notify.success(t('common.saveSuccess'))
-            setItems((prev) =>
-                prev.map((item) => (item.id === group.id ? { ...item, sortStatus: false } : item)),
-            )
-            setSortSnapshots((prev) => {
-                const next = { ...prev }
-                delete next[group.id as number]
-                return next
-            })
+            endSortSession(group.id)
         } else {
             notify.error(`${t('common.saveFail')}:${res.msg}`)
         }
@@ -73,43 +80,26 @@ export function useHomeSort({
     function handleCancelSort(group: ItemGroup) {
         if (!group.id) return
 
-        const snapshot = sortSnapshots[group.id]
-
-        setItems((prev) =>
-            prev.map((item) =>
-                item.id === group.id
-                    ? {
-                          ...item,
-                          sortStatus: false,
-                          items: snapshot ?? item.items,
-                      }
-                    : item,
-            ),
-        )
-        setSortSnapshots((prev) => {
-            const next = { ...prev }
-            delete next[group.id as number]
-            return next
-        })
+        // 移除覆写即回到 store 派生顺序（进入排序后没有写入，服务器顺序即进入时顺序）。
+        endSortSession(group.id)
     }
 
     function handleDrop(groupIndex: number, itemIndex: number) {
-        if (isSearchActive || !dragState || dragState.groupIndex !== groupIndex) return
+        if (!dragState || dragState.groupIndex !== groupIndex) return
 
-        setItems((prev) =>
-            prev.map((group, index) => {
-                if (index !== groupIndex) return group
+        const groupId = baseGroups[groupIndex]?.id
+        const session = groupId ? sortSessions[groupId] : undefined
+        if (!groupId || !session) return
 
-                return {
-                    ...group,
-                    items: reorder(group.items ?? [], dragState.itemIndex, itemIndex),
-                }
-            }),
-        )
+        setSortSessions((prev) => ({
+            ...prev,
+            [groupId]: { items: reorder(session.items, dragState.itemIndex, itemIndex) },
+        }))
         setDragState(null)
     }
 
     return {
+        groups,
         setDragState,
         setGroupSortStatus,
         handleSaveSort,

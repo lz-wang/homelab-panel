@@ -4,7 +4,7 @@ import Button from '@mui/material/Button'
 import Paper from '@mui/material/Paper'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { logout } from '@/api/admin'
@@ -14,7 +14,7 @@ import { useTranslation } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 import { usePanelStore } from '@/store/panel'
 import type { ItemInfo } from '@/types/panel'
-
+import { deriveHomeGroups } from './home/deriveHomeGroups'
 import { HomeContextMenu, type HomeContextMenuState } from './home/HomeContextMenu'
 import { HomeFloatingActions } from './home/HomeFloatingActions'
 import { HomeGroup } from './home/HomeGroup'
@@ -38,9 +38,6 @@ export default function Home() {
         loading,
         load: loadPanel,
     } = usePanelStore()
-    // 展示数据镜像：由 store 派生（聚合同分组的应用），供排序等本地 UI 状态覆写。
-    const [items, setItems] = useState<ItemGroup[]>([])
-    const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
     const [browsingAsGuest, setBrowsingAsGuest] = useState(() => {
@@ -50,6 +47,21 @@ export default function Home() {
     })
     const loggedInAsAdmin = Boolean(authStore.token) && authStore.isAdmin
     const canManage = loggedInAsAdmin && !browsingAsGuest
+
+    // 展示数据纯派生自 store：聚合同分组的应用；排序模式由 useHomeSort 以覆写会话叠加。
+    const homeGroups = useMemo(
+        () => deriveHomeGroups(panelGroups, panelItems),
+        [panelGroups, panelItems],
+    )
+    const {
+        groups: sortGroups,
+        setDragState,
+        setGroupSortStatus,
+        handleSaveSort,
+        handleCancelSort,
+        handleDrop,
+    } = useHomeSort({ canManage, baseGroups: homeGroups })
+    const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(sortGroups)
 
     const {
         editItemOpen,
@@ -66,30 +78,12 @@ export default function Home() {
         handleAddFirstItem,
     } = useHomeActions({
         canManage,
-        items,
+        items: sortGroups,
     })
-
-    const { setDragState, setGroupSortStatus, handleSaveSort, handleCancelSort, handleDrop } =
-        useHomeSort({
-            canManage,
-            isSearchActive,
-            items,
-            setItems,
-        })
 
     useEffect(() => {
         void loadPanel()
     }, [loadPanel])
-
-    useEffect(() => {
-        setItems(
-            panelGroups.map((group) => ({
-                ...group,
-                hoverStatus: false,
-                items: panelItems.filter((item) => item.itemIconGroupId === group.id),
-            })),
-        )
-    }, [panelGroups, panelItems])
 
     useEffect(() => {
         if (panelConfig.logoText) document.title = panelConfig.logoText
@@ -125,7 +119,7 @@ export default function Home() {
     function getSourceGroupIndex(group: ItemGroup, fallbackIndex: number) {
         if (!group.id) return fallbackIndex
 
-        const index = items.findIndex((item) => item.id === group.id)
+        const index = sortGroups.findIndex((item) => item.id === group.id)
 
         return index >= 0 ? index : fallbackIndex
     }
@@ -192,7 +186,7 @@ export default function Home() {
                     <HomeHeader panelConfig={panelConfig} onSearch={setKeyword} />
 
                     <Box sx={{ mx: `${panelConfig.marginX ?? 5}%` }}>
-                        {!loading && !isSearchActive && items.length === 0 && (
+                        {!loading && !isSearchActive && sortGroups.length === 0 && (
                             <Paper
                                 elevation={0}
                                 sx={{
