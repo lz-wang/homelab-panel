@@ -4,12 +4,10 @@ import Button from '@mui/material/Button'
 import Paper from '@mui/material/Paper'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { logout } from '@/api/admin'
-import { AppStarter } from '@/components/apps/AppStarter'
-import { EditItemDialog } from '@/components/common/EditItemDialog'
 import { useTranslation } from '@/locales'
 import { useAuthStore } from '@/store/auth'
 import { usePanelStore } from '@/store/panel'
@@ -26,6 +24,19 @@ import { useHomeSort } from './home/useHomeSort'
 
 // 浏览模式（已登录管理员临时切到只读）是否开启，持久化以在刷新后保持。
 const BROWSING_AS_GUEST_KEY = 'homelab-panel:browsing-as-guest'
+
+// 管理功能按需加载：仅访问导航页的访客不下载设置/编辑等后台代码。
+const AppStarter = lazy(() =>
+    import('@/components/apps/AppStarter').then((module) => ({
+        default: module.AppStarter,
+    })),
+)
+
+const EditItemDialog = lazy(() =>
+    import('@/components/common/EditItemDialog').then((module) => ({
+        default: module.EditItemDialog,
+    })),
+)
 
 export default function Home() {
     const navigate = useNavigate()
@@ -280,16 +291,20 @@ export default function Home() {
                 onLogout={handleLogout}
             />
 
-            {loggedInAsAdmin && (
-                <AppStarter open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+            {settingsOpen && loggedInAsAdmin && (
+                <Suspense fallback={null}>
+                    <AppStarter open onClose={() => setSettingsOpen(false)} />
+                </Suspense>
             )}
-            {canManage && (
-                <EditItemDialog
-                    open={editItemOpen}
-                    item={editItem}
-                    itemIconGroupId={addItemIconGroupId}
-                    onClose={() => setEditItemOpen(false)}
-                />
+            {editItemOpen && canManage && (
+                <Suspense fallback={null}>
+                    <EditItemDialog
+                        open
+                        item={editItem}
+                        itemIconGroupId={addItemIconGroupId}
+                        onClose={() => setEditItemOpen(false)}
+                    />
+                </Suspense>
             )}
         </Box>
     )
