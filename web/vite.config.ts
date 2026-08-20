@@ -23,7 +23,7 @@ export default defineConfig({
         open: false,
     },
     build: {
-        reportCompressedSize: false,
+        reportCompressedSize: true,
         rolldownOptions: {
             output: {
                 codeSplitting: {
