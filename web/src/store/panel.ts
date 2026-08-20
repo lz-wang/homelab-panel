@@ -129,9 +129,9 @@ interface PanelStore {
     groups: ItemIconGroup[]
     items: ItemInfo[]
 
+    loading: boolean
     rightSiderCollapsed: boolean
     leftSiderCollapsed: boolean
-    panelDataVersion: number
 
     load: () => Promise<void>
     setPanelConfig: (config: PanelConfig) => ApiResponse | Promise<ApiResponse>
@@ -166,21 +166,27 @@ export const usePanelStore = create<PanelStore>()(
             groups: [],
             items: [],
 
+            loading: true,
             rightSiderCollapsed: false,
             leftSiderCollapsed: false,
-            panelDataVersion: 0,
 
             load: async () => {
-                const res = await getPanel()
-                if (res.code === 0 && res.data) {
-                    set({
-                        siteName: res.data.siteName,
-                        panelConfig: sanitizePanelConfig(res.data.config),
-                        searchEngine: res.data.searchEngine,
-                        groups: res.data.groups,
-                        items: res.data.items,
-                        panelDataVersion: get().panelDataVersion + 1,
-                    })
+                set({ loading: true })
+
+                try {
+                    const res = await getPanel()
+
+                    if (res.code === 0 && res.data) {
+                        set({
+                            siteName: res.data.siteName,
+                            panelConfig: sanitizePanelConfig(res.data.config),
+                            searchEngine: res.data.searchEngine,
+                            groups: res.data.groups,
+                            items: res.data.items,
+                        })
+                    }
+                } finally {
+                    set({ loading: false })
                 }
             },
 
@@ -254,7 +260,6 @@ async function persistPanel(
             siteName: res.data.siteName,
             groups: res.data.groups,
             items: res.data.items,
-            panelDataVersion: get().panelDataVersion + 1,
         })
         return res
     }

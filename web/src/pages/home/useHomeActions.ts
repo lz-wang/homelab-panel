@@ -8,15 +8,7 @@ import type { ItemInfo } from '@/types/panel'
 
 import type { ItemGroup } from './types'
 
-export function useHomeActions({
-    canManage,
-    items,
-    loadList,
-}: {
-    canManage: boolean
-    items: ItemGroup[]
-    loadList: () => Promise<void>
-}) {
+export function useHomeActions({ canManage, items }: { canManage: boolean; items: ItemGroup[] }) {
     const notify = useNotify()
     const confirm = useConfirm()
     const [editItemOpen, setEditItemOpen] = useState(false)
@@ -62,7 +54,6 @@ export function useHomeActions({
 
         if (res.code === 0) {
             notify.success(t('common.deleteSuccess'))
-            await loadList()
         } else {
             notify.error(`${t('common.deleteFail')}:${res.msg}`)
         }
@@ -81,7 +72,6 @@ export function useHomeActions({
 
         if (res.code === 0) {
             notify.success(t('home.copiedApp'))
-            await loadList()
         } else {
             notify.error(`${t('common.saveFail')}:${res.msg}`)
         }
@@ -145,7 +135,6 @@ export function useHomeActions({
                 return
             }
 
-            await loadList()
             handleAddItem(groupId)
         } finally {
             setCreatingFirstGroup(false)

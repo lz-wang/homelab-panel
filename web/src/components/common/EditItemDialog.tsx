@@ -35,7 +35,8 @@ interface Props {
     item: ItemInfo | null
     itemIconGroupId?: number
     onClose: () => void
-    onSaved: () => void
+    /** 保存成功后的额外回调；store 已由 PUT 响应更新，无需在此重新拉取数据。 */
+    onSaved?: () => void
 }
 
 const defaultIconBackgroundColor = '#2196F3'
@@ -180,7 +181,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
             if (res.code === 0) {
                 notify.success(t('common.saveSuccess'))
-                onSaved()
+                onSaved?.()
                 onClose()
             } else {
                 notify.error(`${t('common.saveFail')}:${res.msg}`)
@@ -206,7 +207,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
             if (res.code === 0) {
                 notify.success(t('home.copiedApp'))
-                onSaved()
+                onSaved?.()
                 onClose()
             } else {
                 notify.error(`${t('common.saveFail')}:${res.msg}`)
@@ -237,7 +238,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
 
             if (res.code === 0) {
                 notify.success(t('common.deleteSuccess'))
-                onSaved()
+                onSaved?.()
                 onClose()
             } else {
                 notify.error(`${t('common.deleteFail')}:${res.msg}`)

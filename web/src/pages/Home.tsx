@@ -21,7 +21,6 @@ import { HomeGroup } from './home/HomeGroup'
 import { HomeHeader } from './home/HomeHeader'
 import type { ItemGroup } from './home/types'
 import { useHomeActions } from './home/useHomeActions'
-import { useHomeData } from './home/useHomeData'
 import { useHomeSearch } from './home/useHomeSearch'
 import { useHomeSort } from './home/useHomeSort'
 
@@ -32,8 +31,15 @@ export default function Home() {
     const navigate = useNavigate()
     const authStore = useAuthStore()
     const { t } = useTranslation()
-    const { panelConfig, panelDataVersion, load: loadPanel } = usePanelStore()
-    const { items, setItems, loading, loadList } = useHomeData()
+    const {
+        panelConfig,
+        groups: panelGroups,
+        items: panelItems,
+        loading,
+        load: loadPanel,
+    } = usePanelStore()
+    // 展示数据镜像：由 store 派生（聚合同分组的应用），供排序等本地 UI 状态覆写。
+    const [items, setItems] = useState<ItemGroup[]>([])
     const { setKeyword, filteredItems, isSearchActive } = useHomeSearch(items)
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
@@ -61,7 +67,6 @@ export default function Home() {
     } = useHomeActions({
         canManage,
         items,
-        loadList,
     })
 
     const { setDragState, setGroupSortStatus, handleSaveSort, handleCancelSort, handleDrop } =
@@ -73,13 +78,18 @@ export default function Home() {
         })
 
     useEffect(() => {
-        loadPanel()
+        void loadPanel()
     }, [loadPanel])
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: panelDataVersion intentionally forces public list reloads after edits.
     useEffect(() => {
-        loadList()
-    }, [loadList, panelDataVersion])
+        setItems(
+            panelGroups.map((group) => ({
+                ...group,
+                hoverStatus: false,
+                items: panelItems.filter((item) => item.itemIconGroupId === group.id),
+            })),
+        )
+    }, [panelGroups, panelItems])
 
     useEffect(() => {
         if (panelConfig.logoText) document.title = panelConfig.logoText
@@ -286,7 +296,6 @@ export default function Home() {
                     item={editItem}
                     itemIconGroupId={addItemIconGroupId}
                     onClose={() => setEditItemOpen(false)}
-                    onSaved={loadList}
                 />
             )}
         </Box>

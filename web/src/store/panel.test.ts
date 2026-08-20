@@ -118,7 +118,6 @@ describe('panel store', () => {
             searchEngine: {},
             groups: [],
             items: [],
-            panelDataVersion: 0,
         })
     })
 
