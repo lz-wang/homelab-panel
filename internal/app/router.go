@@ -23,6 +23,7 @@ func (s *Server) registerRoutes() {
 	api.GET("/about", h.About)
 
 	api.GET("/panel", h.GetPanel)
+	api.GET("/icons/:name", h.GetIconifyIcon)
 
 	api.POST("/admin/session", h.CreateAdminSession)
 
