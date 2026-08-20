@@ -335,6 +335,8 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                                     component="img"
                                     src={file.src}
                                     alt={file.fileName}
+                                    loading="lazy"
+                                    decoding="async"
                                     sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />
                             ) : (
