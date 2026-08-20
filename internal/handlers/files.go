@@ -147,6 +147,9 @@ func (h *Handler) Upload(c *gin.Context) {
 		writeError(c, http.StatusBadRequest, "invalid file path")
 		return
 	}
+	// 上传文件以随机 objectKey 命名、不会原地覆盖（内容变化即换 URL），
+	// 适合一年 immutable 缓存。
+	c.Header("Cache-Control", "public, max-age=31536000, immutable")
 	c.File(filepath.Join(h.DataDir, "uploads", objectKey))
 }
 

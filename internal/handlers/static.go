@@ -57,6 +57,14 @@ func (h *Handler) serveStaticFile(c *gin.Context, name string) bool {
 		return true
 	}
 
+	// Vite 构建产物带内容哈希（index-AbCd1234.js），内容变化即换文件名，
+	// 适合一年 immutable；index.html 必须每次校验以引用新哈希文件。
+	if strings.HasPrefix(name, "assets/") {
+		c.Header("Cache-Control", "public, max-age=31536000, immutable")
+	} else if name == "index.html" {
+		c.Header("Cache-Control", "no-cache")
+	}
+
 	http.ServeContent(c.Writer, c.Request, path.Base(name), stat.ModTime(), reader)
 	return true
 }

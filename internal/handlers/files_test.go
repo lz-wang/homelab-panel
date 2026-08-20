@@ -153,4 +153,8 @@ func TestUploadServesStoredFile(t *testing.T) {
 	if w.Body.String() != "hello" {
 		t.Errorf("served body = %q, want hello", w.Body.String())
 	}
+	// 随机 objectKey 不会原地覆盖，应返回一年 immutable 缓存头。
+	if cc := w.Header().Get("Cache-Control"); cc != "public, max-age=31536000, immutable" {
+		t.Errorf("uploads Cache-Control = %q, want immutable", cc)
+	}
 }
