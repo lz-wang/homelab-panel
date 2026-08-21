@@ -105,21 +105,27 @@ jobs:
           - goos: linux
             goarch: amd64
             suffix: ""
+            archive: tar.gz
           - goos: linux
             goarch: arm64
             suffix: ""
+            archive: tar.gz
           - goos: darwin
             goarch: amd64
             suffix: ""
+            archive: tar.gz
           - goos: darwin
             goarch: arm64
             suffix: ""
+            archive: tar.gz
           - goos: windows
             goarch: amd64
             suffix: ".exe"
+            archive: zip
           - goos: windows
             goarch: arm64
             suffix: ".exe"
+            archive: zip
 
     steps:
       - uses: actions/checkout@v6
@@ -152,12 +158,42 @@ jobs:
           CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o "${output}" .
           sha256sum "${output}" > "${output}.sha256"
 
+      - name: Package WebDAV archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ needs.prepare.outputs.version }}"
+          name="homelab-panel_${version}_${{ matrix.goos }}_${{ matrix.goarch }}"
+          package_dir="release/${name}"
+          mkdir -p "${package_dir}"
+          cp "homelab-panel-${version}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}" "${package_dir}/homelab-panel${{ matrix.suffix }}"
+          if [[ "${{ matrix.archive }}" == 'zip' ]]; then
+            archive="release/${name}.zip"
+            (cd "${package_dir}" && zip -qr "${GITHUB_WORKSPACE}/${archive}" .)
+          else
+            archive="release/${name}.tar.gz"
+            tar -C "${package_dir}" -czf "${archive}" .
+          fi
+          sha256sum "${archive}" > "${archive}.sha256"
+
+      - name: Upload release archive and checksum to WebDAV
+        uses: bxb100/action-upload-webdav@v1
+        with:
+          webdav_address: ${{ secrets.WEBDAV_SERVER }}
+          webdav_username: ${{ secrets.WEBDAV_USERNAME }}
+          webdav_password: ${{ secrets.WEBDAV_PASSWORD }}
+          webdav_upload_path: "/Shares/github/${{ github.repository }}/${{ needs.prepare.outputs.version }}"
+          files: |
+            release/homelab-panel_${{ needs.prepare.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.${{ matrix.archive }}
+            release/homelab-panel_${{ needs.prepare.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.${{ matrix.archive }}.sha256
+
       - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          gh release upload "${VERSION}" homelab-panel-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}* --clobber
+          asset="homelab-panel-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}"
+          gh release upload "${VERSION}" "${asset}" "${asset}.sha256" --clobber
 
   publish:
     runs-on: ubuntu-latest
