@@ -110,6 +110,15 @@ change commands, CI, or code examples that should be verified.
 
 Do not proactively run full browser/E2E validation unless the user asks for it or the change is specifically about rendered behavior. If you do run a local server and sandboxing blocks port binding, request escalation rather than changing the implementation.
 
+## Release and Homebrew publishing
+
+- Release automation is defined in `.github/workflows/release.yml`. It starts when an existing `v*` tag is pushed, or when `workflow_dispatch` receives an existing tag in its `version` input. The workflow verifies the tag before building, so never use a branch name or an unpushed tag as the input.
+- Before creating a release, inspect the current branch and worktree, run the complete gate (`make fmt`, `make check`, `make test`, `git diff --check`), then create an annotated tag such as `v0.1.1` and push the branch plus tag. Do not move or recreate a public release tag; publish a new patch tag to correct a released build.
+- A release builds six binaries and publishes both raw binaries and archives with SHA-256 files. The four Darwin/Linux archives use Homebrew-friendly names such as `homelab-panel_0.1.1_darwin_arm64.tar.gz` and contain a top-level `homelab-panel` executable.
+- The workflow requires the repository secret `HOMEBREW_TAP_TOKEN` before releasing. It must be able to check out and push `lz-wang/homebrew-tap`; do not expose or store its value in repository files, logs, or documentation.
+- After the GitHub Release is public, the `homebrew` job reads the four public archive checksums, generates `Formula/homelab-panel.rb`, runs `brew audit --strict`, `brew install`, and `brew test`, then pushes the Formula only if all checks succeed. It skips a release that is no longer the latest to prevent Formula rollback.
+- For a release investigation, verify the GitHub Release assets and the resulting commit in `lz-wang/homebrew-tap`. A green main Release job alone is not proof that the Formula was published.
+
 ## Frontend conventions
 
 - npm with `web/package-lock.json` is the dependency source of truth.

@@ -28,6 +28,13 @@
 
 可同时下载对应 `.sha256` 文件校验完整性。
 
+macOS 或 Linux 也可以使用 Homebrew 安装和升级：
+
+```bash
+brew install lz-wang/tap/homelab-panel
+brew upgrade homelab-panel
+```
+
 ## 快速启动
 
 Linux/macOS：

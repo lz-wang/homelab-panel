@@ -28,6 +28,13 @@ Download the matching binary from [Releases](https://github.com/lz-wang/homelab-
 
 You can also download the matching `.sha256` file to verify integrity.
 
+On macOS or Linux, install and upgrade with Homebrew:
+
+```bash
+brew install lz-wang/tap/homelab-panel
+brew upgrade homelab-panel
+```
+
 ## Quick Start
 
 Linux/macOS:
