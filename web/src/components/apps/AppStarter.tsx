@@ -6,7 +6,6 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined'
 import TableViewIcon from '@mui/icons-material/TableView'
 import TuneIcon from '@mui/icons-material/Tune'
 import Box from '@mui/material/Box'
-import CircularProgress from '@mui/material/CircularProgress'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import List from '@mui/material/List'
@@ -15,46 +14,25 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
 import { alpha } from '@mui/material/styles'
-import { type ComponentType, lazy, Suspense, useEffect, useState } from 'react'
+import { type ComponentType, useEffect, useState } from 'react'
 
+import { FileManagerPanel } from '@/features/files/FileManagerPanel'
 import { useTranslation } from '@/locales'
+import { AboutPanel } from './AboutPanel'
+import { AppSettingsPanel } from './AppSettingsPanel'
+import { GroupManager } from './GroupManager'
+import { MCPSettingsPanel } from './MCPSettingsPanel'
+import { MiscSettingsPanel } from './MiscSettingsPanel'
+import { PageSettingsPanel } from './PageSettingsPanel'
 
-// 设置各面板按需加载：默认页（页面设置）随 AppStarter 一起 preload，
-// 其余面板在切换 Tab 时才拉取对应 chunk。
-const panelLoaders = {
-    pageSettings: () => import('./PageSettingsPanel'),
-    appSettings: () => import('./AppSettingsPanel'),
-    groups: () => import('./GroupManager'),
-    files: () => import('@/features/files/FileManagerPanel'),
-    mcp: () => import('./MCPSettingsPanel'),
-    misc: () => import('./MiscSettingsPanel'),
-    about: () => import('./AboutPanel'),
-} as const
-
-type SettingsPanelKey = keyof typeof panelLoaders
-
-const PageSettingsPanel = lazy(() =>
-    panelLoaders.pageSettings().then((m) => ({ default: m.PageSettingsPanel })),
-)
-const AppSettingsPanel = lazy(() =>
-    panelLoaders.appSettings().then((m) => ({ default: m.AppSettingsPanel })),
-)
-const GroupManager = lazy(() => panelLoaders.groups().then((m) => ({ default: m.GroupManager })))
-const FileManagerPanel = lazy(() =>
-    panelLoaders.files().then((m) => ({ default: m.FileManagerPanel })),
-)
-const MCPSettingsPanel = lazy(() =>
-    panelLoaders.mcp().then((m) => ({ default: m.MCPSettingsPanel })),
-)
-const MiscSettingsPanel = lazy(() =>
-    panelLoaders.misc().then((m) => ({ default: m.MiscSettingsPanel })),
-)
-const AboutPanel = lazy(() => panelLoaders.about().then((m) => ({ default: m.AboutPanel })))
-
-/** 提前拉取指定设置面板的 chunk；idle preload 与 Tab hover/focus 共用。 */
-export function preloadSettingsPanel(key: SettingsPanelKey) {
-    void panelLoaders[key]()
-}
+type SettingsPanelKey =
+    | 'pageSettings'
+    | 'appSettings'
+    | 'groups'
+    | 'files'
+    | 'mcp'
+    | 'misc'
+    | 'about'
 
 const apps: Array<{
     key: SettingsPanelKey
@@ -95,14 +73,6 @@ const apps: Array<{
         component: AboutPanel,
     },
 ]
-
-function PanelSuspenseFallback() {
-    return (
-        <Stack sx={{ alignItems: 'center', py: 10 }}>
-            <CircularProgress size={32} />
-        </Stack>
-    )
-}
 
 interface Props {
     open: boolean
@@ -154,9 +124,6 @@ export function AppStarter({ open, onClose }: Props) {
                             key={app.key}
                             selected={app.key === activeKey}
                             onClick={() => setActiveKey(app.key)}
-                            // hover/focus 即预取对应面板 chunk，点击 Tab 时基本零等待。
-                            onPointerEnter={() => preloadSettingsPanel(app.key)}
-                            onFocus={() => preloadSettingsPanel(app.key)}
                             sx={{
                                 borderRadius: 2,
                                 mx: 1,
@@ -170,9 +137,7 @@ export function AppStarter({ open, onClose }: Props) {
                     ))}
                 </List>
                 <Box sx={{ flex: 1, p: 3, overflow: 'auto' }}>
-                    <Suspense fallback={<PanelSuspenseFallback />}>
-                        <ActiveComponent />
-                    </Suspense>
+                    <ActiveComponent />
                 </Box>
             </Stack>
         </Dialog>

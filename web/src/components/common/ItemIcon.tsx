@@ -36,7 +36,6 @@ export function ItemIcon({ itemIcon, size = 70, forceBackground }: Props) {
             <Box
                 component="img"
                 src={itemIcon.src}
-                loading="lazy"
                 decoding="async"
                 sx={{
                     width: size,

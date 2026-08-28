@@ -24,7 +24,6 @@ function createHandlers() {
     return {
         onLogin: vi.fn(),
         onOpenSettings: vi.fn(),
-        onPreloadSettings: vi.fn(),
         onToggleBrowseMode: vi.fn(),
         onLogout: vi.fn(),
     }
@@ -55,22 +54,5 @@ describe('HomeFloatingActions', () => {
         expect(handlers.onToggleBrowseMode).toHaveBeenCalledTimes(1)
         expect(handlers.onLogout).toHaveBeenCalledTimes(1)
         expect(screen.queryByTitle('登录')).not.toBeInTheDocument()
-    })
-
-    it('设置按钮 hover/focus/press 均触发 chunk 预取', () => {
-        const handlers = createHandlers()
-
-        render(<HomeFloatingActions canManage browsingAsGuest={false} {...handlers} />)
-
-        const settingsButton = getTooltipButton('设置')
-
-        fireEvent.pointerEnter(settingsButton)
-        expect(handlers.onPreloadSettings).toHaveBeenCalledTimes(1)
-
-        fireEvent.focus(settingsButton)
-        expect(handlers.onPreloadSettings).toHaveBeenCalledTimes(2)
-
-        fireEvent.pointerDown(settingsButton)
-        expect(handlers.onPreloadSettings).toHaveBeenCalledTimes(3)
     })
 })
