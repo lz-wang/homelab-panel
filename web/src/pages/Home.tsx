@@ -18,12 +18,10 @@ import { HomeFloatingActions } from './home/HomeFloatingActions'
 import { HomeGroup } from './home/HomeGroup'
 import { HomeHeader } from './home/HomeHeader'
 import type { ItemGroup } from './home/types'
+import { useBrowseMode } from './home/useBrowseMode'
 import { useHomeActions } from './home/useHomeActions'
 import { useHomeSearch } from './home/useHomeSearch'
 import { useHomeSort } from './home/useHomeSort'
-
-// 浏览模式（已登录管理员临时切到只读）是否开启，持久化以在刷新后保持。
-const BROWSING_AS_GUEST_KEY = 'homelab-panel:browsing-as-guest'
 
 // 管理功能按需加载：仅访问导航页的访客不下载设置/编辑等后台代码。
 const AppStarter = lazy(() =>
@@ -51,11 +49,9 @@ export default function Home() {
     } = usePanelStore()
     const [settingsOpen, setSettingsOpen] = useState(false)
     const [contextMenu, setContextMenu] = useState<HomeContextMenuState | null>(null)
-    const [browsingAsGuest, setBrowsingAsGuest] = useState(
-        () => localStorage.getItem(BROWSING_AS_GUEST_KEY) === '1',
-    )
     // checking 期间不显示管理入口；验证完成后 Zustand 更新仅触发少量管理按钮重绘。
     const loggedInAsAdmin = authStore.status === 'admin'
+    const { browsingAsGuest, updateBrowsingAsGuest, toggleBrowseMode } = useBrowseMode()
     const canManage = loggedInAsAdmin && !browsingAsGuest
 
     // 展示数据纯派生自 store：聚合同分组的应用；排序模式由 useHomeSort 以覆写会话叠加。
@@ -91,6 +87,16 @@ export default function Home() {
         items: sortGroups,
     })
 
+    // 仅明确验证为 guest 后才复位管理 UI；checking/admin 都不动。
+    // 浏览模式本身（含 localStorage）由 useBrowseMode 在同一时机清理。
+    useEffect(() => {
+        if (authStore.status !== 'guest') return
+
+        setSettingsOpen(false)
+        setContextMenu(null)
+        setEditItemOpen(false)
+    }, [authStore.status, setEditItemOpen])
+
     useEffect(() => {
         void loadPanel()
     }, [loadPanel])
@@ -98,25 +104,6 @@ export default function Home() {
     useEffect(() => {
         if (panelConfig.logoText) document.title = panelConfig.logoText
     }, [panelConfig.logoText])
-
-    // 浏览模式开关持久化到 localStorage，刷新后保持上次状态。
-    useEffect(() => {
-        try {
-            if (browsingAsGuest) localStorage.setItem(BROWSING_AS_GUEST_KEY, '1')
-            else localStorage.removeItem(BROWSING_AS_GUEST_KEY)
-        } catch {
-            // localStorage 不可用时静默忽略
-        }
-    }, [browsingAsGuest])
-
-    useEffect(() => {
-        if (loggedInAsAdmin) return
-
-        setBrowsingAsGuest(false)
-        setSettingsOpen(false)
-        setContextMenu(null)
-        setEditItemOpen(false)
-    }, [loggedInAsAdmin, setEditItemOpen])
 
     useEffect(() => {
         if (!browsingAsGuest) return
@@ -158,7 +145,8 @@ export default function Home() {
             await logout()
         } finally {
             authStore.clearToken()
-            setBrowsingAsGuest(false)
+            // 显式同步清掉 localStorage，不依赖 Home 卸载后的 effect 时序。
+            updateBrowsingAsGuest(false)
             setSettingsOpen(false)
             setContextMenu(null)
             setEditItemOpen(false)
@@ -291,7 +279,7 @@ export default function Home() {
                 browsingAsGuest={browsingAsGuest}
                 onOpenSettings={() => setSettingsOpen(true)}
                 onLogin={() => navigate('/login')}
-                onToggleBrowseMode={() => setBrowsingAsGuest((value) => !value)}
+                onToggleBrowseMode={toggleBrowseMode}
                 onLogout={handleLogout}
             />
 
