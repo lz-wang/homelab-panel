@@ -9,12 +9,17 @@ vi.mock('@/api/files', () => ({
     deletes: vi.fn(),
 }))
 
+// mock 返回值必须是稳定引用：FileManagerPanel 的 loadFiles 以 notify 为依赖，
+// 每次渲染返回新对象会触发无限重载循环，导致「暂无文件」闪烁、断言竞态失败。
+const mockNotify = { success: vi.fn(), error: vi.fn() }
+const mockConfirm = vi.fn()
+
 vi.mock('@/components/common/NotifyProvider', () => ({
-    useNotify: () => ({ success: vi.fn(), error: vi.fn() }),
+    useNotify: () => mockNotify,
 }))
 
 vi.mock('@/components/common/ConfirmProvider', () => ({
-    useConfirm: () => vi.fn(),
+    useConfirm: () => mockConfirm,
 }))
 
 describe('AppStarter', () => {
