@@ -10,60 +10,67 @@ vi.mock('@mui/material/Tooltip', () => ({
     ),
 }))
 
-function clickTooltipButton(title: string) {
+function getTooltipButton(title: string) {
     const button = screen.getByTitle(title).querySelector('button')
     if (!button) throw new Error(`Button not found for tooltip: ${title}`)
-    fireEvent.click(button)
+    return button
+}
+
+function clickTooltipButton(title: string) {
+    fireEvent.click(getTooltipButton(title))
+}
+
+function createHandlers() {
+    return {
+        onLogin: vi.fn(),
+        onOpenSettings: vi.fn(),
+        onPreloadSettings: vi.fn(),
+        onToggleBrowseMode: vi.fn(),
+        onLogout: vi.fn(),
+    }
 }
 
 describe('HomeFloatingActions', () => {
     it('未登录时只显示登录按钮', () => {
-        const onLogin = vi.fn()
-        const onOpenSettings = vi.fn()
-        const onToggleBrowseMode = vi.fn()
-        const onLogout = vi.fn()
+        const handlers = createHandlers()
 
-        render(
-            <HomeFloatingActions
-                canManage={false}
-                browsingAsGuest={false}
-                onLogin={onLogin}
-                onOpenSettings={onOpenSettings}
-                onToggleBrowseMode={onToggleBrowseMode}
-                onLogout={onLogout}
-            />,
-        )
+        render(<HomeFloatingActions canManage={false} browsingAsGuest={false} {...handlers} />)
 
         clickTooltipButton('登录')
 
-        expect(onLogin).toHaveBeenCalledTimes(1)
+        expect(handlers.onLogin).toHaveBeenCalledTimes(1)
         expect(screen.queryByTitle('设置')).not.toBeInTheDocument()
     })
 
     it('可管理时显示悬浮操作按钮组', () => {
-        const onLogin = vi.fn()
-        const onOpenSettings = vi.fn()
-        const onToggleBrowseMode = vi.fn()
-        const onLogout = vi.fn()
+        const handlers = createHandlers()
 
-        render(
-            <HomeFloatingActions
-                canManage
-                browsingAsGuest={false}
-                onLogin={onLogin}
-                onOpenSettings={onOpenSettings}
-                onToggleBrowseMode={onToggleBrowseMode}
-                onLogout={onLogout}
-            />,
-        )
+        render(<HomeFloatingActions canManage browsingAsGuest={false} {...handlers} />)
 
         clickTooltipButton('设置')
         clickTooltipButton('切换到浏览模式')
         clickTooltipButton('登出')
 
-        expect(onOpenSettings).toHaveBeenCalledTimes(1)
-        expect(onToggleBrowseMode).toHaveBeenCalledTimes(1)
-        expect(onLogout).toHaveBeenCalledTimes(1)
+        expect(handlers.onOpenSettings).toHaveBeenCalledTimes(1)
+        expect(handlers.onToggleBrowseMode).toHaveBeenCalledTimes(1)
+        expect(handlers.onLogout).toHaveBeenCalledTimes(1)
         expect(screen.queryByTitle('登录')).not.toBeInTheDocument()
+    })
+
+    it('设置按钮 hover/focus/press 均触发 chunk 预取', () => {
+        const handlers = createHandlers()
+
+        render(<HomeFloatingActions canManage browsingAsGuest={false} {...handlers} />)
+
+        const settingsButton = getTooltipButton('设置')
+
+        fireEvent.pointerEnter(settingsButton)
+        expect(handlers.onPreloadSettings).toHaveBeenCalledTimes(1)
+
+        fireEvent.focus(settingsButton)
+        expect(handlers.onPreloadSettings).toHaveBeenCalledTimes(2)
+
+        fireEvent.pointerDown(settingsButton)
+        expect(handlers.onPreloadSettings).toHaveBeenCalledTimes(3)
     })
 })

@@ -43,6 +43,8 @@ interface Props {
     canManage: boolean
     browsingAsGuest: boolean
     onOpenSettings: () => void
+    /** hover/focus/press 预取设置 chunk，作为空闲预取来不及执行时的第二层保险。 */
+    onPreloadSettings: () => void
     onLogin: () => void
     onToggleBrowseMode: () => void
     onLogout: () => void
@@ -52,6 +54,7 @@ export function HomeFloatingActions({
     canManage,
     browsingAsGuest,
     onOpenSettings,
+    onPreloadSettings,
     onLogin,
     onToggleBrowseMode,
     onLogout,
@@ -105,7 +108,14 @@ export function HomeFloatingActions({
             {canManage && (
                 <>
                     <Tooltip title={t('home.settingsTooltip')} placement="left">
-                        <IconButton className="hover-action" size="small" onClick={onOpenSettings}>
+                        <IconButton
+                            className="hover-action"
+                            size="small"
+                            onClick={onOpenSettings}
+                            onPointerEnter={onPreloadSettings}
+                            onFocus={onPreloadSettings}
+                            onPointerDown={onPreloadSettings}
+                        >
                             <SettingsIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>

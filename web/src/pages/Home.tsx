@@ -1,10 +1,11 @@
 import AddIcon from '@mui/icons-material/Add'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
 import Paper from '@mui/material/Paper'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { logout } from '@/api/admin'
@@ -24,17 +25,40 @@ import { useHomeSearch } from './home/useHomeSearch'
 import { useHomeSort } from './home/useHomeSort'
 
 // 管理功能按需加载：仅访问导航页的访客不下载设置/编辑等后台代码。
+// loader 提取为独立函数，lazy 注册与空闲预取共用同一动态 import。
+const loadAppStarter = () => import('@/components/apps/AppStarter')
+const loadEditItemDialog = () => import('@/components/common/EditItemDialog')
+
 const AppStarter = lazy(() =>
-    import('@/components/apps/AppStarter').then((module) => ({
+    loadAppStarter().then((module) => ({
         default: module.AppStarter,
     })),
 )
 
 const EditItemDialog = lazy(() =>
-    import('@/components/common/EditItemDialog').then((module) => ({
+    loadEditItemDialog().then((module) => ({
         default: module.EditItemDialog,
     })),
 )
+
+// 极端情况下 chunk 尚未就绪时，点击后立即给出轻量视觉反馈而非空白。
+function LazyChunkFallback() {
+    return (
+        <Box
+            sx={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: (theme) => theme.zIndex.modal,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'rgba(0,0,0,0.32)',
+            }}
+        >
+            <CircularProgress />
+        </Box>
+    )
+}
 
 export default function Home() {
     const navigate = useNavigate()
@@ -100,6 +124,32 @@ export default function Home() {
     useEffect(() => {
         void loadPanel()
     }, [loadPanel])
+
+    // 悬浮「设置」按钮 hover/focus/press 时的第二层保险：
+    // idle 预取尚未执行时，先于点击把设置 shell 与默认面板拉下来。
+    const preloadSettingsChunks = useCallback(() => {
+        void loadAppStarter().then((module) => module.preloadSettingsPanel('pageSettings'))
+    }, [])
+
+    // 管理员身份确认 + 首屏面板加载完成后，浏览器空闲时后台预取管理 chunk：
+    // 不阻塞首屏下载，点击设置/编辑时模块已在 module cache，Dialog 立即 mount。
+    useEffect(() => {
+        if (!loggedInAsAdmin || loading) return
+
+        const preload = () => {
+            void loadEditItemDialog()
+            preloadSettingsChunks()
+        }
+
+        if (typeof window.requestIdleCallback === 'function') {
+            const id = window.requestIdleCallback(preload, { timeout: 3000 })
+            return () => window.cancelIdleCallback(id)
+        }
+
+        // requestIdleCallback 不可用时用 ~400ms setTimeout 兜底。
+        const timer = window.setTimeout(preload, 400)
+        return () => window.clearTimeout(timer)
+    }, [loggedInAsAdmin, loading, preloadSettingsChunks])
 
     useEffect(() => {
         if (panelConfig.logoText) document.title = panelConfig.logoText
@@ -278,18 +328,19 @@ export default function Home() {
                 canManage={loggedInAsAdmin}
                 browsingAsGuest={browsingAsGuest}
                 onOpenSettings={() => setSettingsOpen(true)}
+                onPreloadSettings={preloadSettingsChunks}
                 onLogin={() => navigate('/login')}
                 onToggleBrowseMode={toggleBrowseMode}
                 onLogout={handleLogout}
             />
 
             {settingsOpen && loggedInAsAdmin && (
-                <Suspense fallback={null}>
+                <Suspense fallback={<LazyChunkFallback />}>
                     <AppStarter open onClose={() => setSettingsOpen(false)} />
                 </Suspense>
             )}
             {editItemOpen && canManage && (
-                <Suspense fallback={null}>
+                <Suspense fallback={<LazyChunkFallback />}>
                     <EditItemDialog
                         open
                         item={editItem}
