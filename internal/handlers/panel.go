@@ -95,6 +95,8 @@ func (h *Handler) UpdatePanel(c *gin.Context) {
 	}
 	logging.Infof("panel updated: %d groups, %d items from %s",
 		len(normalized.Groups), len(normalized.Items), c.ClientIP())
+	// 后台预热新增/变更的 Iconify 图标，保存接口本身不等预热结果。
+	h.PrewarmIconifyIcons(collectIconifyNames(normalized.Items))
 	writeJSON(c, http.StatusOK, panelView(normalized))
 }
 

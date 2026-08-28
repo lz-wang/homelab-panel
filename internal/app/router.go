@@ -16,6 +16,7 @@ func (s *Server) registerRoutes() {
 		WebFS:   s.config.WebFS,
 		GoMod:   s.config.GoMod,
 	})
+	s.handler = h
 
 	api := s.router.Group("/api/v1")
 	api.Use(requestLogger())

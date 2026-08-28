@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"homelab-panel/internal/data"
+	"homelab-panel/internal/handlers"
 	"homelab-panel/internal/logging"
 	"net/http"
 
@@ -17,9 +18,10 @@ type ServerDeps struct {
 }
 
 type Server struct {
-	config Config
-	store  *data.Store
-	router *gin.Engine
+	config  Config
+	store   *data.Store
+	router  *gin.Engine
+	handler *handlers.Handler
 }
 
 func NewServer(deps ServerDeps) *Server {
@@ -37,6 +39,10 @@ func NewServer(deps ServerDeps) *Server {
 }
 
 func (s *Server) Run(ctx context.Context) error {
+	// 启动即后台预热面板在用的 Iconify 图标；read-through 仍是兜底，
+	// 放在 Run（而非 New/registerRoutes）保证只有真正启动服务时才访问上游。
+	s.handler.StartIconifyPrewarm()
+
 	httpServer := &http.Server{
 		Addr:    s.config.address(),
 		Handler: s.router,

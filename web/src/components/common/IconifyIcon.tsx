@@ -6,7 +6,12 @@ import { useEffect, useRef, useState } from 'react'
 // SVG 经 DOMParser 解析后以 DOM 节点挂载（不使用 innerHTML），
 // 保留 currentColor 随父级文字色着色的语义。
 
+// 解析结果缓存：成功后永久复用，同名图标不再发起请求。
 const svgCache = new Map<string, SVGSVGElement>()
+
+// 在途请求去重：同名图标并发渲染（首页同图标多实例）只发起一次请求；
+// 某个组件 unmount 只阻止其后续 setState，不中断共享请求。
+const inflightCache = new Map<string, Promise<SVGSVGElement | null>>()
 
 // 只接受纯 <svg> 根节点；解析失败（parsererror）或携带 script 一律丢弃。
 function parseIconSVG(text: string): SVGSVGElement | null {
@@ -24,6 +29,30 @@ function parseIconSVG(text: string): SVGSVGElement | null {
     }
 }
 
+function loadIconSVG(icon: string): Promise<SVGSVGElement | null> {
+    const cached = svgCache.get(icon)
+    if (cached) return Promise.resolve(cached)
+
+    const inflight = inflightCache.get(icon)
+    if (inflight) return inflight
+
+    const request = fetch(`/api/v1/icons/${encodeURIComponent(icon)}`)
+        .then((response) => (response.ok ? response.text() : null))
+        .then((text) => {
+            const parsed = text ? parseIconSVG(text) : null
+            if (parsed) svgCache.set(icon, parsed)
+            return parsed
+        })
+        .catch(() => null)
+        .finally(() => {
+            // 失败不缓存，下次挂载可重试。
+            inflightCache.delete(icon)
+        })
+
+    inflightCache.set(icon, request)
+    return request
+}
+
 export function IconifyIcon({ icon, size = 35 }: { icon?: string; size?: number }) {
     const containerRef = useRef<HTMLDivElement | null>(null)
     const [svgEl, setSvgEl] = useState<SVGSVGElement | null>(() =>
@@ -33,28 +62,16 @@ export function IconifyIcon({ icon, size = 35 }: { icon?: string; size?: number 
     useEffect(() => {
         if (!icon) return
 
-        const cached = svgCache.get(icon)
-        if (cached) {
-            setSvgEl(cached)
+        if (svgCache.has(icon)) {
+            setSvgEl(svgCache.get(icon) ?? null)
             return
         }
 
         let cancelled = false
 
-        fetch(`/api/v1/icons/${encodeURIComponent(icon)}`)
-            .then((response) => (response.ok ? response.text() : null))
-            .then((text) => {
-                if (cancelled || !text) return
-
-                const parsed = parseIconSVG(text)
-                if (!parsed) return
-
-                svgCache.set(icon, parsed)
-                setSvgEl(parsed)
-            })
-            .catch(() => {
-                // 获取失败保持占位，不阻塞渲染
-            })
+        void loadIconSVG(icon).then((el) => {
+            if (!cancelled && el) setSvgEl(el)
+        })
 
         return () => {
             cancelled = true
