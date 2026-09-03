@@ -88,8 +88,11 @@ CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .
 | `background_color` | 卡片/图标背景色，取 21 个预设色之一 |
 
 `icon` 为 `null` 表示无图标；一旦存在 `icon`，`text` 必须是有效的
-Iconify 图标名。历史上的 `item_type` 和 `src` 字段已从图标模型中移除，
-旧数据中的这两个字段会在下一次保存时自然消失，无需迁移。
+Iconify 图标名。历史 Iconify 图标数据无需专门迁移：旧数据中的
+`item_type` 和 `src` 字段会被忽略，并在下一次保存时自然消失，
+`text`、`color` 和 `background_color` 会继续保留。
+
+旧版纯文本图标或图片图标不再受支持，应在升级前改为 Iconify 图标。
 
 Iconify 图标只在面板数据中保存名称标识，由前端经 `@iconify/react`
 直接向 Iconify API 按需加载渲染。后端只负责存储与返回该标识，

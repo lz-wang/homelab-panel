@@ -88,9 +88,13 @@ App icons use Iconify exclusively. The data model is:
 | `background_color` | card/icon background color, one of the 21 presets |
 
 A `null` icon means no icon; once an `icon` object exists, its `text`
-must be a valid Iconify name. The legacy `item_type` and `src` fields
-are no longer part of the app icon model — they are dropped naturally
-the next time panel data is saved, with no migration needed.
+must be a valid Iconify name. Legacy Iconify icon data requires no
+explicit migration. The obsolete `item_type` and `src` fields are
+ignored when loading and disappear on the next save, while `text`,
+`color`, and `background_color` are preserved.
+
+Legacy plain-text and image icons are no longer supported and should be
+converted to Iconify icons before upgrading.
 
 Iconify icons are stored in panel data as identifiers only, and the web
 frontend loads and renders them on demand from the Iconify API via
