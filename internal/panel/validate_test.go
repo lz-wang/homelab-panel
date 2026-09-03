@@ -80,42 +80,42 @@ func TestValidateAppPatch(t *testing.T) {
 }
 
 func TestValidateAppIcon(t *testing.T) {
-	if err := validateAppIcon(AppIcon{}); err != nil {
+	if err := ValidateAppIcon(AppIcon{}); err != nil {
 		t.Fatalf("empty icon should pass: %v", err)
 	}
 	valid := AppIcon{Text: "mdi:home", Color: "#FFFFFF", BackgroundColor: "#2196F3"}
-	if err := validateAppIcon(valid); err != nil {
+	if err := ValidateAppIcon(valid); err != nil {
 		t.Fatalf("valid iconify icon should pass: %v", err)
 	}
-	if err := validateAppIcon(AppIcon{Text: "mdi:home", Color: "#ffffff"}); err != nil {
+	if err := ValidateAppIcon(AppIcon{Text: "mdi:home", Color: "#ffffff"}); err != nil {
 		t.Fatalf("lowercase color should pass: %v", err)
 	}
 
 	// 非零图标必须有 text（Iconify identifier）。
-	if err := validateAppIcon(AppIcon{Color: "#FFFFFF"}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Color: "#FFFFFF"}); err == nil {
 		t.Fatal("icon without text should fail")
 	}
-	if err := validateAppIcon(AppIcon{Text: "  "}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Text: "  "}); err == nil {
 		t.Fatal("blank icon text should fail")
 	}
 	// text 必须是 prefix:name 形式的 Iconify identifier。
-	if err := validateAppIcon(AppIcon{Text: "plain-text"}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Text: "plain-text"}); err == nil {
 		t.Fatal("text without prefix:name shape should fail")
 	}
-	if err := validateAppIcon(AppIcon{Text: ":home"}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Text: ":home"}); err == nil {
 		t.Fatal("empty prefix should fail")
 	}
-	if err := validateAppIcon(AppIcon{Text: "mdi:"}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Text: "mdi:"}); err == nil {
 		t.Fatal("empty name should fail")
 	}
 
-	if err := validateAppIcon(AppIcon{Text: "mdi:home", Color: "#FF0000"}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Text: "mdi:home", Color: "#FF0000"}); err == nil {
 		t.Fatal("invalid color should fail")
 	}
-	if err := validateAppIcon(AppIcon{Text: "mdi:home", BackgroundColor: "#123456"}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Text: "mdi:home", BackgroundColor: "#123456"}); err == nil {
 		t.Fatal("invalid background should fail")
 	}
-	if err := validateAppIcon(AppIcon{Text: "mdi:" + strings.Repeat("x", maxIconText)}); err == nil {
+	if err := ValidateAppIcon(AppIcon{Text: "mdi:" + strings.Repeat("x", maxIconText)}); err == nil {
 		t.Fatal("too-long icon text should fail")
 	}
 }

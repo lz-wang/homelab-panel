@@ -108,22 +108,67 @@ func TestNormalizeRejectsMissingItemURL(t *testing.T) {
 	}
 }
 
-func TestNormalizeRejectsIconWithoutText(t *testing.T) {
+func TestNormalizeRejectsInvalidIcon(t *testing.T) {
 	store := mustStore(t)
 	snap := store.Snapshot()
-	req := panelRequest{
+
+	base := panelRequest{
 		Groups: []groupInput{{Name: "g1"}},
-		Items:  []itemInput{{GroupID: 1, Title: "i1", URL: "https://a", Icon: &data.ItemIcon{}}},
-	}
-	if _, err := normalizePanel(req, snap, snap.NextID); err != errItemIconRequired {
-		t.Fatalf("expected errItemIconRequired, got %v", err)
+		Items: []itemInput{{
+			GroupID: 1,
+			Title:   "i1",
+			URL:     "https://a",
+		}},
 	}
 
-	// 带 text 的图标通过。
-	req.Items[0].Icon = &data.ItemIcon{Text: "mdi:server-network"}
-	if _, err := normalizePanel(req, snap, snap.NextID); err != nil {
-		t.Fatalf("iconify icon should pass: %v", err)
-	}
+	t.Run("empty icon", func(t *testing.T) {
+		req := base
+		req.Items = append([]itemInput(nil), base.Items...)
+		req.Items[0].Icon = &data.ItemIcon{}
+
+		if _, err := normalizePanel(req, snap, snap.NextID); err == nil {
+			t.Fatal("empty icon should fail")
+		}
+	})
+
+	t.Run("invalid iconify name", func(t *testing.T) {
+		req := base
+		req.Items = append([]itemInput(nil), base.Items...)
+		req.Items[0].Icon = &data.ItemIcon{
+			Text: "plain-text",
+		}
+
+		if _, err := normalizePanel(req, snap, snap.NextID); err == nil {
+			t.Fatal("invalid Iconify identifier should fail")
+		}
+	})
+
+	t.Run("invalid color", func(t *testing.T) {
+		req := base
+		req.Items = append([]itemInput(nil), base.Items...)
+		req.Items[0].Icon = &data.ItemIcon{
+			Text:  "mdi:home",
+			Color: "#FF0000",
+		}
+
+		if _, err := normalizePanel(req, snap, snap.NextID); err == nil {
+			t.Fatal("invalid icon color should fail")
+		}
+	})
+
+	t.Run("valid icon", func(t *testing.T) {
+		req := base
+		req.Items = append([]itemInput(nil), base.Items...)
+		req.Items[0].Icon = &data.ItemIcon{
+			Text:            "mdi:server-network",
+			Color:           "#FFFFFF",
+			BackgroundColor: "#2196F3",
+		}
+
+		if _, err := normalizePanel(req, snap, snap.NextID); err != nil {
+			t.Fatalf("valid icon should pass: %v", err)
+		}
+	})
 }
 
 func TestUpdatePanelStatusCodes(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"homelab-panel/internal/logging"
+	"homelab-panel/internal/panel"
 	"net/http"
-	"strings"
 	"time"
 
 	"homelab-panel/internal/data"
@@ -44,7 +44,6 @@ var (
 	errItemTitleRequired = errors.New("item title is required")
 	errItemURLRequired   = errors.New("item url is required")
 	errItemGroupDangling = errors.New("item references unknown group")
-	errItemIconRequired  = errors.New("icon text is required")
 )
 
 func (h *Handler) GetPanel(c *gin.Context) {
@@ -154,9 +153,8 @@ func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (
 		if !groupIDSet[it.GroupID] {
 			return data.Panel{}, errItemGroupDangling
 		}
-		// 图标仅支持 Iconify：给了 icon 对象就必须带 text（如 mdi:home）。
-		if it.Icon != nil && strings.TrimSpace(it.Icon.Text) == "" {
-			return data.Panel{}, errItemIconRequired
+		if err := validateItemIcon(it.Icon); err != nil {
+			return data.Panel{}, err
 		}
 		id := it.ID
 		created := now
@@ -191,6 +189,25 @@ func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (
 		Groups:       groups,
 		Items:        items,
 	}, nil
+}
+
+// validateItemIcon 把 data 层图标模型转换为 panel 领域模型后复用统一校验。
+// identifier/颜色等格式规则只存在于 panel.ValidateAppIcon 一处；这里仅表达
+// Web 路径的指针语义：显式传入的 icon 对象不允许为空（保持既有 400 契约），
+// icon 为 null 才表示无图标。
+func validateItemIcon(icon *data.ItemIcon) error {
+	if icon == nil {
+		return nil
+	}
+	if *icon == (data.ItemIcon{}) {
+		return errors.New("icon text is required")
+	}
+
+	return panel.ValidateAppIcon(panel.AppIcon{
+		Text:            icon.Text,
+		Color:           icon.Color,
+		BackgroundColor: icon.BackgroundColor,
+	})
 }
 
 func maxExistingIDs(p data.Panel) (int, int) {

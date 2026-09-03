@@ -116,7 +116,7 @@ func validateAppPatch(p AppPatch) error {
 		return fmt.Errorf("item description too long (max %d characters)", maxDescription)
 	}
 	if p.Icon != nil {
-		if err := validateAppIcon(*p.Icon); err != nil {
+		if err := ValidateAppIcon(*p.Icon); err != nil {
 			return err
 		}
 	}
@@ -149,17 +149,15 @@ func validateAppInput(in AppInput) error {
 	if in.Sort < 0 {
 		return fmt.Errorf("sort must be non-negative")
 	}
-	if err := validateAppIcon(in.Icon); err != nil {
+	if err := ValidateAppIcon(in.Icon); err != nil {
 		return err
 	}
 	return nil
 }
 
-// validateAppIcon 校验图标子字段。应用图标仅支持 Iconify：
-// 零值图标表示「无图标」，合法；非零图标则 text 必须是 prefix:name 形式的 Iconify identifier。
-// color 仅允许白/黑，background_color 仅允许 21 个预设色，与前端编辑器快选调色板一致；
-// 空值视为不设置，跳过校验。
-func validateAppIcon(icon AppIcon) error {
+// ValidateAppIcon 校验 Iconify-only 应用图标。
+// 零值表示无图标；非零图标必须包含 prefix:name 形式的 Iconify identifier。
+func ValidateAppIcon(icon AppIcon) error {
 	if icon == (AppIcon{}) {
 		return nil
 	}
@@ -176,7 +174,10 @@ func validateAppIcon(icon AppIcon) error {
 		return fmt.Errorf("invalid icon color %q: must be #FFFFFF or #000000", icon.Color)
 	}
 	if icon.BackgroundColor != "" && !isValidIconBackgroundColor(icon.BackgroundColor) {
-		return fmt.Errorf("invalid icon background_color %q: must be one of the 21 preset colors", icon.BackgroundColor)
+		return fmt.Errorf(
+			"invalid icon background_color %q: must be one of the 21 preset colors",
+			icon.BackgroundColor,
+		)
 	}
 	return nil
 }
