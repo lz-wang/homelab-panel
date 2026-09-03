@@ -16,7 +16,6 @@ func (s *Server) registerRoutes() {
 		WebFS:   s.config.WebFS,
 		GoMod:   s.config.GoMod,
 	})
-	s.handler = h
 
 	api := s.router.Group("/api/v1")
 	api.Use(requestLogger())
@@ -24,7 +23,6 @@ func (s *Server) registerRoutes() {
 	api.GET("/about", h.About)
 
 	api.GET("/panel", h.GetPanel)
-	api.GET("/icons/:name", h.GetIconifyIcon)
 
 	api.POST("/admin/session", h.CreateAdminSession)
 
