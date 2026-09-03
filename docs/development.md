@@ -80,8 +80,8 @@ CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .
 | `3` | Iconify 图标 | `text` 为 Iconify 图标名（如 `mdi:server-network`） |
 
 Iconify 图标只在面板数据中保存名称标识，由前端经 `@iconify/react`
-直接向 Iconify API 按需加载渲染。后端只负责存储、返回与校验该标识，
-不代理、不缓存、不预取、也不提供任何 Iconify SVG 端点。
+直接向 Iconify API 按需加载渲染。后端只负责存储与返回该标识，
+不代理、不缓存、不预取，也不提供任何 Iconify SVG 端点。
 
 因此后端可用性与 Iconify 可用性相互独立：浏览器无法访问公网时，
 未缓存的 Iconify 图标可能缺失，但面板本身不受影响。

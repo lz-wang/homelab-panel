@@ -81,7 +81,7 @@ App icons are distinguished by `itemType`:
 
 Iconify icons are stored in panel data as identifiers only, and the web
 frontend loads and renders them on demand from the Iconify API via
-`@iconify/react`. The backend only stores, returns, and validates the
+`@iconify/react`. The backend only stores and returns the
 identifier — it does not proxy, cache, prefetch, or serve Iconify SVGs.
 
 Backend availability is therefore independent of Iconify availability:
