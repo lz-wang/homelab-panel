@@ -1,83 +1,51 @@
-import { render, waitFor } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+
+import type { ItemIcon as ItemIconType } from '@/types/panel'
 
 import { IconifyIcon } from './IconifyIcon'
+import { ItemIcon } from './ItemIcon'
 
-const testSVG =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h16v16H4z"/></svg>'
-
-function svgResponse() {
-    return {
-        ok: true,
-        text: async () => testSVG,
-    }
-}
+vi.mock('@iconify/react', () => ({
+    Icon: ({ icon, width, height }: { icon: string; width: number; height: number }) => (
+        <span data-testid="iconify" data-icon={icon} data-width={width} data-height={height} />
+    ),
+}))
 
 describe('IconifyIcon', () => {
-    let fetchMock: ReturnType<typeof vi.fn>
+    it('icon 为空时不渲染任何内容', () => {
+        const { container } = render(<IconifyIcon />)
 
-    beforeEach(() => {
-        fetchMock = vi.fn()
-        vi.stubGlobal('fetch', fetchMock)
+        expect(container).toBeEmptyDOMElement()
     })
 
-    afterEach(() => {
-        vi.unstubAllGlobals()
+    it('把 icon 与 size 透传给 @iconify/react 的 Icon', () => {
+        render(<IconifyIcon icon="mdi:server-network" size={32} />)
+        const icon = screen.getByTestId('iconify')
+
+        expect(icon).toHaveAttribute('data-icon', 'mdi:server-network')
+        expect(icon).toHaveAttribute('data-width', '32')
+        expect(icon).toHaveAttribute('data-height', '32')
     })
 
-    it('同名图标的多个实例并发渲染只发起一次请求', async () => {
-        fetchMock.mockImplementation(
-            () => new Promise((resolve) => setTimeout(resolve, 20, svgResponse())),
-        )
+    it('未传 size 时使用默认 35', () => {
+        render(<IconifyIcon icon="mdi:home" />)
 
-        const first = render(<IconifyIcon icon="mdi:dedupe-a" />)
-        const second = render(<IconifyIcon icon="mdi:dedupe-a" />)
-
-        await waitFor(() => {
-            expect(first.container.querySelector('svg')).toBeInTheDocument()
-            expect(second.container.querySelector('svg')).toBeInTheDocument()
-        })
-
-        expect(fetchMock).toHaveBeenCalledTimes(1)
-        expect(fetchMock).toHaveBeenCalledWith('/api/v1/icons/mdi%3Adedupe-a')
+        expect(screen.getByTestId('iconify')).toHaveAttribute('data-width', '35')
     })
+})
 
-    it('组件卸载不中断共享请求，结果进入缓存供下次挂载复用', async () => {
-        let resolveFetch: (value: unknown) => void = () => {}
-        fetchMock.mockImplementation(
-            () =>
-                new Promise((resolve) => {
-                    resolveFetch = resolve
-                }),
-        )
+describe('ItemIcon 的 iconify 分支', () => {
+    it('itemType=3 时经 IconifyIcon 渲染 Iconify 图标', () => {
+        const itemIcon: ItemIconType = {
+            itemType: 3,
+            text: 'mdi:server-network',
+            color: '#FFFFFF',
+            backgroundColor: '#2196F3',
+        }
 
-        const { unmount } = render(<IconifyIcon icon="mdi:unmount-b" />)
-        expect(fetchMock).toHaveBeenCalledTimes(1)
-        unmount()
+        render(<ItemIcon itemIcon={itemIcon} />)
 
-        // 卸载后请求仍完成，解析结果写入模块级缓存。
-        resolveFetch(svgResponse())
-        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-
-        const again = render(<IconifyIcon icon="mdi:unmount-b" />)
-        await waitFor(() => {
-            expect(again.container.querySelector('svg')).toBeInTheDocument()
-        })
-        expect(fetchMock).toHaveBeenCalledTimes(1)
-    })
-
-    it('请求失败不写入缓存，下次挂载可重试', async () => {
-        fetchMock.mockResolvedValue({ ok: false, text: async () => '' })
-
-        const failed = render(<IconifyIcon icon="mdi:retry-c" />)
-        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-        failed.unmount()
-
-        fetchMock.mockResolvedValue(svgResponse())
-        const retried = render(<IconifyIcon icon="mdi:retry-c" />)
-        await waitFor(() => {
-            expect(retried.container.querySelector('svg')).toBeInTheDocument()
-        })
-        expect(fetchMock).toHaveBeenCalledTimes(2)
+        expect(screen.getByTestId('iconify')).toHaveAttribute('data-icon', 'mdi:server-network')
     })
 })
