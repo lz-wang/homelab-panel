@@ -10,11 +10,9 @@ import "homelab-panel/internal/panel"
 // EmptyInput 表示工具不接受任何参数。
 type EmptyInput struct{}
 
-// AppIcon 描述应用图标，字段与 panel.AppIcon 对齐。
+// AppIcon 描述应用图标，仅支持 Iconify，字段与 panel.AppIcon 对齐。
 type AppIcon struct {
-	ItemType        int    `json:"item_type,omitempty" jsonschema:"icon item type: 1=plain text, 2=image (requires src), 3=iconify (requires text, e.g. mdi:git). Default 3 (iconify) when omitted."`
-	Src             string `json:"src,omitempty" jsonschema:"image url or data url for image icons"`
-	Text            string `json:"text,omitempty" jsonschema:"iconify icon name or text label"`
+	Text            string `json:"text" jsonschema:"Iconify icon name, e.g. mdi:git"`
 	Color           string `json:"color,omitempty" jsonschema:"foreground (text) color; must be #FFFFFF or #000000 (case-insensitive)"`
 	BackgroundColor string `json:"background_color,omitempty" jsonschema:"icon background color; must be one of the 21 presets (case-insensitive): #F44336 #E91E63 #9C27B0 #673AB7 #3F51B5 #2196F3 #03A9F4 #00BCD4 #009688 #4CAF50 #8BC34A #CDDC39 #FFEB3B #FFC107 #FF9800 #FF5722 #795548 #9E9E9E #607D8B #FFFFFF #000000"`
 }
