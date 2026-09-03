@@ -69,6 +69,29 @@ go test ./...
 CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .
 ```
 
+## Icon Rendering Conventions
+
+App icons are distinguished by `itemType`:
+
+| itemType | Type | Key field |
+| --- | --- | --- |
+| `1` | Text icon | `text` is rendered as plain text |
+| `2` | Image icon | `src` is an image URL or path |
+| `3` | Iconify icon | `text` is an Iconify name (e.g. `mdi:server-network`) |
+
+Iconify icons are stored in panel data as identifiers only, and the web
+frontend loads and renders them on demand from the Iconify API via
+`@iconify/react`. The backend only stores, returns, and validates the
+identifier — it does not proxy, cache, prefetch, or serve Iconify SVGs.
+
+Backend availability is therefore independent of Iconify availability:
+when the browser has no internet access, not-yet-cached Iconify icons
+may be missing, while the panel itself keeps working.
+
+The legacy server-side icon cache directory `<data-dir>/iconify/` is
+obsolete; if an upgraded deployment still has it, delete it manually —
+the application simply ignores it.
+
 ## Manual Build Flow
 
 Frontend:

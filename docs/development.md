@@ -69,6 +69,26 @@ go test ./...
 CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .
 ```
 
+## 图标渲染约定
+
+应用图标通过 `itemType` 区分三种类型：
+
+| itemType | 类型 | 关键字段 |
+| --- | --- | --- |
+| `1` | 文本图标 | `text` 直接显示为文字 |
+| `2` | 图片图标 | `src` 为图片 URL 或路径 |
+| `3` | Iconify 图标 | `text` 为 Iconify 图标名（如 `mdi:server-network`） |
+
+Iconify 图标只在面板数据中保存名称标识，由前端经 `@iconify/react`
+直接向 Iconify API 按需加载渲染。后端只负责存储、返回与校验该标识，
+不代理、不缓存、不预取、也不提供任何 Iconify SVG 端点。
+
+因此后端可用性与 Iconify 可用性相互独立：浏览器无法访问公网时，
+未缓存的 Iconify 图标可能缺失，但面板本身不受影响。
+
+早期版本的服务端图标缓存目录 `<data-dir>/iconify/` 已废弃；
+如旧部署中仍存在，可手工删除，程序会直接忽略它。
+
 ## 手动构建流程
 
 前端：
