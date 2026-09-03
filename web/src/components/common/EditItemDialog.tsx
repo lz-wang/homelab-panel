@@ -43,9 +43,7 @@ const defaultIconBackgroundColor = '#2196F3'
 const defaultIconColor = '#FFFFFF'
 
 const defaultIcon: ItemIconType = {
-    itemType: 3,
     text: 'mdi:server-network',
-    src: '',
     color: defaultIconColor,
     backgroundColor: defaultIconBackgroundColor,
 }
@@ -112,14 +110,13 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
             ...item,
             icon: {
                 ...defaultIcon,
+                ...itemIcon,
                 backgroundColor:
                     itemIcon?.backgroundColor ??
                     panelConfig.appCardDefaultColor ??
                     defaultIcon.backgroundColor,
                 color: itemIcon?.color ?? defaultIcon.color,
-                text: itemIcon?.itemType === 3 ? itemIcon.text : defaultIcon.text,
-                itemType: 3,
-                src: '',
+                text: itemIcon?.text ?? defaultIcon.text,
             },
             itemIconGroupId: item?.itemIconGroupId ?? itemIconGroupId,
         })
@@ -170,8 +167,6 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                 icon: {
                     ...defaultIcon,
                     ...form.icon,
-                    itemType: 3,
-                    src: '',
                     color: form.icon?.color ?? defaultIcon.color,
                     backgroundColor: form.icon?.backgroundColor ?? defaultIcon.backgroundColor,
                 },
@@ -373,9 +368,7 @@ export function EditItemDialog({ open, item, itemIconGroupId, onClose, onSaved }
                         <TextField
                             label={t('editItem.iconLabel')}
                             value={form.icon?.text ?? ''}
-                            onChange={(event) =>
-                                patchIcon({ itemType: 3, text: event.target.value, src: '' })
-                            }
+                            onChange={(event) => patchIcon({ text: event.target.value })}
                             fullWidth
                             required
                             sx={{ flex: 1, minWidth: 0 }}

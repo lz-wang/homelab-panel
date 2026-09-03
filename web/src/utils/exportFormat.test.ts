@@ -22,7 +22,7 @@ describe('export format utilities', () => {
                     description: 'storage',
                     sort: 5,
                     itemIconGroupId: 1,
-                    icon: { itemType: 3, text: 'mdi:nas' },
+                    icon: { text: 'mdi:nas' },
                 },
                 9,
             ),
@@ -33,7 +33,7 @@ describe('export format utilities', () => {
             description: 'storage',
             sort: 5,
             itemIconGroupId: 9,
-            icon: { itemType: 3, text: 'mdi:nas' },
+            icon: { text: 'mdi:nas' },
         })
     })
 

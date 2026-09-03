@@ -59,15 +59,13 @@ describe('toFrontendItem', () => {
     })
 })
 
-// 回归：编辑图标后保存，item_type / background_color 等多词字段必须在 wire 边界双向转换，
-// 否则后端按 snake_case 反序列化会丢失（变 0 / ""），加载渲染时图标消失。
+// 回归：编辑图标后保存，background_color 等多词字段必须在 wire 边界双向转换，
+// 否则后端按 snake_case 反序列化会丢失（变 ""），加载渲染时图标样式消失。
 describe('icon wire casing', () => {
     const icon: ItemIcon = {
-        itemType: 3,
         text: 'mdi:home',
         color: '#FFFFFF',
         backgroundColor: '#2196F3',
-        src: '',
     }
 
     it('toBackendItem emits snake_case icon keys', () => {
@@ -79,11 +77,9 @@ describe('icon wire casing', () => {
             itemIconGroupId: 1,
         })
         expect(wire.icon).toEqual({
-            item_type: 3,
             text: 'mdi:home',
             color: '#FFFFFF',
             background_color: '#2196F3',
-            src: '',
         })
     })
 
@@ -94,19 +90,15 @@ describe('icon wire casing', () => {
             title: 't',
             url: 'u',
             icon: {
-                item_type: 3,
                 text: 'mdi:home',
                 color: '#FFFFFF',
                 background_color: '#2196F3',
-                src: '',
             },
         })
         expect(fe.icon).toEqual({
-            itemType: 3,
             text: 'mdi:home',
             color: '#FFFFFF',
             backgroundColor: '#2196F3',
-            src: '',
         })
     })
 
@@ -124,7 +116,10 @@ describe('icon wire casing', () => {
             url: 'u',
             icon: wire.icon,
         })
-        expect(back.icon?.itemType).toBe(3)
-        expect(back.icon?.backgroundColor).toBe('#2196F3')
+        expect(back.icon).toEqual({
+            text: 'mdi:home',
+            color: '#FFFFFF',
+            backgroundColor: '#2196F3',
+        })
     })
 })

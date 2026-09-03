@@ -17,9 +17,8 @@ export interface PanelGroupWire {
 }
 
 export interface PanelItemIconWire {
-    item_type: number
-    src?: string
-    text?: string
+    /** Iconify identifier，例如 mdi:server-network。 */
+    text: string
     color?: string
     background_color?: string
 }
@@ -48,10 +47,26 @@ export function toBackendGroup(g: ItemIconGroup): PanelGroupWire {
     return { id: g.id, name: g.title ?? '', icon: g.icon ?? '', sort: g.sort }
 }
 
+function toFrontendIcon(icon: PanelItemIconWire): ItemIcon {
+    return {
+        text: icon.text,
+        color: icon.color,
+        backgroundColor: icon.background_color,
+    }
+}
+
+function toBackendIcon(icon: ItemIcon): PanelItemIconWire {
+    return {
+        text: icon.text,
+        color: icon.color,
+        background_color: icon.backgroundColor,
+    }
+}
+
 export function toFrontendItem(w: PanelItemWire): ItemInfo {
     return {
         id: w.id,
-        icon: w.icon ? (keysToCamel(w.icon) as ItemIcon) : null,
+        icon: w.icon ? toFrontendIcon(w.icon) : null,
         title: w.title ?? '',
         url: w.url ?? '',
         backupUrl: w.backup_url ?? '',
@@ -69,7 +84,7 @@ export function toBackendItem(it: ItemInfo): PanelItemWire {
         url: it.url,
         backup_url: it.backupUrl ?? '',
         description: it.description ?? '',
-        icon: it.icon ? (keysToSnake(it.icon) as PanelItemIconWire) : null,
+        icon: it.icon ? toBackendIcon(it.icon) : null,
         sort: it.sort,
     }
 }

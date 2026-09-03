@@ -35,10 +35,9 @@ describe('IconifyIcon', () => {
     })
 })
 
-describe('ItemIcon 的 iconify 分支', () => {
-    it('itemType=3 时经 IconifyIcon 渲染 Iconify 图标', () => {
+describe('ItemIcon', () => {
+    it('经 IconifyIcon 渲染 Iconify 图标', () => {
         const itemIcon: ItemIconType = {
-            itemType: 3,
             text: 'mdi:server-network',
             color: '#FFFFFF',
             backgroundColor: '#2196F3',
@@ -47,5 +46,12 @@ describe('ItemIcon 的 iconify 分支', () => {
         render(<ItemIcon itemIcon={itemIcon} />)
 
         expect(screen.getByTestId('iconify')).toHaveAttribute('data-icon', 'mdi:server-network')
+    })
+
+    it('itemIcon 为空时渲染无内容的 Avatar', () => {
+        const { container } = render(<ItemIcon itemIcon={null} />)
+
+        expect(screen.queryByTestId('iconify')).not.toBeInTheDocument()
+        expect(container.querySelector('.MuiAvatar-root')).toBeInTheDocument()
     })
 })

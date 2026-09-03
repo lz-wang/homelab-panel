@@ -19,9 +19,7 @@ const homeContentHorizontalPadding = 32
 
 const appCardPreviewItem: ItemInfo = {
     icon: {
-        itemType: 3,
         text: 'line-md:github',
-        src: '',
         color: '#FFFFFF',
     },
     title: 'GitHub',

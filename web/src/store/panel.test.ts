@@ -140,7 +140,6 @@ describe('panel store', () => {
             url: 'https://example.com/',
             description: '',
             icon: {
-                itemType: 3,
                 text: 'mdi:application-outline',
                 backgroundColor: '#2a2a2a',
             },

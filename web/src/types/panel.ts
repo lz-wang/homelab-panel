@@ -17,9 +17,8 @@ export interface ItemIconGroup extends InfoBase {
 }
 
 export interface ItemIcon {
-    itemType: number
-    src?: string
-    text?: string
+    /** Iconify identifier，例如 mdi:server-network。 */
+    text: string
     color?: string
     backgroundColor?: string
 }

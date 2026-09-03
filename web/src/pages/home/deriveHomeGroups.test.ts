@@ -15,7 +15,7 @@ function item(id: number, groupId: number | undefined, title: string): ItemInfo 
         title,
         url: `https://${title}.example.com/`,
         description: '',
-        icon: { itemType: 3, text: 'mdi:server-network', src: '', color: '', backgroundColor: '' },
+        icon: { text: 'mdi:server-network', color: '', backgroundColor: '' },
     }
 }
 
