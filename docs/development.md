@@ -71,13 +71,25 @@ CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .
 
 ## 图标渲染约定
 
-应用图标通过 `itemType` 区分三种类型：
+应用图标仅支持 Iconify，数据模型为：
 
-| itemType | 类型 | 关键字段 |
-| --- | --- | --- |
-| `1` | 文本图标 | `text` 直接显示为文字 |
-| `2` | 图片图标 | `src` 为图片 URL 或路径 |
-| `3` | Iconify 图标 | `text` 为 Iconify 图标名（如 `mdi:server-network`） |
+```json
+{
+    "text": "mdi:server-network",
+    "color": "#FFFFFF",
+    "background_color": "#2196F3"
+}
+```
+
+| 字段 | 含义 |
+| --- | --- |
+| `text` | Iconify 图标名（如 `mdi:server-network`），必填 |
+| `color` | 图标前景色（白/黑） |
+| `background_color` | 卡片/图标背景色，取 21 个预设色之一 |
+
+`icon` 为 `null` 表示无图标；一旦存在 `icon`，`text` 必须是有效的
+Iconify 图标名。历史上的 `item_type` 和 `src` 字段已从图标模型中移除，
+旧数据中的这两个字段会在下一次保存时自然消失，无需迁移。
 
 Iconify 图标只在面板数据中保存名称标识，由前端经 `@iconify/react`
 直接向 Iconify API 按需加载渲染。后端只负责存储与返回该标识，

@@ -71,13 +71,26 @@ CGO_ENABLED=0 go build -o /tmp/homelab-panel-test -ldflags "-s -w" .
 
 ## Icon Rendering Conventions
 
-App icons are distinguished by `itemType`:
+App icons use Iconify exclusively. The data model is:
 
-| itemType | Type | Key field |
-| --- | --- | --- |
-| `1` | Text icon | `text` is rendered as plain text |
-| `2` | Image icon | `src` is an image URL or path |
-| `3` | Iconify icon | `text` is an Iconify name (e.g. `mdi:server-network`) |
+```json
+{
+    "text": "mdi:server-network",
+    "color": "#FFFFFF",
+    "background_color": "#2196F3"
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `text` | Iconify name (e.g. `mdi:server-network`), required |
+| `color` | icon foreground color (white/black) |
+| `background_color` | card/icon background color, one of the 21 presets |
+
+A `null` icon means no icon; once an `icon` object exists, its `text`
+must be a valid Iconify name. The legacy `item_type` and `src` fields
+are no longer part of the app icon model — they are dropped naturally
+the next time panel data is saved, with no migration needed.
 
 Iconify icons are stored in panel data as identifiers only, and the web
 frontend loads and renders them on demand from the Iconify API via
