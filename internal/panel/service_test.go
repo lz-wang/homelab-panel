@@ -303,15 +303,23 @@ func TestCreateAppIconColors(t *testing.T) {
 	// 合法预设色（含小写）通过。
 	if _, err := svc.CreateApp(ctx, AppInput{
 		GroupID: 1, Title: "Ok", URL: "https://x",
-		Icon: AppIcon{Color: "#ffffff", BackgroundColor: "#2196f3"},
+		Icon: AppIcon{Text: "mdi:server", Color: "#ffffff", BackgroundColor: "#2196f3"},
 	}); err != nil {
 		t.Fatalf("valid preset colors should pass: %v", err)
+	}
+
+	// 非零图标缺 text 报错。
+	if _, err := svc.CreateApp(ctx, AppInput{
+		GroupID: 1, Title: "Bad", URL: "https://x",
+		Icon: AppIcon{Color: "#ffffff"},
+	}); err == nil {
+		t.Error("icon without text should error")
 	}
 
 	// 非法文字色（非白/黑）报错。
 	if _, err := svc.CreateApp(ctx, AppInput{
 		GroupID: 1, Title: "Bad", URL: "https://x",
-		Icon: AppIcon{Color: "#FF0000"},
+		Icon: AppIcon{Text: "mdi:server", Color: "#FF0000"},
 	}); err == nil {
 		t.Error("non preset text color should error")
 	}
@@ -319,7 +327,7 @@ func TestCreateAppIconColors(t *testing.T) {
 	// 非法背景色（red 300 属「更多」色阶，非快选预设）报错。
 	if _, err := svc.CreateApp(ctx, AppInput{
 		GroupID: 1, Title: "Bad", URL: "https://x",
-		Icon: AppIcon{BackgroundColor: "#E57373"},
+		Icon: AppIcon{Text: "mdi:server", BackgroundColor: "#E57373"},
 	}); err == nil {
 		t.Error("non preset background color should error")
 	}

@@ -57,13 +57,12 @@ func toPanelGroupInput(in CreateGroupInput) panel.GroupInput {
 }
 
 // iconToPanel 将 MCP 图标 DTO 转为 panel.AppIcon；nil 视为空图标。
+// 历史字段 item_type/src 不再映射到领域模型，仅保留在 DTO 上待下个 commit 删除。
 func iconToPanel(icon *AppIcon) panel.AppIcon {
 	if icon == nil {
 		return panel.AppIcon{}
 	}
 	return panel.AppIcon{
-		ItemType:        normalizeIconItemType(icon.ItemType, icon.Src, icon.Text),
-		Src:             icon.Src,
 		Text:            icon.Text,
 		Color:           icon.Color,
 		BackgroundColor: icon.BackgroundColor,

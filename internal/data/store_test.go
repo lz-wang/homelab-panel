@@ -1,6 +1,8 @@
 package data
 
 import (
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -198,3 +200,98 @@ var assertErr = errSentinel("sentinel")
 type errSentinel string
 
 func (e errSentinel) Error() string { return string(e) }
+
+// TestLegacyIconJSONReadsAndCleansUpOnSave 证明旧版三字段图标数据无需迁移即可升级：
+// 手工写入带 item_type/src 的历史 JSON，Open 后 text 正常读出；
+// 再 Save 一次，已删除的 item_type/src 字段自然从磁盘文件消失。
+func TestLegacyIconJSONReadsAndCleansUpOnSave(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "homelab-panel.json")
+
+	// 先生成一份合法的基线数据文件。
+	store, _, err := Open(path)
+	if err != nil {
+		t.Fatalf("open: %v", err)
+	}
+	err = store.Save(func(d *StoreData) error {
+		d.Panel.Groups = append(d.Panel.Groups, Group{ID: 1, Name: "g1"})
+		d.Panel.Items = append(d.Panel.Items, Item{ID: 1, GroupID: 1, Title: "srv", URL: "https://srv"})
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("baseline save: %v", err)
+	}
+
+	// 把 items[0] 的 icon 替换为历史格式（含 item_type/src）。
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	panel := doc["panel"].(map[string]any)
+	items := panel["items"].([]any)
+	item := items[0].(map[string]any)
+	item["icon"] = map[string]any{
+		"item_type":        3,
+		"src":              "",
+		"text":             "mdi:server",
+		"color":            "#FFFFFF",
+		"background_color": "#2196F3",
+	}
+	rewritten, err := json.Marshal(doc)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if err := os.WriteFile(path, rewritten, 0o600); err != nil {
+		t.Fatalf("write legacy file: %v", err)
+	}
+
+	// 旧数据零迁移直接读取。
+	legacy, _, err := Open(path)
+	if err != nil {
+		t.Fatalf("reopen legacy: %v", err)
+	}
+	icon := legacy.Snapshot().Panel.Items[0].Icon
+	if icon == nil || icon.Text != "mdi:server" || icon.Color != "#FFFFFF" {
+		t.Fatalf("legacy icon not read back: %+v", icon)
+	}
+
+	// 触发一次保存后，历史字段从磁盘消失。
+	err = legacy.Save(func(d *StoreData) error { return nil })
+	if err != nil {
+		t.Fatalf("save: %v", err)
+	}
+	cleaned, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read cleaned: %v", err)
+	}
+	var cleanedDoc struct {
+		Panel struct {
+			Items []struct {
+				Icon *struct {
+					ItemType        *int   `json:"item_type"`
+					Src             string `json:"src"`
+					Text            string `json:"text"`
+					Color           string `json:"color"`
+					BackgroundColor string `json:"background_color"`
+				} `json:"icon"`
+			} `json:"items"`
+		} `json:"panel"`
+	}
+	if err := json.Unmarshal(cleaned, &cleanedDoc); err != nil {
+		t.Fatalf("unmarshal cleaned: %v", err)
+	}
+	storedIcon := cleanedDoc.Panel.Items[0].Icon
+	if storedIcon == nil {
+		t.Fatal("icon should still be persisted")
+	}
+	if storedIcon.ItemType != nil || storedIcon.Src != "" {
+		t.Errorf("legacy item_type/src keys should be gone after save, got: %+v", storedIcon)
+	}
+	if storedIcon.Text != "mdi:server" || storedIcon.Color != "#FFFFFF" || storedIcon.BackgroundColor != "#2196F3" {
+		t.Errorf("iconify fields should persist, got: %+v", storedIcon)
+	}
+}

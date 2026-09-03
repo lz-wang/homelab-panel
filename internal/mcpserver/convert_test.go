@@ -33,17 +33,16 @@ func TestNormalizeIconItemType(t *testing.T) {
 	}
 }
 
-// TestIconToPanelNormalizesType 验证 MCP 图标 DTO 经 iconToPanel 后 item_type 被归一化，
-// 避免前端把 iconify 图标当图片渲染（历史 bug 的回归保护）。
-func TestIconToPanelNormalizesType(t *testing.T) {
-	got := iconToPanel(&AppIcon{ItemType: 2, Text: "mdi:git"})
-	if got.ItemType != 3 {
-		t.Errorf("iconToPanel item_type = %d, want 3 (iconify)", got.ItemType)
+// TestIconToPanel 验证 MCP 图标 DTO 经 iconToPanel 后 text 透传为 Iconify identifier，
+// nil 视为零值图标。
+func TestIconToPanel(t *testing.T) {
+	got := iconToPanel(&AppIcon{Text: "mdi:git", Color: "#FFFFFF"})
+	if got.Text != "mdi:git" || got.Color != "#FFFFFF" {
+		t.Errorf("iconToPanel = %+v, want text mdi:git with color", got)
 	}
 
-	// nil icon → 空图标，item_type=0。
-	if iconToPanel(nil).ItemType != 0 {
-		t.Error("nil icon should yield zero item_type")
+	if iconToPanel(nil) != (panel.AppIcon{}) {
+		t.Error("nil icon should yield zero AppIcon")
 	}
 }
 
@@ -61,7 +60,7 @@ func TestToPanelCreateInput(t *testing.T) {
 	want := panel.AppInput{
 		GroupID: 1, Title: "t", URL: "u", BackupURL: "bu",
 		Description: "d", Sort: 5,
-		Icon: panel.AppIcon{ItemType: 3, Text: "mdi:git", Color: "#FFFFFF", BackgroundColor: "#2196F3"},
+		Icon: panel.AppIcon{Text: "mdi:git", Color: "#FFFFFF", BackgroundColor: "#2196F3"},
 	}
 	if got != want {
 		t.Errorf("toPanelCreateInput = %+v, want %+v", got, want)
@@ -88,7 +87,7 @@ func TestToPanelPatchInput(t *testing.T) {
 		url := "u"
 		bak := "bu"
 		sort := 3
-		icon := AppIcon{ItemType: 2, Src: "https://x/a.png"}
+		icon := AppIcon{Text: "mdi:git", Color: "#000000"}
 		got := toPanelPatchInput(PatchAppInput{
 			ID: 2, Title: &title, URL: &url, BackupURL: &bak, Sort: &sort, Icon: &icon,
 		})
@@ -104,7 +103,7 @@ func TestToPanelPatchInput(t *testing.T) {
 		if got.Sort == nil || *got.Sort != 3 {
 			t.Errorf("sort not mapped: %+v", got.Sort)
 		}
-		if got.Icon == nil || got.Icon.ItemType != 2 || got.Icon.Src != "https://x/a.png" {
+		if got.Icon == nil || got.Icon.Text != "mdi:git" || got.Icon.Color != "#000000" {
 			t.Errorf("icon not mapped: %+v", got.Icon)
 		}
 	})

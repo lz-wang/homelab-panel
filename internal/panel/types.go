@@ -6,9 +6,8 @@ import (
 )
 
 // AppIcon 描述应用图标，与 data.ItemIcon 字段一一对应。
+// Text 为 Iconify identifier（如 mdi:server-network）；零值表示无图标。
 type AppIcon struct {
-	ItemType        int    `json:"item_type"`
-	Src             string `json:"src,omitempty"`
 	Text            string `json:"text,omitempty"`
 	Color           string `json:"color,omitempty"`
 	BackgroundColor string `json:"background_color,omitempty"`

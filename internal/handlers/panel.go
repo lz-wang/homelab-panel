@@ -5,6 +5,7 @@ import (
 	"errors"
 	"homelab-panel/internal/logging"
 	"net/http"
+	"strings"
 	"time"
 
 	"homelab-panel/internal/data"
@@ -43,6 +44,7 @@ var (
 	errItemTitleRequired = errors.New("item title is required")
 	errItemURLRequired   = errors.New("item url is required")
 	errItemGroupDangling = errors.New("item references unknown group")
+	errItemIconRequired  = errors.New("icon text is required")
 )
 
 func (h *Handler) GetPanel(c *gin.Context) {
@@ -151,6 +153,10 @@ func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (
 		}
 		if !groupIDSet[it.GroupID] {
 			return data.Panel{}, errItemGroupDangling
+		}
+		// 图标仅支持 Iconify：给了 icon 对象就必须带 text（如 mdi:home）。
+		if it.Icon != nil && strings.TrimSpace(it.Icon.Text) == "" {
+			return data.Panel{}, errItemIconRequired
 		}
 		id := it.ID
 		created := now

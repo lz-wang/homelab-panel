@@ -75,10 +75,10 @@ type Item struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+// ItemIcon 是应用图标，仅支持 Iconify：Text 为 Iconify identifier（如 mdi:server-network）。
+// 历史 JSON 中的 item_type/src 字段由 encoding/json 自然忽略，旧数据可零迁移读取。
 type ItemIcon struct {
-	ItemType        int    `json:"item_type"`
-	Src             string `json:"src,omitempty"`
-	Text            string `json:"text,omitempty"`
+	Text            string `json:"text"`
 	Color           string `json:"color,omitempty"`
 	BackgroundColor string `json:"background_color,omitempty"`
 }

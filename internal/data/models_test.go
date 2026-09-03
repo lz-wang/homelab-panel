@@ -25,7 +25,7 @@ func TestStoreDataUsesSnakeCaseJSONKeys(t *testing.T) {
 			Items: []Item{
 				{
 					ID: 1, GroupID: 1, Title: "i", URL: "https://a", BackupURL: "https://b",
-					Icon:      &ItemIcon{ItemType: 1, BackgroundColor: "#fff"},
+					Icon:      &ItemIcon{Text: "mdi:server-network", BackgroundColor: "#2196F3"},
 					CreatedAt: now, UpdatedAt: now,
 				},
 			},
@@ -47,7 +47,7 @@ func TestStoreDataUsesSnakeCaseJSONKeys(t *testing.T) {
 	for _, k := range []string{
 		`"next_id"`, `"created_at"`, `"updated_at"`, `"password_hash"`,
 		`"site_name"`, `"search_engine"`, `"group_id"`, `"backup_url"`,
-		`"item_type"`, `"background_color"`,
+		`"background_color"`,
 		`"original_name"`, `"object_key"`, `"mime_type"`,
 	} {
 		if !strings.Contains(got, k) {
@@ -57,7 +57,7 @@ func TestStoreDataUsesSnakeCaseJSONKeys(t *testing.T) {
 	for _, k := range []string{
 		`"nextId"`, `"createdAt"`, `"updatedAt"`, `"passwordHash"`,
 		`"siteName"`, `"searchEngine"`, `"groupId"`, `"backupUrl"`,
-		`"itemType"`, `"backgroundColor"`,
+		`"backgroundColor"`,
 		`"originalName"`, `"objectKey"`, `"mimeType"`,
 	} {
 		if strings.Contains(got, k) {

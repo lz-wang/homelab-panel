@@ -108,6 +108,24 @@ func TestNormalizeRejectsMissingItemURL(t *testing.T) {
 	}
 }
 
+func TestNormalizeRejectsIconWithoutText(t *testing.T) {
+	store := mustStore(t)
+	snap := store.Snapshot()
+	req := panelRequest{
+		Groups: []groupInput{{Name: "g1"}},
+		Items:  []itemInput{{GroupID: 1, Title: "i1", URL: "https://a", Icon: &data.ItemIcon{}}},
+	}
+	if _, err := normalizePanel(req, snap, snap.NextID); err != errItemIconRequired {
+		t.Fatalf("expected errItemIconRequired, got %v", err)
+	}
+
+	// 带 text 的图标通过。
+	req.Items[0].Icon = &data.ItemIcon{Text: "mdi:server-network"}
+	if _, err := normalizePanel(req, snap, snap.NextID); err != nil {
+		t.Fatalf("iconify icon should pass: %v", err)
+	}
+}
+
 func TestUpdatePanelStatusCodes(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	store := mustStore(t)

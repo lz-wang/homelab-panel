@@ -13,7 +13,6 @@ const (
 	maxAppURL      = 2048
 	maxDescription = 512
 	maxIconText    = 128
-	maxIconSrc     = 2048
 	maxPatternLen  = 256
 	defaultLimit   = 20
 	maxLimit       = 100
@@ -156,15 +155,22 @@ func validateAppInput(in AppInput) error {
 	return nil
 }
 
-// validateAppIcon 校验图标子字段。
+// validateAppIcon 校验图标子字段。应用图标仅支持 Iconify：
+// 零值图标表示「无图标」，合法；非零图标则 text 必须是 prefix:name 形式的 Iconify identifier。
 // color 仅允许白/黑，background_color 仅允许 21 个预设色，与前端编辑器快选调色板一致；
 // 空值视为不设置，跳过校验。
 func validateAppIcon(icon AppIcon) error {
+	if icon == (AppIcon{}) {
+		return nil
+	}
+	if strings.TrimSpace(icon.Text) == "" {
+		return fmt.Errorf("icon text is required")
+	}
+	if !isIconifyName(icon.Text) {
+		return fmt.Errorf("icon text %q must be an Iconify name like mdi:home", icon.Text)
+	}
 	if runeLen(icon.Text) > maxIconText {
 		return fmt.Errorf("icon text too long (max %d characters)", maxIconText)
-	}
-	if runeLen(icon.Src) > maxIconSrc {
-		return fmt.Errorf("icon src too long (max %d characters)", maxIconSrc)
 	}
 	if icon.Color != "" && !isValidIconColor(icon.Color) {
 		return fmt.Errorf("invalid icon color %q: must be #FFFFFF or #000000", icon.Color)
@@ -173,6 +179,13 @@ func validateAppIcon(icon AppIcon) error {
 		return fmt.Errorf("invalid icon background_color %q: must be one of the 21 preset colors", icon.BackgroundColor)
 	}
 	return nil
+}
+
+// isIconifyName 做最轻量的 Iconify identifier 形状校验：必须形如 prefix:name。
+// 不做网络校验、不校验图标是否真实存在。
+func isIconifyName(v string) bool {
+	prefix, name, ok := strings.Cut(v, ":")
+	return ok && prefix != "" && name != ""
 }
 
 // validateSearchPattern 校验正则 pattern 长度。

@@ -370,18 +370,19 @@ func fromDataIcon(icon *data.ItemIcon) AppIcon {
 		return AppIcon{}
 	}
 	return AppIcon{
-		ItemType:        icon.ItemType,
-		Src:             icon.Src,
 		Text:            icon.Text,
 		Color:           icon.Color,
 		BackgroundColor: icon.BackgroundColor,
 	}
 }
 
+// toDataIconPtr 将领域图标转为持久化模型；零值 AppIcon 对应 nil（无图标），
+// 而不是落盘成空对象 "icon": {}。
 func toDataIconPtr(icon AppIcon) *data.ItemIcon {
+	if icon == (AppIcon{}) {
+		return nil
+	}
 	return &data.ItemIcon{
-		ItemType:        icon.ItemType,
-		Src:             icon.Src,
 		Text:            icon.Text,
 		Color:           icon.Color,
 		BackgroundColor: icon.BackgroundColor,
