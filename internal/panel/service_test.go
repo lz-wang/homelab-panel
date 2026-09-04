@@ -65,6 +65,20 @@ func TestGetPanel(t *testing.T) {
 	}
 }
 
+func TestListFiles(t *testing.T) {
+	store := seedStore(t)
+	if err := store.Save(func(d *data.StoreData) error {
+		d.Files = []data.File{{ID: 2, OriginalName: "wallpaper.jpg", MimeType: "image/jpeg", Size: 42, URL: "/uploads/wallpaper.jpg", CreatedAt: time.Now()}}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	files, err := NewService(store).ListFiles(context.Background())
+	if err != nil || len(files) != 1 || files[0].URL != "/uploads/wallpaper.jpg" {
+		t.Errorf("files=%+v err=%v", files, err)
+	}
+}
+
 func TestListAppsByGroup(t *testing.T) {
 	svc := NewService(seedStore(t))
 

@@ -98,6 +98,14 @@ type GetAppOutput struct {
 	Item panel.AppDetail `json:"item"`
 }
 
+type GetPanelOutput struct {
+	Panel panel.PanelSnapshot `json:"panel"`
+}
+
+type ListFilesOutput struct {
+	Files []panel.FileSummary `json:"files"`
+}
+
 type RenameGroupOutput struct {
 	Group panel.GroupSummary `json:"group"`
 }

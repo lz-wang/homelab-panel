@@ -8,8 +8,20 @@ import (
 	"homelab-panel/internal/panel"
 )
 
-// registerReadTools 注册 4 个只读工具。已通过 MCP 鉴权即可调用，无需写权限。
+// registerReadTools 注册 6 个只读工具。已通过 MCP 鉴权即可调用，无需写权限。
 func registerReadTools(s *mcp.Server, panelSvc *panel.Service) {
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "homelab_panel_get_panel",
+		Title:       "Get HomeLab Panel snapshot",
+		Description: "Get the complete HomeLab Panel settings, groups and app details in one snapshot.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ EmptyInput) (*mcp.CallToolResult, GetPanelOutput, error) {
+		value, err := panelSvc.GetPanel(ctx)
+		if err != nil {
+			return nil, GetPanelOutput{}, err
+		}
+		return nil, GetPanelOutput{Panel: *value}, nil
+	})
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "homelab_panel_list_groups",
 		Title:       "List HomeLab Panel groups",
@@ -28,7 +40,7 @@ func registerReadTools(s *mcp.Server, panelSvc *panel.Service) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "homelab_panel_list_apps_by_group",
 		Title:       "List apps by group",
-		Description: "List apps in a group, returning id, group_id, title, description and sort.",
+		Description: "List apps in a group, returning id, group_id, title, URL, description and sort.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint: true,
 		},
@@ -43,7 +55,7 @@ func registerReadTools(s *mcp.Server, panelSvc *panel.Service) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "homelab_panel_search_apps",
 		Title:       "Search HomeLab Panel apps",
-		Description: "Search apps by title, description or iconify icon name using a regular expression.",
+		Description: "Search apps by title, description, URL, backup URL or Iconify icon name using a regular expression.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint: true,
 		},
@@ -68,6 +80,18 @@ func registerReadTools(s *mcp.Server, panelSvc *panel.Service) {
 			return nil, GetAppOutput{}, err
 		}
 		return nil, GetAppOutput{Item: *item}, nil
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name: "homelab_panel_list_files", Title: "List HomeLab Panel files",
+		Description: "List uploaded file metadata and reusable URLs. This tool does not return file contents.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ EmptyInput) (*mcp.CallToolResult, ListFilesOutput, error) {
+		files, err := panelSvc.ListFiles(ctx)
+		if err != nil {
+			return nil, ListFilesOutput{}, err
+		}
+		return nil, ListFilesOutput{Files: files}, nil
 	})
 }
 

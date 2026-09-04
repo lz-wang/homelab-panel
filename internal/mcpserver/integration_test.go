@@ -38,6 +38,7 @@ func newMCPTestServer(t *testing.T) (*data.Store, *httptest.Server, string) {
 			ID: 10, GroupID: 1, Title: "Proxmox", URL: "https://pve.local",
 			Sort: 1, CreatedAt: now, UpdatedAt: now,
 		}}
+		d.Files = []data.File{{ID: 1, OriginalName: "wallpaper.jpg", MimeType: "image/jpeg", Size: 42, URL: "/uploads/wallpaper.jpg", CreatedAt: now}}
 		d.NextID = data.NextID{Group: 2, Item: 11, File: 1}
 		return nil
 	}); err != nil {
@@ -120,12 +121,19 @@ func TestMCPReadTools(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListTools: %v", err)
 	}
-	if len(tools.Tools) != 9 {
-		t.Errorf("tools count = %d, want 9", len(tools.Tools))
+	if len(tools.Tools) != 11 {
+		t.Errorf("tools count = %d, want 11", len(tools.Tools))
+	}
+
+	// get_panel：一次获取完整状态。
+	res := callTool(t, sess, "homelab_panel_get_panel", nil)
+	snapshot := structuredMap(t, res)["panel"].(map[string]any)
+	if snapshot["site_name"] == nil || len(snapshot["apps"].([]any)) != 1 {
+		t.Errorf("panel snapshot = %v", snapshot)
 	}
 
 	// list_groups：不含应用。
-	res := callTool(t, sess, "homelab_panel_list_groups", nil)
+	res = callTool(t, sess, "homelab_panel_list_groups", nil)
 	groups := structuredMap(t, res)["groups"].([]any)
 	if len(groups) != 1 {
 		t.Fatalf("groups = %d, want 1", len(groups))
@@ -159,6 +167,12 @@ func TestMCPReadTools(t *testing.T) {
 	res = callTool(t, sess, "homelab_panel_search_apps", map[string]any{"pattern": long})
 	if !res.IsError {
 		t.Error("oversized pattern should be a tool error")
+	}
+
+	res = callTool(t, sess, "homelab_panel_list_files", nil)
+	files := structuredMap(t, res)["files"].([]any)
+	if len(files) != 1 || files[0].(map[string]any)["url"] != "/uploads/wallpaper.jpg" {
+		t.Errorf("files = %v", files)
 	}
 }
 

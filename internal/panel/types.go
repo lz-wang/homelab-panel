@@ -40,6 +40,16 @@ type PanelSnapshot struct {
 	Apps     []AppDetail    `json:"apps"`
 }
 
+// FileSummary 是已上传文件的只读视图，可作为背景或 favicon 的既有 URL 引用。
+type FileSummary struct {
+	ID           int       `json:"id"`
+	OriginalName string    `json:"original_name"`
+	MimeType     string    `json:"mime_type"`
+	Size         int64     `json:"size"`
+	URL          string    `json:"url"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
 // AppDetail 是应用的完整配置。
 type AppDetail struct {
 	ID          int       `json:"id"`

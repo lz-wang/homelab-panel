@@ -59,6 +59,17 @@ func (s *Service) GetPanel(_ context.Context) (*PanelSnapshot, error) {
 	return &PanelSnapshot{SiteName: snap.Panel.SiteName, Config: config, Groups: groups, Apps: apps}, nil
 }
 
+// ListFiles 返回已上传文件的可引用元数据；文件内容不经 MCP 传输。
+func (s *Service) ListFiles(_ context.Context) ([]FileSummary, error) {
+	snap := s.store.Snapshot()
+	files := make([]FileSummary, 0, len(snap.Files))
+	for _, f := range snap.Files {
+		files = append(files, FileSummary{ID: f.ID, OriginalName: f.OriginalName, MimeType: f.MimeType, Size: f.Size, URL: f.URL, CreatedAt: f.CreatedAt})
+	}
+	sort.SliceStable(files, func(i, j int) bool { return files[i].ID < files[j].ID })
+	return files, nil
+}
+
 // PatchSettings 局部更新已建模的面板设置，持久化格式保持为既有 JSON。
 func (s *Service) PatchSettings(_ context.Context, patch PanelSettingsPatch) (*PanelSettings, error) {
 	var result *PanelSettings
