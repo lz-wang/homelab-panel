@@ -1,6 +1,7 @@
 package panel
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -63,7 +64,9 @@ func DecodePanelConfig(raw json.RawMessage) (PanelConfig, error) {
 		return cfg, nil
 	}
 	var partial PanelConfig
-	if err := json.Unmarshal(raw, &partial); err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&partial); err != nil {
 		return PanelConfig{}, fmt.Errorf("decode panel config: %w", err)
 	}
 	// 零值是历史 JSON 中的缺失字段；使用与前端相同的默认回退。

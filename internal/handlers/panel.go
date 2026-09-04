@@ -101,6 +101,14 @@ func (h *Handler) UpdatePanel(c *gin.Context) {
 
 func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (data.Panel, error) {
 	now := time.Now()
+	config, err := panel.DecodePanelConfig(req.Config)
+	if err != nil {
+		return data.Panel{}, err
+	}
+	encodedConfig, err := panel.EncodePanelConfig(config)
+	if err != nil {
+		return data.Panel{}, err
+	}
 
 	existingGroupByID := make(map[int]data.Group, len(snap.Panel.Groups))
 	for _, g := range snap.Panel.Groups {
@@ -184,7 +192,7 @@ func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (
 
 	return data.Panel{
 		SiteName:     req.SiteName,
-		Config:       req.Config,
+		Config:       encodedConfig,
 		SearchEngine: req.SearchEngine,
 		Groups:       groups,
 		Items:        items,

@@ -36,7 +36,7 @@ func TestNormalizeAssignsIDsAndPreservesCreatedAt(t *testing.T) {
 
 	req := panelRequest{
 		SiteName: "Lab",
-		Config:   json.RawMessage(`{"logoText":"x"}`),
+		Config:   json.RawMessage(`{"logo_text":"x"}`),
 		Groups: []groupInput{
 			{ID: 1, Name: "g1"}, // 已存在，保留
 			{Name: "g2"},        // 新增
@@ -59,6 +59,27 @@ func TestNormalizeAssignsIDsAndPreservesCreatedAt(t *testing.T) {
 	}
 	if out.Groups[0].CreatedAt.IsZero() {
 		t.Fatal("existing group createdAt should be preserved")
+	}
+}
+
+func TestNormalizeValidatesPanelConfig(t *testing.T) {
+	store := mustStore(t)
+	snap := store.Snapshot()
+	base := panelRequest{Config: json.RawMessage(`{"app_card_aspect_ratio":"auto"}`)}
+	if _, err := normalizePanel(base, snap, snap.NextID); err != nil {
+		t.Fatalf("valid config: %v", err)
+	}
+	for _, raw := range []json.RawMessage{
+		json.RawMessage(`{"app_card_aspect_ratio":"square"}`),
+		json.RawMessage(`{"app_card_default_color":"red"}`),
+		json.RawMessage(`{"favicon_src":"javascript:alert(1)"}`),
+		json.RawMessage(`{"unknown":true}`),
+	} {
+		req := base
+		req.Config = raw
+		if _, err := normalizePanel(req, snap, snap.NextID); err == nil {
+			t.Errorf("config %s should fail", raw)
+		}
 	}
 }
 
