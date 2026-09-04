@@ -4,6 +4,7 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
+import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
@@ -16,6 +17,8 @@ import Switch from '@mui/material/Switch'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
 import TextField from '@mui/material/TextField'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Typography from '@mui/material/Typography'
 import { useCallback, useEffect, useState } from 'react'
 import { API_SUCCESS_CODE } from '@/api/apiResult'
@@ -125,6 +128,12 @@ function TokenRow({
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                         {maskPrefix(token.prefix)}
                     </Typography>
+                    <Chip
+                        size="small"
+                        label={token.scope === 'read' ? t('mcp.scopeRead') : t('mcp.scopeWrite')}
+                        color={token.scope === 'read' ? 'info' : 'warning'}
+                        variant="outlined"
+                    />
                 </Stack>
                 <IconButton
                     size="small"
@@ -153,6 +162,7 @@ export function MCPSettingsPanel() {
 
     const [settings, setSettings] = useState<MCPSettings | null>(null)
     const [tokenDialog, setTokenDialog] = useState<string | null>(null)
+    const [tokenScope, setTokenScope] = useState<'read' | 'write'>('read')
 
     const refresh = useCallback(async () => {
         const response = await getMCPSettings()
@@ -178,7 +188,7 @@ export function MCPSettingsPanel() {
     }
 
     async function handleGenerate() {
-        const response = await run(() => generateMCPToken(), {
+        const response = await run(() => generateMCPToken(tokenScope), {
             successMessage: t('mcp.tokenGenerated'),
             errorMessage: (res) => t('mcp.generateFail', { msg: res.msg }),
         })
@@ -273,6 +283,27 @@ export function MCPSettingsPanel() {
                     >
                         {t('mcp.generateToken')}
                     </Button>
+                </Stack>
+                <Stack spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                        {t('mcp.scopeLabel')}
+                    </Typography>
+                    <ToggleButtonGroup
+                        size="small"
+                        exclusive
+                        value={tokenScope}
+                        onChange={(_, value) => {
+                            if (value) setTokenScope(value)
+                        }}
+                        disabled={loading}
+                        aria-label={t('mcp.scopeLabel')}
+                    >
+                        <ToggleButton value="read">{t('mcp.scopeRead')}</ToggleButton>
+                        <ToggleButton value="write">{t('mcp.scopeWrite')}</ToggleButton>
+                    </ToggleButtonGroup>
+                    <Typography variant="caption" color="text.secondary">
+                        {tokenScope === 'read' ? t('mcp.scopeReadHint') : t('mcp.scopeWriteHint')}
+                    </Typography>
                 </Stack>
                 {settings.tokens.map((tok) => (
                     <TokenRow

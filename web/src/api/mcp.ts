@@ -3,6 +3,7 @@ import { del, get, post, put } from '@/api/request'
 // 字段与后端 wire 格式一致（snake_case），不经 adapter 转换。
 export interface MCPTokenInfo {
     prefix: string
+    scope: 'read' | 'write'
     created_at?: string
     last_used_at?: string
 }
@@ -15,6 +16,7 @@ export interface MCPSettings {
 
 export interface MCPTokenResponse {
     token: string
+    scope: 'read' | 'write'
 }
 
 export interface UpdateMCPSettingsInput {
@@ -29,8 +31,8 @@ export function updateMCPSettings(input: UpdateMCPSettingsInput) {
     return put<MCPSettings>({ url: '/mcp/settings', data: input })
 }
 
-export function generateMCPToken() {
-    return post<MCPTokenResponse>({ url: '/mcp/token' })
+export function generateMCPToken(scope: 'read' | 'write') {
+    return post<MCPTokenResponse>({ url: '/mcp/token', data: { scope } })
 }
 
 export function deleteMCPToken(prefix: string) {

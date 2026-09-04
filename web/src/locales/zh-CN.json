@@ -154,7 +154,12 @@
         "generateFail": "生成失败:{msg}",
         "tokenDeleted": "Token 已删除",
         "deleteFail": "删除失败:{msg}",
-        "envHint": "export HOMELAB_PANEL_MCP_TOKEN=\"<粘贴你的 token>\""
+        "envHint": "export HOMELAB_PANEL_MCP_TOKEN=\"<粘贴你的 token>\"",
+        "scopeLabel": "权限",
+        "scopeRead": "只读",
+        "scopeWrite": "读写",
+        "scopeReadHint": "仅可查看面板、分组、应用和文件；适合分析与查询。",
+        "scopeWriteHint": "可创建、修改、删除和重新排序面板内容；仅在需要管理时使用。"
     },
     "editItem": {
         "titleRequired": "标题不能为空",

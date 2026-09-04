@@ -154,7 +154,12 @@
         "generateFail": "Generate failed: {msg}",
         "tokenDeleted": "Token deleted",
         "deleteFail": "Delete failed: {msg}",
-        "envHint": "export HOMELAB_PANEL_MCP_TOKEN=\"<paste your token>\""
+        "envHint": "export HOMELAB_PANEL_MCP_TOKEN=\"<paste your token>\"",
+        "scopeLabel": "Permission",
+        "scopeRead": "Read only",
+        "scopeWrite": "Read & write",
+        "scopeReadHint": "Can inspect the panel, groups, apps, and files; ideal for analysis and lookup.",
+        "scopeWriteHint": "Can create, edit, delete, and reorder panel content; use only when management is needed."
     },
     "editItem": {
         "titleRequired": "Title is required",
