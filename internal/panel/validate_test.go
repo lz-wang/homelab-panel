@@ -155,3 +155,18 @@ func TestValidateGroupInput(t *testing.T) {
 		t.Fatal("negative sort should fail")
 	}
 }
+
+func TestValidateGroupPatch(t *testing.T) {
+	if err := validateGroupPatch(GroupPatch{}); err != nil {
+		t.Fatalf("empty patch should pass: %v", err)
+	}
+	if err := validateGroupPatch(GroupPatch{Name: strPtr("")}); err == nil {
+		t.Fatal("empty name should fail")
+	}
+	if err := validateGroupPatch(GroupPatch{Icon: strPtr("")}); err != nil {
+		t.Fatalf("clear icon should pass: %v", err)
+	}
+	if err := validateGroupPatch(GroupPatch{Sort: intPtr(-1)}); err == nil {
+		t.Fatal("negative sort should fail")
+	}
+}

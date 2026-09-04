@@ -73,7 +73,15 @@ type AppPatch struct {
 // GroupInput 用于 CreateGroup 的分组输入。
 type GroupInput struct {
 	Name string
+	Icon string
 	Sort int
+}
+
+// GroupPatch 用指针字段表达分组的部分更新语义。Icon 指向空串时清除图标。
+type GroupPatch struct {
+	Name *string
+	Icon *string
+	Sort *int
 }
 
 // 业务错误。MCP 工具把这些作为 tool error 返回给客户端。

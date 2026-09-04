@@ -263,7 +263,7 @@ func TestCreateGroup(t *testing.T) {
 	ctx := context.Background()
 
 	// 追加到末尾：sort = max(2)+1 = 3，id 由服务端分配。
-	created, err := svc.CreateGroup(ctx, GroupInput{Name: "Network"})
+	created, err := svc.CreateGroup(ctx, GroupInput{Name: "Network", Icon: "mdi:network"})
 	if err != nil {
 		t.Fatalf("CreateGroup: %v", err)
 	}
@@ -275,6 +275,9 @@ func TestCreateGroup(t *testing.T) {
 	}
 	if groupNameByID(store.Snapshot(), created.ID) != "Network" {
 		t.Error("created group not persisted")
+	}
+	if created.Icon != "mdi:network" {
+		t.Errorf("created icon = %q", created.Icon)
 	}
 
 	// 显式 sort 被保留。
@@ -292,6 +295,40 @@ func TestCreateGroup(t *testing.T) {
 	}
 	// 负 sort 报错。
 	if _, err := svc.CreateGroup(ctx, GroupInput{Name: "X", Sort: -1}); err == nil {
+		t.Error("negative sort should error")
+	}
+}
+
+func TestPatchGroup(t *testing.T) {
+	store := seedStore(t)
+	svc := NewService(store)
+	ctx := context.Background()
+
+	name, icon, sort := "Infrastructure", "mdi:server-network", 7
+	patched, err := svc.PatchGroup(ctx, 1, GroupPatch{Name: &name, Icon: &icon, Sort: &sort})
+	if err != nil {
+		t.Fatalf("PatchGroup: %v", err)
+	}
+	if patched.Name != name || patched.Icon != icon || patched.Sort != sort {
+		t.Errorf("patched = %+v", patched)
+	}
+
+	empty := ""
+	patched, err = svc.PatchGroup(ctx, 1, GroupPatch{Icon: &empty})
+	if err != nil {
+		t.Fatalf("PatchGroup clear icon: %v", err)
+	}
+	if patched.Icon != "" {
+		t.Errorf("icon = %q, want cleared", patched.Icon)
+	}
+	if _, err := svc.PatchGroup(ctx, 999, GroupPatch{Name: &name}); !errors.Is(err, ErrGroupNotFound) {
+		t.Errorf("missing group err = %v, want ErrGroupNotFound", err)
+	}
+	if _, err := svc.PatchGroup(ctx, 1, GroupPatch{Name: &empty}); err == nil {
+		t.Error("empty name should error")
+	}
+	negative := -1
+	if _, err := svc.PatchGroup(ctx, 1, GroupPatch{Sort: &negative}); err == nil {
 		t.Error("negative sort should error")
 	}
 }

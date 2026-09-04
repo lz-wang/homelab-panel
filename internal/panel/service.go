@@ -130,6 +130,7 @@ func (s *Service) CreateGroup(_ context.Context, input GroupInput) (*GroupSummar
 		g := data.Group{
 			ID:        id,
 			Name:      input.Name,
+			Icon:      input.Icon,
 			Sort:      sort,
 			CreatedAt: now,
 			UpdatedAt: now,
@@ -139,6 +140,41 @@ func (s *Service) CreateGroup(_ context.Context, input GroupInput) (*GroupSummar
 		summary := toGroupSummary(g)
 		result = &summary
 		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// PatchGroup 按 id 部分更新分组，仅修改 patch 中非 nil 的字段。
+func (s *Service) PatchGroup(_ context.Context, groupID int, patch GroupPatch) (*GroupSummary, error) {
+	if err := validateGroupPatch(patch); err != nil {
+		return nil, err
+	}
+
+	var result *GroupSummary
+	err := s.store.Save(func(d *data.StoreData) error {
+		for i := range d.Panel.Groups {
+			g := &d.Panel.Groups[i]
+			if g.ID != groupID {
+				continue
+			}
+			if patch.Name != nil {
+				g.Name = *patch.Name
+			}
+			if patch.Icon != nil {
+				g.Icon = *patch.Icon
+			}
+			if patch.Sort != nil {
+				g.Sort = *patch.Sort
+			}
+			g.UpdatedAt = time.Now()
+			summary := toGroupSummary(*g)
+			result = &summary
+			return nil
+		}
+		return ErrGroupNotFound
 	})
 	if err != nil {
 		return nil, err

@@ -90,6 +90,19 @@ func validateGroupInput(input GroupInput) error {
 	return nil
 }
 
+// validateGroupPatch 仅校验实际传入的分组字段。图标沿用 Web 现有契约，允许任意字符串和空串。
+func validateGroupPatch(p GroupPatch) error {
+	if p.Name != nil {
+		if err := validateGroupName(*p.Name); err != nil {
+			return err
+		}
+	}
+	if p.Sort != nil && *p.Sort < 0 {
+		return fmt.Errorf("sort must be non-negative")
+	}
+	return nil
+}
+
 // validateAppPatch 校验部分更新字段：仅检查指针非 nil 的字段。
 // Title、URL 为必填字段，显式传空串视为非法；其余可空字段允许清空。
 func validateAppPatch(p AppPatch) error {
