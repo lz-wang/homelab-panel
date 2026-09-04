@@ -92,8 +92,8 @@ type ReorderAppsInput struct {
 type PatchSettingsInput struct {
 	SiteName                    *string  `json:"site_name,omitempty" jsonschema:"site name"`
 	BackgroundImageSrc          *string  `json:"background_image_src,omitempty" jsonschema:"background image URL or path"`
-	BackgroundBlur              *float64 `json:"background_blur,omitempty" jsonschema:"background blur between 0 and 100"`
-	BackgroundMaskNumber        *float64 `json:"background_mask_number,omitempty" jsonschema:"background mask opacity between 0 and 100"`
+	BackgroundBlur              *float64 `json:"background_blur,omitempty" jsonschema:"background blur between 0 and 20"`
+	BackgroundMaskNumber        *float64 `json:"background_mask_number,omitempty" jsonschema:"background mask opacity between 0 and 1"`
 	IconTextInfoShowDescription *bool    `json:"icon_text_info_show_description,omitempty" jsonschema:"show app descriptions"`
 	LogoText                    *string  `json:"logo_text,omitempty" jsonschema:"logo text"`
 	ClockShow                   *bool    `json:"clock_show,omitempty" jsonschema:"show clock"`

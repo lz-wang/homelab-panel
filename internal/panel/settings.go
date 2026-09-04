@@ -63,27 +63,12 @@ func DecodePanelConfig(raw json.RawMessage) (PanelConfig, error) {
 	if len(raw) == 0 || string(raw) == "null" {
 		return cfg, nil
 	}
-	var partial PanelConfig
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&partial); err != nil {
+	if err := decoder.Decode(&cfg); err != nil {
 		return PanelConfig{}, fmt.Errorf("decode panel config: %w", err)
 	}
-	// 零值是历史 JSON 中的缺失字段；使用与前端相同的默认回退。
-	defaults := defaultPanelConfig()
-	if partial.BackgroundImageSrc == "" {
-		partial.BackgroundImageSrc = defaults.BackgroundImageSrc
-	}
-	if partial.LogoText == "" {
-		partial.LogoText = defaults.LogoText
-	}
-	if partial.AppCardAspectRatio == "" {
-		partial.AppCardAspectRatio = defaults.AppCardAspectRatio
-	}
-	if partial.AppCardDefaultColor == "" {
-		partial.AppCardDefaultColor = defaults.AppCardDefaultColor
-	}
-	return partial, ValidatePanelConfig(partial)
+	return cfg, ValidatePanelConfig(cfg)
 }
 
 func EncodePanelConfig(cfg PanelConfig) (json.RawMessage, error) {
@@ -111,7 +96,7 @@ func ValidatePanelConfig(cfg PanelConfig) error {
 		name            string
 		value, min, max float64
 	}{
-		{"background blur", cfg.BackgroundBlur, 0, 100}, {"background mask number", cfg.BackgroundMaskNumber, 0, 100}, {"margin top", cfg.MarginTop, 0, 30}, {"margin bottom", cfg.MarginBottom, 0, 30}, {"margin x", cfg.MarginX, 0, 20}, {"app card radius", cfg.AppCardRadius, 0, 64},
+		{"background blur", cfg.BackgroundBlur, 0, 20}, {"background mask number", cfg.BackgroundMaskNumber, 0, 1}, {"margin top", cfg.MarginTop, 0, 30}, {"margin bottom", cfg.MarginBottom, 0, 30}, {"margin x", cfg.MarginX, 0, 20}, {"app card radius", cfg.AppCardRadius, 0, 64},
 	} {
 		if math.IsNaN(field.value) || math.IsInf(field.value, 0) || field.value < field.min || field.value > field.max {
 			return fmt.Errorf("%s must be between %g and %g", field.name, field.min, field.max)
