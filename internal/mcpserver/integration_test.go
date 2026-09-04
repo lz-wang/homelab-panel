@@ -65,6 +65,21 @@ func newMCPTestServer(t *testing.T) (*data.Store, *httptest.Server, string) {
 	return store, srv, plain
 }
 
+func addMCPToken(t *testing.T, store *data.Store, scope string) string {
+	t.Helper()
+	plain, prefix, hash, err := GenerateToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Save(func(d *data.StoreData) error {
+		d.MCP.Tokens = append(d.MCP.Tokens, data.MCPToken{Prefix: prefix, Hash: hash, Scope: scope})
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	return plain
+}
+
 func connectMCP(t *testing.T, url, token string) *mcp.ClientSession {
 	t.Helper()
 	transport := &mcp.StreamableClientTransport{
@@ -173,6 +188,24 @@ func TestMCPReadTools(t *testing.T) {
 	files := structuredMap(t, res)["files"].([]any)
 	if len(files) != 1 || files[0].(map[string]any)["url"] != "/uploads/wallpaper.jpg" {
 		t.Errorf("files = %v", files)
+	}
+}
+
+func TestMCPScopeToolDiscovery(t *testing.T) {
+	store, srv, writeToken := newMCPTestServer(t)
+	readToken := addMCPToken(t, store, data.MCPTokenScopeRead)
+	readTools, err := connectMCP(t, srv.URL, readToken).ListTools(context.Background(), &mcp.ListToolsParams{})
+	if err != nil || len(readTools.Tools) != 6 {
+		t.Fatalf("read tools=%d err=%v", len(readTools.Tools), err)
+	}
+	for _, tool := range readTools.Tools {
+		if tool.Name == "homelab_panel_delete_app" {
+			t.Fatal("read scope exposed delete_app")
+		}
+	}
+	writeTools, err := connectMCP(t, srv.URL, writeToken).ListTools(context.Background(), &mcp.ListToolsParams{})
+	if err != nil || len(writeTools.Tools) != 15 {
+		t.Fatalf("write tools=%d err=%v", len(writeTools.Tools), err)
 	}
 }
 

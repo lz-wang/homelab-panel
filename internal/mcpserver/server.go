@@ -19,6 +19,10 @@ type ServerOptions struct {
 // 工具注册在独立的 register* 函数中完成（见 tools_read.go / tools_write.go），
 // 本函数仅负责装配 Server 本身。
 func NewServer(panelSvc *panel.Service, opts ServerOptions) *mcp.Server {
+	return newServer(panelSvc, opts, true)
+}
+
+func newServer(panelSvc *panel.Service, opts ServerOptions, includeWrite bool) *mcp.Server {
 	version := opts.Version
 	if version == "" {
 		version = "v0.1.0"
@@ -31,7 +35,9 @@ func NewServer(panelSvc *panel.Service, opts ServerOptions) *mcp.Server {
 	}, nil)
 
 	registerReadTools(s, panelSvc)
-	registerWriteTools(s, panelSvc)
+	if includeWrite {
+		registerWriteTools(s, panelSvc)
+	}
 
 	return s
 }
@@ -47,10 +53,16 @@ func NewServer(panelSvc *panel.Service, opts ServerOptions) *mcp.Server {
 // SDK 内部使用 *slog.Logger 做协议级调试日志，这里保持 nil 让其使用默认实现；
 // 应用层操作日志（鉴权、工具调用、审计）仍统一走 internal/logging。
 func NewHTTPHandler(panelSvc *panel.Service, opts ServerOptions) http.Handler {
-	server := NewServer(panelSvc, opts)
+	readServer := newServer(panelSvc, opts, false)
+	writeServer := newServer(panelSvc, opts, true)
 
 	return mcp.NewStreamableHTTPHandler(
-		func(*http.Request) *mcp.Server { return server },
+		func(r *http.Request) *mcp.Server {
+			if ScopeFromContext(r.Context()) == "read" {
+				return readServer
+			}
+			return writeServer
+		},
 		&mcp.StreamableHTTPOptions{
 			Stateless:      true,
 			JSONResponse:   true,
