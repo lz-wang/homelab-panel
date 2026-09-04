@@ -35,14 +35,21 @@ type GetAppInput struct {
 
 // ---- 写入输入 ----
 
-type RenameGroupInput struct {
-	GroupID int    `json:"group_id" jsonschema:"target group id"`
-	Name    string `json:"name" jsonschema:"new group name"`
-}
-
 type CreateGroupInput struct {
 	Name string `json:"name" jsonschema:"new group name (required)"`
+	Icon string `json:"icon,omitempty" jsonschema:"optional group icon; empty string means no icon"`
 	Sort int    `json:"sort,omitempty" jsonschema:"optional sort order, non-negative integer; omit to append at the end"`
+}
+
+type PatchGroupInput struct {
+	GroupID int     `json:"group_id" jsonschema:"target group id"`
+	Name    *string `json:"name,omitempty" jsonschema:"new group name"`
+	Icon    *string `json:"icon,omitempty" jsonschema:"group icon; empty string clears it"`
+	Sort    *int    `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
+}
+
+type DeleteGroupInput struct {
+	GroupID int `json:"group_id" jsonschema:"target group id; deletion is rejected while it still contains apps"`
 }
 
 type CreateAppInput struct {
@@ -106,11 +113,11 @@ type ListFilesOutput struct {
 	Files []panel.FileSummary `json:"files"`
 }
 
-type RenameGroupOutput struct {
+type CreateGroupOutput struct {
 	Group panel.GroupSummary `json:"group"`
 }
 
-type CreateGroupOutput struct {
+type PatchGroupOutput struct {
 	Group panel.GroupSummary `json:"group"`
 }
 

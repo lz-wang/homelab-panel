@@ -16,24 +16,24 @@ func auditToolCall(ctx context.Context, tool, targetType string, targetID int, s
 		tool, targetType, targetID, success, RemoteAddrFromContext(ctx))
 }
 
-// registerWriteTools 注册 5 个写入工具。已通过 MCP 鉴权即可调用。
+// registerWriteTools 注册写入工具。已通过 MCP 鉴权即可调用。
 func registerWriteTools(s *mcp.Server, panelSvc *panel.Service) {
 	mcp.AddTool(s, &mcp.Tool{
-		Name:        "homelab_panel_rename_group",
-		Title:       "Rename HomeLab Panel group",
-		Description: "Rename a HomeLab Panel group.",
+		Name:        "homelab_panel_patch_group",
+		Title:       "Patch HomeLab Panel group",
+		Description: "Patch selected fields of a HomeLab Panel group by its id.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    false,
 			DestructiveHint: ptr(false),
 			IdempotentHint:  true,
 		},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, in RenameGroupInput) (*mcp.CallToolResult, RenameGroupOutput, error) {
-		group, err := panelSvc.RenameGroup(ctx, in.GroupID, in.Name)
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, in PatchGroupInput) (*mcp.CallToolResult, PatchGroupOutput, error) {
+		group, err := panelSvc.PatchGroup(ctx, in.GroupID, toPanelGroupPatch(in))
 		if err != nil {
-			return nil, RenameGroupOutput{}, err
+			return nil, PatchGroupOutput{}, err
 		}
-		auditToolCall(ctx, "homelab_panel_rename_group", "group", group.ID, true)
-		return nil, RenameGroupOutput{Group: *group}, nil
+		auditToolCall(ctx, "homelab_panel_patch_group", "group", group.ID, true)
+		return nil, PatchGroupOutput{Group: *group}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
@@ -52,6 +52,19 @@ func registerWriteTools(s *mcp.Server, panelSvc *panel.Service) {
 		}
 		auditToolCall(ctx, "homelab_panel_create_group", "group", group.ID, true)
 		return nil, CreateGroupOutput{Group: *group}, nil
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name: "homelab_panel_delete_group", Title: "Delete HomeLab Panel group",
+		Description: "Delete an empty group by id. This never cascades to apps; move or delete its apps first.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: ptr(true), IdempotentHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, in DeleteGroupInput) (*mcp.CallToolResult, EmptyInput, error) {
+		err := panelSvc.DeleteGroup(ctx, in.GroupID)
+		if err != nil {
+			return nil, EmptyInput{}, err
+		}
+		auditToolCall(ctx, "homelab_panel_delete_group", "group", in.GroupID, true)
+		return nil, EmptyInput{}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{

@@ -121,8 +121,8 @@ func TestMCPReadTools(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListTools: %v", err)
 	}
-	if len(tools.Tools) != 11 {
-		t.Errorf("tools count = %d, want 11", len(tools.Tools))
+	if len(tools.Tools) != 12 {
+		t.Errorf("tools count = %d, want 12", len(tools.Tools))
 	}
 
 	// get_panel：一次获取完整状态。
@@ -208,15 +208,15 @@ func TestMCPWriteFlow(t *testing.T) {
 		t.Errorf("created app not persisted with title Grafana: %q", appTitleByID(snap, int(newID)))
 	}
 
-	// rename_group。
-	res = callTool(t, sess, "homelab_panel_rename_group", map[string]any{"group_id": 1, "name": "Infrastructure"})
+	// patch_group。
+	res = callTool(t, sess, "homelab_panel_patch_group", map[string]any{"group_id": 1, "name": "Infrastructure", "icon": "mdi:server-network"})
 	group := structuredMap(t, res)["group"].(map[string]any)
 	if group["name"] != "Infrastructure" {
-		t.Errorf("renamed group = %v", group["name"])
+		t.Errorf("patched group = %v", group["name"])
 	}
 
 	// create_group：服务端分配 id，sort 追加到末尾。
-	res = callTool(t, sess, "homelab_panel_create_group", map[string]any{"name": "Network"})
+	res = callTool(t, sess, "homelab_panel_create_group", map[string]any{"name": "Network", "icon": "mdi:network"})
 	group = structuredMap(t, res)["group"].(map[string]any)
 	newGroupID, ok := group["id"].(float64)
 	if !ok || newGroupID == 0 {
