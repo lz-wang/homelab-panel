@@ -2,6 +2,7 @@ package panel
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"sort"
 	"time"
@@ -218,6 +219,74 @@ func (s *Service) DeleteGroup(_ context.Context, id int) error {
 	})
 }
 
+// ReorderGroups 以集合级原子操作重排全部分组。groupIDs 必须恰好包含每个现有分组一次。
+func (s *Service) ReorderGroups(_ context.Context, groupIDs []int) ([]GroupSummary, error) {
+	var result []GroupSummary
+	err := s.store.Save(func(d *data.StoreData) error {
+		if err := validateExactGroupIDs(d.Panel.Groups, groupIDs); err != nil {
+			return err
+		}
+		index := make(map[int]int, len(groupIDs))
+		for i, id := range groupIDs {
+			index[id] = i + 1
+		}
+		now := time.Now()
+		result = make([]GroupSummary, 0, len(d.Panel.Groups))
+		for i := range d.Panel.Groups {
+			g := &d.Panel.Groups[i]
+			g.Sort = index[g.ID]
+			g.UpdatedAt = now
+			result = append(result, toGroupSummary(*g))
+		}
+		sortGroups(result)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// ReorderApps 以集合级原子操作重排指定分组内的全部应用。appIDs 必须恰好覆盖该分组的应用。
+func (s *Service) ReorderApps(_ context.Context, groupID int, appIDs []int) ([]AppSummary, error) {
+	var result []AppSummary
+	err := s.store.Save(func(d *data.StoreData) error {
+		if !groupExists(d.Panel.Groups, groupID) {
+			return ErrGroupNotFound
+		}
+		apps := make([]data.Item, 0)
+		for _, it := range d.Panel.Items {
+			if it.GroupID == groupID {
+				apps = append(apps, it)
+			}
+		}
+		if err := validateExactAppIDs(apps, appIDs); err != nil {
+			return err
+		}
+		index := make(map[int]int, len(appIDs))
+		for i, id := range appIDs {
+			index[id] = i + 1
+		}
+		now := time.Now()
+		result = make([]AppSummary, 0, len(appIDs))
+		for i := range d.Panel.Items {
+			it := &d.Panel.Items[i]
+			if it.GroupID != groupID {
+				continue
+			}
+			it.Sort = index[it.ID]
+			it.UpdatedAt = now
+			result = append(result, toAppSummary(*it))
+		}
+		sortApps(result)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // CreateApp 在指定分组下新建应用，ID 由服务端分配。
 func (s *Service) CreateApp(_ context.Context, input AppInput) (*AppDetail, error) {
 	if err := validateAppInput(input); err != nil {
@@ -359,6 +428,48 @@ func groupExists(groups []data.Group, id int) bool {
 		}
 	}
 	return false
+}
+
+func validateExactGroupIDs(groups []data.Group, ids []int) error {
+	if len(ids) != len(groups) {
+		return fmt.Errorf("group IDs must contain every current group exactly once")
+	}
+	existing := make(map[int]struct{}, len(groups))
+	for _, g := range groups {
+		existing[g.ID] = struct{}{}
+	}
+	seen := make(map[int]struct{}, len(ids))
+	for _, id := range ids {
+		if _, ok := existing[id]; !ok {
+			return fmt.Errorf("unknown group ID %d", id)
+		}
+		if _, ok := seen[id]; ok {
+			return fmt.Errorf("duplicate group ID %d", id)
+		}
+		seen[id] = struct{}{}
+	}
+	return nil
+}
+
+func validateExactAppIDs(apps []data.Item, ids []int) error {
+	if len(ids) != len(apps) {
+		return fmt.Errorf("app IDs must contain every current app exactly once")
+	}
+	existing := make(map[int]struct{}, len(apps))
+	for _, it := range apps {
+		existing[it.ID] = struct{}{}
+	}
+	seen := make(map[int]struct{}, len(ids))
+	for _, id := range ids {
+		if _, ok := existing[id]; !ok {
+			return fmt.Errorf("unknown app ID %d", id)
+		}
+		if _, ok := seen[id]; ok {
+			return fmt.Errorf("duplicate app ID %d", id)
+		}
+		seen[id] = struct{}{}
+	}
+	return nil
 }
 
 // nextGroupSort 返回追加到末尾的 sort 值：现有最大 sort + 1，无分组时为 1。

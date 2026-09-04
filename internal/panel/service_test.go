@@ -371,6 +371,51 @@ func TestDeleteAppAndGroup(t *testing.T) {
 	}
 }
 
+func TestReorderGroups(t *testing.T) {
+	svc := NewService(seedStore(t))
+	ctx := context.Background()
+
+	groups, err := svc.ReorderGroups(ctx, []int{2, 1})
+	if err != nil {
+		t.Fatalf("ReorderGroups: %v", err)
+	}
+	if len(groups) != 2 || groups[0].ID != 2 || groups[0].Sort != 1 || groups[1].ID != 1 || groups[1].Sort != 2 {
+		t.Errorf("groups = %+v", groups)
+	}
+	for _, ids := range [][]int{{2, 2}, {1}, {1, 999}} {
+		if _, err := svc.ReorderGroups(ctx, ids); err == nil {
+			t.Errorf("ReorderGroups(%v) should fail", ids)
+		}
+	}
+}
+
+func TestReorderApps(t *testing.T) {
+	svc := NewService(seedStore(t))
+	ctx := context.Background()
+
+	apps, err := svc.ReorderApps(ctx, 1, []int{11, 10})
+	if err != nil {
+		t.Fatalf("ReorderApps: %v", err)
+	}
+	if len(apps) != 2 || apps[0].ID != 11 || apps[0].Sort != 1 || apps[1].ID != 10 || apps[1].Sort != 2 {
+		t.Errorf("apps = %+v", apps)
+	}
+	for _, ids := range [][]int{{11, 11}, {10}, {10, 20}} {
+		if _, err := svc.ReorderApps(ctx, 1, ids); err == nil {
+			t.Errorf("ReorderApps(%v) should fail", ids)
+		}
+	}
+	if _, err := svc.ReorderApps(ctx, 999, nil); !errors.Is(err, ErrGroupNotFound) {
+		t.Errorf("missing group err = %v, want ErrGroupNotFound", err)
+	}
+	if err := svc.DeleteApp(ctx, 20); err != nil {
+		t.Fatalf("DeleteApp empty-group setup: %v", err)
+	}
+	if _, err := svc.ReorderApps(ctx, 2, []int{}); err != nil {
+		t.Errorf("empty group reorder: %v", err)
+	}
+}
+
 func TestCreateAppIconColors(t *testing.T) {
 	svc := NewService(seedStore(t))
 	ctx := context.Background()
