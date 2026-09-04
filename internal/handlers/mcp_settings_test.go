@@ -67,7 +67,7 @@ func TestMCPGenerateAndDeleteToken(t *testing.T) {
 	r.GET("/mcp/settings", h.GetMCPSettings)
 
 	// generate → enables MCP implicitly + returns plaintext once
-	req := httptest.NewRequest(http.MethodPost, "/mcp/token", nil)
+	req := httptest.NewRequest(http.MethodPost, "/mcp/token", bytes.NewBufferString(`{"scope":"read"}`))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {
@@ -76,11 +76,12 @@ func TestMCPGenerateAndDeleteToken(t *testing.T) {
 	var gen struct {
 		Token       string `json:"token"`
 		TokenPrefix string `json:"token_prefix"`
+		Scope       string `json:"scope"`
 	}
 	if err := json.Unmarshal(w.Body.Bytes(), &gen); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if gen.Token == "" || gen.TokenPrefix == "" {
+	if gen.Token == "" || gen.TokenPrefix == "" || gen.Scope != "read" {
 		t.Fatalf("expected token+prefix, got %+v", gen)
 	}
 
@@ -92,10 +93,11 @@ func TestMCPGenerateAndDeleteToken(t *testing.T) {
 		Enabled bool `json:"enabled"`
 		Tokens  []struct {
 			Prefix string `json:"prefix"`
+			Scope  string `json:"scope"`
 		} `json:"tokens"`
 	}
 	json.Unmarshal(w.Body.Bytes(), &settings)
-	if !settings.Enabled || len(settings.Tokens) != 1 || settings.Tokens[0].Prefix != gen.TokenPrefix {
+	if !settings.Enabled || len(settings.Tokens) != 1 || settings.Tokens[0].Prefix != gen.TokenPrefix || settings.Tokens[0].Scope != "read" {
 		t.Fatalf("unexpected settings: %+v", settings)
 	}
 

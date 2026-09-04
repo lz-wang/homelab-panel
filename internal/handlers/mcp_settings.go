@@ -14,6 +14,7 @@ import (
 // mcpTokenInfo 是单个 token 的只读视图：仅返回可展示前缀与时间，绝不返回 hash。
 type mcpTokenInfo struct {
 	Prefix     string     `json:"prefix"`
+	Scope      string     `json:"scope"`
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
 }
@@ -29,6 +30,11 @@ type mcpSettingsResponse struct {
 type mcpTokenResponse struct {
 	Token       string `json:"token"`
 	TokenPrefix string `json:"token_prefix"`
+	Scope       string `json:"scope"`
+}
+
+type mcpTokenRequest struct {
+	Scope string `json:"scope"`
 }
 
 // mcpSettingsRequest 用指针字段支持部分更新：缺省字段不改动当前值。
@@ -42,7 +48,11 @@ func generateMCPToken() (plain string, prefix string, hash string, err error) {
 }
 
 func tokenInfoView(t data.MCPToken) mcpTokenInfo {
-	info := mcpTokenInfo{Prefix: t.Prefix}
+	scope := t.Scope
+	if scope == "" {
+		scope = data.MCPTokenScopeWrite
+	}
+	info := mcpTokenInfo{Prefix: t.Prefix, Scope: scope}
 	if !t.CreatedAt.IsZero() {
 		info.CreatedAt = &t.CreatedAt
 	}
@@ -102,6 +112,21 @@ func (h *Handler) UpdateMCPSettings(c *gin.Context) {
 // GenerateMCPToken 生成一个新 token 并加入列表，明文只返回一次，并隐式启用 MCP。
 // 支持生成多个 token（每个独立前缀与 hash）。
 func (h *Handler) GenerateMCPToken(c *gin.Context) {
+	var req mcpTokenRequest
+	if c.Request.ContentLength > 0 {
+		if err := c.ShouldBindJSON(&req); err != nil {
+			writeError(c, http.StatusBadRequest, "invalid request body")
+			return
+		}
+	}
+	scope := req.Scope
+	if scope == "" {
+		scope = data.MCPTokenScopeWrite
+	}
+	if scope != data.MCPTokenScopeRead && scope != data.MCPTokenScopeWrite {
+		writeError(c, http.StatusBadRequest, "scope must be read or write")
+		return
+	}
 	plain, prefix, hash, err := generateMCPToken()
 	if err != nil {
 		logging.Errorf("generate mcp token failed: %v", err)
@@ -114,6 +139,7 @@ func (h *Handler) GenerateMCPToken(c *gin.Context) {
 		d.MCP.Tokens = append(d.MCP.Tokens, data.MCPToken{
 			Prefix:    prefix,
 			Hash:      hash,
+			Scope:     scope,
 			CreatedAt: now,
 		})
 		d.MCP.Enabled = true
@@ -127,7 +153,7 @@ func (h *Handler) GenerateMCPToken(c *gin.Context) {
 	}
 
 	logging.Infof("mcp token generated (prefix=%s) from %s", prefix, c.ClientIP())
-	writeJSON(c, http.StatusOK, mcpTokenResponse{Token: plain, TokenPrefix: prefix})
+	writeJSON(c, http.StatusOK, mcpTokenResponse{Token: plain, TokenPrefix: prefix, Scope: scope})
 }
 
 // DeleteMCPToken 按前缀删除指定 token；被删 token 因 hash 移除立即失效。

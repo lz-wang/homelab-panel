@@ -20,9 +20,15 @@ type StoreData struct {
 type MCPToken struct {
 	Prefix     string    `json:"token_prefix"`
 	Hash       string    `json:"token_hash"`
+	Scope      string    `json:"scope,omitempty"`
 	CreatedAt  time.Time `json:"created_at"`
 	LastUsedAt time.Time `json:"last_used_at"`
 }
+
+const (
+	MCPTokenScopeRead  = "read"
+	MCPTokenScopeWrite = "write"
+)
 
 // MCPConfig 保存 MCP HTTP 服务的开关与一组 token。
 // 明文 token 永不落盘，每个 token 仅保存其前缀（可展示）与 sha256 摘要。
