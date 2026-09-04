@@ -1,7 +1,6 @@
 package panel
 
 import (
-	"encoding/json"
 	"errors"
 	"time"
 )
@@ -35,10 +34,10 @@ type AppSummary struct {
 // PanelSnapshot 是完整面板状态的只读视图，供需要整体分析的 transport 使用。
 // Config 在 typed settings 领域模型引入前保持原始持久化契约。
 type PanelSnapshot struct {
-	SiteName string          `json:"site_name"`
-	Config   json.RawMessage `json:"config"`
-	Groups   []GroupSummary  `json:"groups"`
-	Apps     []AppDetail     `json:"apps"`
+	SiteName string         `json:"site_name"`
+	Config   PanelConfig    `json:"config"`
+	Groups   []GroupSummary `json:"groups"`
+	Apps     []AppDetail    `json:"apps"`
 }
 
 // AppDetail 是应用的完整配置。

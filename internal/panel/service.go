@@ -34,6 +34,10 @@ func (s *Service) ListGroups(_ context.Context) ([]GroupSummary, error) {
 // GetPanel 返回完整的面板快照，避免客户端为了解析全部导航而进行多次列表请求。
 func (s *Service) GetPanel(_ context.Context) (*PanelSnapshot, error) {
 	snap := s.store.Snapshot()
+	config, err := DecodePanelConfig(snap.Panel.Config)
+	if err != nil {
+		return nil, err
+	}
 	groups := make([]GroupSummary, 0, len(snap.Panel.Groups))
 	for _, g := range snap.Panel.Groups {
 		groups = append(groups, toGroupSummary(g))
@@ -52,7 +56,33 @@ func (s *Service) GetPanel(_ context.Context) (*PanelSnapshot, error) {
 		}
 		return apps[i].ID < apps[j].ID
 	})
-	return &PanelSnapshot{SiteName: snap.Panel.SiteName, Config: snap.Panel.Config, Groups: groups, Apps: apps}, nil
+	return &PanelSnapshot{SiteName: snap.Panel.SiteName, Config: config, Groups: groups, Apps: apps}, nil
+}
+
+// PatchSettings 局部更新已建模的面板设置，持久化格式保持为既有 JSON。
+func (s *Service) PatchSettings(_ context.Context, patch PanelSettingsPatch) (*PanelSettings, error) {
+	var result *PanelSettings
+	err := s.store.Save(func(d *data.StoreData) error {
+		config, err := DecodePanelConfig(d.Panel.Config)
+		if err != nil {
+			return err
+		}
+		settings, err := ApplyPanelSettingsPatch(PanelSettings{SiteName: d.Panel.SiteName, Config: config}, patch)
+		if err != nil {
+			return err
+		}
+		raw, err := EncodePanelConfig(settings.Config)
+		if err != nil {
+			return err
+		}
+		d.Panel.SiteName, d.Panel.Config = settings.SiteName, raw
+		result = &settings
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // ListAppsByGroup 返回指定分组下的应用。分组不存在时返回 ErrGroupNotFound。
