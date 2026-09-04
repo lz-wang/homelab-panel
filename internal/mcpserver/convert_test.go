@@ -40,13 +40,6 @@ func TestToPanelCreateInput(t *testing.T) {
 	}
 }
 
-func TestToPanelReplaceInput(t *testing.T) {
-	got := toPanelReplaceInput(ReplaceAppInput{ID: 7, GroupID: 2, Title: "r", URL: "ru", BackupURL: "rbu", Sort: 9})
-	if got.GroupID != 2 || got.Title != "r" || got.URL != "ru" || got.BackupURL != "rbu" || got.Sort != 9 {
-		t.Errorf("toPanelReplaceInput fields not mapped: %+v", got)
-	}
-}
-
 func TestToPanelPatchInput(t *testing.T) {
 	t.Run("nil icon stays nil", func(t *testing.T) {
 		got := toPanelPatchInput(PatchAppInput{ID: 1})
@@ -83,8 +76,16 @@ func TestToPanelPatchInput(t *testing.T) {
 }
 
 func TestToPanelGroupInput(t *testing.T) {
-	got := toPanelGroupInput(CreateGroupInput{Name: "g", Sort: 3})
-	if got.Name != "g" || got.Sort != 3 {
-		t.Errorf("toPanelGroupInput = %+v, want {g 3}", got)
+	got := toPanelGroupInput(CreateGroupInput{Name: "g", Icon: "mdi:group", Sort: 3})
+	if got.Name != "g" || got.Icon != "mdi:group" || got.Sort != 3 {
+		t.Errorf("toPanelGroupInput = %+v", got)
+	}
+}
+
+func TestToPanelGroupPatch(t *testing.T) {
+	name, icon, sort := "g", "mdi:group", 3
+	got := toPanelGroupPatch(PatchGroupInput{GroupID: 1, Name: &name, Icon: &icon, Sort: &sort})
+	if got.Name == nil || *got.Name != name || got.Icon == nil || *got.Icon != icon || got.Sort == nil || *got.Sort != sort {
+		t.Errorf("toPanelGroupPatch = %+v", got)
 	}
 }

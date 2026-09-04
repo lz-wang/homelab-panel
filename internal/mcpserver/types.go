@@ -62,18 +62,6 @@ type CreateAppInput struct {
 	Sort        int      `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
 }
 
-type ReplaceAppInput struct {
-	ID int `json:"id" jsonschema:"target app id"`
-
-	GroupID     int      `json:"group_id" jsonschema:"target group id"`
-	Title       string   `json:"title" jsonschema:"app title"`
-	URL         string   `json:"url" jsonschema:"app url"`
-	BackupURL   string   `json:"backup_url,omitempty" jsonschema:"optional backup url opened on right-click in browse mode"`
-	Description string   `json:"description,omitempty" jsonschema:"optional description"`
-	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
-	Sort        int      `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
-}
-
 // PatchAppInput 用指针字段区分「不修改 / 显式清空 / 更新为新值」。
 type PatchAppInput struct {
 	ID int `json:"id" jsonschema:"target app id"`
@@ -85,6 +73,10 @@ type PatchAppInput struct {
 	Description *string  `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
 	Sort        *int     `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
+}
+
+type DeleteAppInput struct {
+	ID int `json:"id" jsonschema:"target app id"`
 }
 
 // ---- 输出（复用 panel 值类型） ----
@@ -122,10 +114,6 @@ type PatchGroupOutput struct {
 }
 
 type CreateAppOutput struct {
-	Item panel.AppDetail `json:"item"`
-}
-
-type ReplaceAppOutput struct {
 	Item panel.AppDetail `json:"item"`
 }
 

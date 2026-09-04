@@ -86,21 +86,15 @@ func registerWriteTools(s *mcp.Server, panelSvc *panel.Service) {
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
-		Name:        "homelab_panel_replace_app",
-		Title:       "Replace HomeLab Panel app",
-		Description: "Replace the full configuration of an app by its id.",
-		Annotations: &mcp.ToolAnnotations{
-			ReadOnlyHint:    false,
-			DestructiveHint: ptr(true),
-			IdempotentHint:  true,
-		},
-	}, func(ctx context.Context, _ *mcp.CallToolRequest, in ReplaceAppInput) (*mcp.CallToolResult, ReplaceAppOutput, error) {
-		item, err := panelSvc.ReplaceApp(ctx, in.ID, toPanelReplaceInput(in))
-		if err != nil {
-			return nil, ReplaceAppOutput{}, err
+		Name: "homelab_panel_delete_app", Title: "Delete HomeLab Panel app",
+		Description: "Delete an app by id.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: ptr(true), IdempotentHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, in DeleteAppInput) (*mcp.CallToolResult, EmptyInput, error) {
+		if err := panelSvc.DeleteApp(ctx, in.ID); err != nil {
+			return nil, EmptyInput{}, err
 		}
-		auditToolCall(ctx, "homelab_panel_replace_app", "app", item.ID, true)
-		return nil, ReplaceAppOutput{Item: *item}, nil
+		auditToolCall(ctx, "homelab_panel_delete_app", "app", in.ID, true)
+		return nil, EmptyInput{}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{

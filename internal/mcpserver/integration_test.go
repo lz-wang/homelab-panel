@@ -235,13 +235,13 @@ func TestMCPWriteFlow(t *testing.T) {
 		t.Error("non preset background color should be a tool error")
 	}
 
-	// replace_app。
-	res = callTool(t, sess, "homelab_panel_replace_app", map[string]any{
-		"id": 10, "group_id": 1, "title": "PVE", "url": "https://pve2.local",
-	})
-	item = structuredMap(t, res)["item"].(map[string]any)
-	if item["title"] != "PVE" || item["url"] != "https://pve2.local" {
-		t.Errorf("replace result = %v", item)
+	// delete_app。
+	res = callTool(t, sess, "homelab_panel_delete_app", map[string]any{"id": 10})
+	if res.IsError {
+		t.Errorf("delete app: %s", contentText(res))
+	}
+	if appTitleByID(store.Snapshot(), 10) != "" {
+		t.Error("app should be deleted")
 	}
 }
 

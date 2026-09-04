@@ -20,19 +20,6 @@ func toPanelCreateInput(in CreateAppInput) panel.AppInput {
 	}
 }
 
-// toPanelReplaceInput 将替换应用的 MCP 入参转为 panel.AppInput。
-func toPanelReplaceInput(in ReplaceAppInput) panel.AppInput {
-	return panel.AppInput{
-		GroupID:     in.GroupID,
-		Title:       in.Title,
-		URL:         in.URL,
-		BackupURL:   in.BackupURL,
-		Description: in.Description,
-		Icon:        iconToPanel(in.Icon),
-		Sort:        in.Sort,
-	}
-}
-
 // toPanelPatchInput 将部分更新的 MCP 入参转为 panel.AppPatch。
 func toPanelPatchInput(in PatchAppInput) panel.AppPatch {
 	var icon *panel.AppIcon
