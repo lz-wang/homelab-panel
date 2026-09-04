@@ -333,6 +333,44 @@ func TestPatchGroup(t *testing.T) {
 	}
 }
 
+func TestDeleteAppAndGroup(t *testing.T) {
+	store := seedStore(t)
+	svc := NewService(store)
+	ctx := context.Background()
+
+	if err := svc.DeleteApp(ctx, 10); err != nil {
+		t.Fatalf("DeleteApp: %v", err)
+	}
+	if _, err := svc.GetApp(ctx, 10); !errors.Is(err, ErrAppNotFound) {
+		t.Errorf("deleted app err = %v, want ErrAppNotFound", err)
+	}
+	if store.Snapshot().NextID.Item != 21 {
+		t.Error("deleting app must not reuse IDs")
+	}
+	if err := svc.DeleteApp(ctx, 999); !errors.Is(err, ErrAppNotFound) {
+		t.Errorf("missing app err = %v, want ErrAppNotFound", err)
+	}
+
+	if err := svc.DeleteGroup(ctx, 1); !errors.Is(err, ErrGroupNotEmpty) {
+		t.Errorf("non-empty group err = %v, want ErrGroupNotEmpty", err)
+	}
+	if err := svc.DeleteApp(ctx, 11); err != nil {
+		t.Fatalf("DeleteApp 11: %v", err)
+	}
+	if err := svc.DeleteGroup(ctx, 1); err != nil {
+		t.Fatalf("DeleteGroup empty: %v", err)
+	}
+	if _, err := svc.ListAppsByGroup(ctx, 1); !errors.Is(err, ErrGroupNotFound) {
+		t.Errorf("deleted group err = %v, want ErrGroupNotFound", err)
+	}
+	if store.Snapshot().NextID.Group != 3 {
+		t.Error("deleting group must not reuse IDs")
+	}
+	if err := svc.DeleteGroup(ctx, 999); !errors.Is(err, ErrGroupNotFound) {
+		t.Errorf("missing group err = %v, want ErrGroupNotFound", err)
+	}
+}
+
 func TestCreateAppIconColors(t *testing.T) {
 	svc := NewService(seedStore(t))
 	ctx := context.Background()

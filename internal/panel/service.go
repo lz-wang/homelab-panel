@@ -182,6 +182,42 @@ func (s *Service) PatchGroup(_ context.Context, groupID int, patch GroupPatch) (
 	return result, nil
 }
 
+// DeleteApp 删除单个应用。不存在时返回 ErrAppNotFound。
+func (s *Service) DeleteApp(_ context.Context, id int) error {
+	return s.store.Save(func(d *data.StoreData) error {
+		for i := range d.Panel.Items {
+			if d.Panel.Items[i].ID == id {
+				d.Panel.Items = append(d.Panel.Items[:i], d.Panel.Items[i+1:]...)
+				return nil
+			}
+		}
+		return ErrAppNotFound
+	})
+}
+
+// DeleteGroup 删除一个空分组。为避免 Agent 意外删除应用，非空分组不会级联删除。
+func (s *Service) DeleteGroup(_ context.Context, id int) error {
+	return s.store.Save(func(d *data.StoreData) error {
+		idx := -1
+		for i := range d.Panel.Groups {
+			if d.Panel.Groups[i].ID == id {
+				idx = i
+				break
+			}
+		}
+		if idx < 0 {
+			return ErrGroupNotFound
+		}
+		for _, it := range d.Panel.Items {
+			if it.GroupID == id {
+				return ErrGroupNotEmpty
+			}
+		}
+		d.Panel.Groups = append(d.Panel.Groups[:idx], d.Panel.Groups[idx+1:]...)
+		return nil
+	})
+}
+
 // CreateApp 在指定分组下新建应用，ID 由服务端分配。
 func (s *Service) CreateApp(_ context.Context, input AppInput) (*AppDetail, error) {
 	if err := validateAppInput(input); err != nil {
