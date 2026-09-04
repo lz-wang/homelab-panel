@@ -186,7 +186,7 @@ Enable it in the Web UI:
 
 1. Log in as admin.
 2. Open MCP settings.
-3. Enable MCP and generate a token.
+3. Enable MCP, choose a permission, and generate a token (the UI defaults to read only).
 4. Copy the plaintext token immediately. It is shown only once.
 5. Configure the URL and `Authorization` header in your agent client.
 
@@ -210,7 +210,14 @@ url = "http://<server IP>:9090/api/v1/mcp"
 bearer_token_env_var = "HOMELAB_PANEL_MCP_TOKEN"
 ```
 
-MCP tokens are independent from the admin login JWT. Deleting a token prefix invalidates that token immediately.
+MCP tokens are independent from the admin login JWT. A `read` token discovers only six read tools, while a `write` token discovers all 15 tools; legacy tokens are treated as `write`. Deleting a token prefix invalidates that token immediately.
+
+| Type | Tools |
+| --- | --- |
+| Read | `get_panel`, `list_groups`, `list_apps_by_group`, `search_apps`, `get_app`, `list_files` |
+| Write | `create_group`, `patch_group`, `delete_group`, `create_app`, `patch_app`, `delete_app`, `reorder_groups`, `reorder_apps`, `patch_settings` |
+
+Deleting apps and groups is destructive. Group deletion **never** cascades to apps: move or delete a group's apps first. Reorder tools require every ID in the target collection exactly once.
 
 ## Security Notes
 

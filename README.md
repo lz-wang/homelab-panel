@@ -186,7 +186,7 @@ POST /api/v1/mcp
 
 1. 登录管理员账号。
 2. 打开设置页中的 MCP 设置。
-3. 启用 MCP 并生成 token。
+3. 启用 MCP，选择权限后生成 token（UI 默认只读）。
 4. 立即复制明文 token。它只展示一次。
 5. 在 Agent 客户端中配置 URL 和 `Authorization` header。
 
@@ -210,7 +210,14 @@ url = "http://<服务器 IP>:9090/api/v1/mcp"
 bearer_token_env_var = "HOMELAB_PANEL_MCP_TOKEN"
 ```
 
-MCP token 独立于管理员登录 JWT。删除 token 前缀后，对应 token 会立即失效。
+MCP token 独立于管理员登录 JWT。`read` token 仅发现 6 个读取工具，`write` token 可发现全部 15 个工具；旧 token 自动兼容为 `write`。删除 token 前缀后，对应 token 会立即失效。
+
+| 类型 | 工具 |
+| --- | --- |
+| 读取 | `get_panel`、`list_groups`、`list_apps_by_group`、`search_apps`、`get_app`、`list_files` |
+| 写入 | `create_group`、`patch_group`、`delete_group`、`create_app`、`patch_app`、`delete_app`、`reorder_groups`、`reorder_apps`、`patch_settings` |
+
+删除应用和分组是 destructive 操作；删除分组**不会**级联删除应用，须先移动或删除该分组的应用。排序工具要求提供目标集合内全部 ID，且每个 ID 恰好一次。
 
 ## 安全提示
 

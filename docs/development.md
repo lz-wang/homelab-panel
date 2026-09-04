@@ -147,3 +147,11 @@ make check
 make test
 git diff --check
 ```
+
+## MCP 领域与权限
+
+MCP 和 Web 都只是 transport adapter：所有面板业务规则位于 `internal/panel.Service`。MCP DTO 不得直接操作 `data.Store`。MCP 有 6 个读取工具和 9 个写入工具；`get_panel` 已包含 typed settings，不要增加重复的 `get_settings`。
+
+Token scope 只有 `read` 和 `write`。认证中间件把 scope 写入请求 context，Streamable HTTP server 据此选择只读或完整 tool surface；不要只在 tool callback 内返回 forbidden。没有 scope 的历史 token 必须继续按 `write` 处理。
+
+`delete_group` 禁止隐式 cascade；`reorder_groups` 与 `reorder_apps` 必须要求当前目标集合的所有 ID 恰好一次。`patch_settings` 仅暴露 typed 字段，配置 JSON 的解码、校验和编码统一经 `internal/panel/settings.go`。

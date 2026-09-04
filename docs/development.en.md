@@ -152,3 +152,11 @@ make check
 make test
 git diff --check
 ```
+
+## MCP Domain and Permissions
+
+MCP and the Web UI are transport adapters only: all panel rules belong in `internal/panel.Service`. MCP DTOs must never access `data.Store` directly. MCP has six read tools and nine write tools; `get_panel` already contains typed settings, so do not add a duplicate `get_settings`.
+
+The only token scopes are `read` and `write`. Authentication places the scope in request context and the Streamable HTTP resolver chooses a read-only or full tool surface; do not merely return forbidden inside write callbacks. Legacy tokens without a scope must continue to mean `write`.
+
+`delete_group` must not cascade. `reorder_groups` and `reorder_apps` must require every current target ID exactly once. `patch_settings` exposes typed fields only, with JSON decoding, validation, and encoding centralized in `internal/panel/settings.go`.

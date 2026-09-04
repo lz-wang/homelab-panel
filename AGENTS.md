@@ -141,8 +141,9 @@ The panel exposes an MCP (Model Context Protocol) endpoint at `/api/v1/mcp` (Str
 - Packages:
   - `internal/mcpserver`: server assembly (`server.go`), bearer-token auth + scope injection (`auth.go`, `context.go`), token gen/hash (`token.go`), tool DTOs (`types.go`), read/write tools (`tools_read.go`, `tools_write.go`), and DTO→panel conversion (`convert.go`).
   - `internal/panel`: `Service` is the single business seam the tools depend on (`service.go`, `types.go`, `validate.go`). MCP DTOs never touch `data.*` models directly.
-- Auth is **independent of the admin JWT**: a bearer token issued from the settings page (`POST /api/v1/mcp/token`). Multiple tokens may be issued; delete one by prefix (`DELETE /api/v1/mcp/token/:prefix`). Only the sha256 hash + a display prefix are stored; plaintext is returned once. Disabled MCP or an unknown token → 401/403.
-- There is no read/write scope — all tools are available once authenticated.
+- Auth is **independent of the admin JWT**: a bearer token issued from the settings page (`POST /api/v1/mcp/token`) with `read` or `write` scope; API omission remains compatible as `write`, while the UI defaults to `read`. Multiple tokens may be issued; delete one by prefix (`DELETE /api/v1/mcp/token/:prefix`). Only the sha256 hash + a display prefix are stored; plaintext is returned once. Disabled MCP or an unknown token → 401/403.
+- Scope controls tool discovery: read tokens see exactly six read tools; write tokens see all fifteen tools. Resolver-level selection is required, not callback-only authorization. Legacy empty scope means write.
+- The final tools are `get_panel`, `list_groups`, `list_apps_by_group`, `search_apps`, `get_app`, `list_files`, `create_group`, `patch_group`, `delete_group`, `create_app`, `patch_app`, `delete_app`, `reorder_groups`, `reorder_apps`, and `patch_settings`. `delete_group` never cascades; reorder requests must include every target ID exactly once.
 - A 1 MiB body cap and an Origin check (empty/same-origin allowed, else 403) guard the route.
 - Audit + access logs go through the **single global logger** (`internal/logging`), not a separate JSONL sink. Write tools log one `mcp tool call:` INFO line; the `requestLogger()` middleware records the request line.
 
