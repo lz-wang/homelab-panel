@@ -79,6 +79,15 @@ type DeleteAppInput struct {
 	ID int `json:"id" jsonschema:"target app id"`
 }
 
+type ReorderGroupsInput struct {
+	GroupIDs []int `json:"group_ids" jsonschema:"IDs must contain every current group exactly once, in the desired order"`
+}
+
+type ReorderAppsInput struct {
+	GroupID int   `json:"group_id" jsonschema:"target group id"`
+	AppIDs  []int `json:"app_ids" jsonschema:"IDs must contain every current app in this group exactly once, in the desired order"`
+}
+
 // ---- 输出（复用 panel 值类型） ----
 
 type ListGroupsOutput struct {
@@ -119,4 +128,11 @@ type CreateAppOutput struct {
 
 type PatchAppOutput struct {
 	Item panel.AppDetail `json:"item"`
+}
+
+type ReorderGroupsOutput struct {
+	Groups []panel.GroupSummary `json:"groups"`
+}
+type ReorderAppsOutput struct {
+	Items []panel.AppSummary `json:"items"`
 }

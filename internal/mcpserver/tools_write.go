@@ -19,6 +19,31 @@ func auditToolCall(ctx context.Context, tool, targetType string, targetID int, s
 // registerWriteTools 注册写入工具。已通过 MCP 鉴权即可调用。
 func registerWriteTools(s *mcp.Server, panelSvc *panel.Service) {
 	mcp.AddTool(s, &mcp.Tool{
+		Name: "homelab_panel_reorder_groups", Title: "Reorder HomeLab Panel groups",
+		Description: "Atomically reorder groups. IDs must contain every current group exactly once.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: ptr(false), IdempotentHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, in ReorderGroupsInput) (*mcp.CallToolResult, ReorderGroupsOutput, error) {
+		groups, err := panelSvc.ReorderGroups(ctx, in.GroupIDs)
+		if err != nil {
+			return nil, ReorderGroupsOutput{}, err
+		}
+		auditToolCall(ctx, "homelab_panel_reorder_groups", "groups", 0, true)
+		return nil, ReorderGroupsOutput{Groups: groups}, nil
+	})
+
+	mcp.AddTool(s, &mcp.Tool{
+		Name: "homelab_panel_reorder_apps", Title: "Reorder HomeLab Panel apps",
+		Description: "Atomically reorder apps in one group. IDs must contain every current app in that group exactly once.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: ptr(false), IdempotentHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, in ReorderAppsInput) (*mcp.CallToolResult, ReorderAppsOutput, error) {
+		items, err := panelSvc.ReorderApps(ctx, in.GroupID, in.AppIDs)
+		if err != nil {
+			return nil, ReorderAppsOutput{}, err
+		}
+		auditToolCall(ctx, "homelab_panel_reorder_apps", "group", in.GroupID, true)
+		return nil, ReorderAppsOutput{Items: items}, nil
+	})
+	mcp.AddTool(s, &mcp.Tool{
 		Name:        "homelab_panel_patch_group",
 		Title:       "Patch HomeLab Panel group",
 		Description: "Patch selected fields of a HomeLab Panel group by its id.",

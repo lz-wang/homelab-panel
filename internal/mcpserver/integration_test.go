@@ -121,8 +121,8 @@ func TestMCPReadTools(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListTools: %v", err)
 	}
-	if len(tools.Tools) != 12 {
-		t.Errorf("tools count = %d, want 12", len(tools.Tools))
+	if len(tools.Tools) != 14 {
+		t.Errorf("tools count = %d, want 14", len(tools.Tools))
 	}
 
 	// get_panel：一次获取完整状态。
