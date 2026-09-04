@@ -19,6 +19,18 @@ func auditToolCall(ctx context.Context, tool, targetType string, targetID int, s
 // registerWriteTools 注册写入工具。已通过 MCP 鉴权即可调用。
 func registerWriteTools(s *mcp.Server, panelSvc *panel.Service) {
 	mcp.AddTool(s, &mcp.Tool{
+		Name: "homelab_panel_patch_settings", Title: "Patch HomeLab Panel settings",
+		Description: "Patch selected typed panel settings. Use homelab_panel_get_panel to read current settings.",
+		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: ptr(false), IdempotentHint: true},
+	}, func(ctx context.Context, _ *mcp.CallToolRequest, in PatchSettingsInput) (*mcp.CallToolResult, PatchSettingsOutput, error) {
+		settings, err := panelSvc.PatchSettings(ctx, toPanelSettingsPatch(in))
+		if err != nil {
+			return nil, PatchSettingsOutput{}, err
+		}
+		auditToolCall(ctx, "homelab_panel_patch_settings", "settings", 0, true)
+		return nil, PatchSettingsOutput{Settings: *settings}, nil
+	})
+	mcp.AddTool(s, &mcp.Tool{
 		Name: "homelab_panel_reorder_groups", Title: "Reorder HomeLab Panel groups",
 		Description: "Atomically reorder groups. IDs must contain every current group exactly once.",
 		Annotations: &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: ptr(false), IdempotentHint: true},

@@ -47,6 +47,10 @@ func toPanelGroupPatch(in PatchGroupInput) panel.GroupPatch {
 	return panel.GroupPatch{Name: in.Name, Icon: in.Icon, Sort: in.Sort}
 }
 
+func toPanelSettingsPatch(in PatchSettingsInput) panel.PanelSettingsPatch {
+	return panel.PanelSettingsPatch{SiteName: in.SiteName, BackgroundImageSrc: in.BackgroundImageSrc, BackgroundBlur: in.BackgroundBlur, BackgroundMaskNumber: in.BackgroundMaskNumber, IconTextInfoShowDescription: in.IconTextInfoShowDescription, LogoText: in.LogoText, ClockShow: in.ClockShow, ClockShowSecond: in.ClockShowSecond, SearchBoxShow: in.SearchBoxShow, MarginTop: in.MarginTop, MarginBottom: in.MarginBottom, MarginX: in.MarginX, AppCardRadius: in.AppCardRadius, AppCardAspectRatio: in.AppCardAspectRatio, AppCardDefaultColor: in.AppCardDefaultColor, FaviconSrc: in.FaviconSrc}
+}
+
 // iconToPanel 将 MCP 图标 DTO 转为 panel.AppIcon；nil 视为空图标。
 func iconToPanel(icon *AppIcon) panel.AppIcon {
 	if icon == nil {

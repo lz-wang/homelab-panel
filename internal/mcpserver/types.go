@@ -88,6 +88,26 @@ type ReorderAppsInput struct {
 	AppIDs  []int `json:"app_ids" jsonschema:"IDs must contain every current app in this group exactly once, in the desired order"`
 }
 
+// PatchSettingsInput 将所有可管理的 settings 展开为 schema 字段，避免无约束 JSON object。
+type PatchSettingsInput struct {
+	SiteName                    *string  `json:"site_name,omitempty" jsonschema:"site name"`
+	BackgroundImageSrc          *string  `json:"background_image_src,omitempty" jsonschema:"background image URL or path"`
+	BackgroundBlur              *float64 `json:"background_blur,omitempty" jsonschema:"background blur between 0 and 100"`
+	BackgroundMaskNumber        *float64 `json:"background_mask_number,omitempty" jsonschema:"background mask opacity between 0 and 100"`
+	IconTextInfoShowDescription *bool    `json:"icon_text_info_show_description,omitempty" jsonschema:"show app descriptions"`
+	LogoText                    *string  `json:"logo_text,omitempty" jsonschema:"logo text"`
+	ClockShow                   *bool    `json:"clock_show,omitempty" jsonschema:"show clock"`
+	ClockShowSecond             *bool    `json:"clock_show_second,omitempty" jsonschema:"show clock seconds"`
+	SearchBoxShow               *bool    `json:"search_box_show,omitempty" jsonschema:"show search box"`
+	MarginTop                   *float64 `json:"margin_top,omitempty" jsonschema:"top margin between 0 and 30"`
+	MarginBottom                *float64 `json:"margin_bottom,omitempty" jsonschema:"bottom margin between 0 and 30"`
+	MarginX                     *float64 `json:"margin_x,omitempty" jsonschema:"horizontal margin between 0 and 20"`
+	AppCardRadius               *float64 `json:"app_card_radius,omitempty" jsonschema:"card radius between 0 and 64"`
+	AppCardAspectRatio          *string  `json:"app_card_aspect_ratio,omitempty" jsonschema:"one of auto, 16 / 9, 2 / 1, 5 / 2, 3 / 1"`
+	AppCardDefaultColor         *string  `json:"app_card_default_color,omitempty" jsonschema:"six-digit hex color"`
+	FaviconSrc                  *string  `json:"favicon_src,omitempty" jsonschema:"http(s), /uploads/, data:image/, or empty to clear"`
+}
+
 // ---- 输出（复用 panel 值类型） ----
 
 type ListGroupsOutput struct {
@@ -135,4 +155,8 @@ type ReorderGroupsOutput struct {
 }
 type ReorderAppsOutput struct {
 	Items []panel.AppSummary `json:"items"`
+}
+
+type PatchSettingsOutput struct {
+	Settings panel.PanelSettings `json:"settings"`
 }
