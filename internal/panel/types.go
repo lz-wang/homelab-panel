@@ -87,6 +87,7 @@ type AppPatch struct {
 	BackupURL   *string
 	Description *string
 	Icon        *AppIcon
+	ClearIcon   *bool
 	Sort        *int
 }
 

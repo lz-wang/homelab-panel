@@ -133,6 +133,9 @@ func validateAppPatch(p AppPatch) error {
 			return err
 		}
 	}
+	if p.ClearIcon != nil && *p.ClearIcon && p.Icon != nil {
+		return fmt.Errorf("icon and clear_icon cannot both be set")
+	}
 	if p.Sort != nil && *p.Sort < 0 {
 		return fmt.Errorf("sort must be non-negative")
 	}

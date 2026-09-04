@@ -24,7 +24,7 @@ type ListAppsByGroupInput struct {
 }
 
 type SearchAppsInput struct {
-	Pattern       string `json:"pattern" jsonschema:"regular expression matched against title, description or icon text"`
+	Pattern       string `json:"pattern" jsonschema:"regular expression matched against title, description, URL, backup URL, or Iconify icon name"`
 	CaseSensitive bool   `json:"case_sensitive,omitempty" jsonschema:"whether the regexp is case sensitive"`
 	Limit         int    `json:"limit,omitempty" jsonschema:"max result count, default 20, max 100"`
 }
@@ -72,6 +72,7 @@ type PatchAppInput struct {
 	BackupURL   *string  `json:"backup_url,omitempty" jsonschema:"optional backup url opened on right-click in browse mode; empty string clears it"`
 	Description *string  `json:"description,omitempty" jsonschema:"optional description"`
 	Icon        *AppIcon `json:"icon,omitempty" jsonschema:"app icon"`
+	ClearIcon   *bool    `json:"clear_icon,omitempty" jsonschema:"set true to remove the current icon; cannot be used with icon"`
 	Sort        *int     `json:"sort,omitempty" jsonschema:"sort order, non-negative integer"`
 }
 

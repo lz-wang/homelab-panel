@@ -546,6 +546,9 @@ func (s *Service) PatchApp(_ context.Context, id int, patch AppPatch) (*AppDetai
 		if patch.Icon != nil {
 			it.Icon = toDataIconPtr(*patch.Icon)
 		}
+		if patch.ClearIcon != nil && *patch.ClearIcon {
+			it.Icon = nil
+		}
 		if patch.Sort != nil {
 			it.Sort = *patch.Sort
 		}

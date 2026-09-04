@@ -34,6 +34,7 @@ func toPanelPatchInput(in PatchAppInput) panel.AppPatch {
 		BackupURL:   in.BackupURL,
 		Description: in.Description,
 		Icon:        icon,
+		ClearIcon:   in.ClearIcon,
 		Sort:        in.Sort,
 	}
 }
