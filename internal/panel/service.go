@@ -31,6 +31,30 @@ func (s *Service) ListGroups(_ context.Context) ([]GroupSummary, error) {
 	return groups, nil
 }
 
+// GetPanel 返回完整的面板快照，避免客户端为了解析全部导航而进行多次列表请求。
+func (s *Service) GetPanel(_ context.Context) (*PanelSnapshot, error) {
+	snap := s.store.Snapshot()
+	groups := make([]GroupSummary, 0, len(snap.Panel.Groups))
+	for _, g := range snap.Panel.Groups {
+		groups = append(groups, toGroupSummary(g))
+	}
+	sortGroups(groups)
+	apps := make([]AppDetail, 0, len(snap.Panel.Items))
+	for _, it := range snap.Panel.Items {
+		apps = append(apps, toAppDetail(it))
+	}
+	sort.SliceStable(apps, func(i, j int) bool {
+		if apps[i].GroupID != apps[j].GroupID {
+			return apps[i].GroupID < apps[j].GroupID
+		}
+		if apps[i].Sort != apps[j].Sort {
+			return apps[i].Sort < apps[j].Sort
+		}
+		return apps[i].ID < apps[j].ID
+	})
+	return &PanelSnapshot{SiteName: snap.Panel.SiteName, Config: snap.Panel.Config, Groups: groups, Apps: apps}, nil
+}
+
 // ListAppsByGroup 返回指定分组下的应用。分组不存在时返回 ErrGroupNotFound。
 func (s *Service) ListAppsByGroup(_ context.Context, groupID int) ([]AppSummary, error) {
 	snap := s.store.Snapshot()
@@ -47,7 +71,7 @@ func (s *Service) ListAppsByGroup(_ context.Context, groupID int) ([]AppSummary,
 	return items, nil
 }
 
-// SearchApps 按正则匹配 title/description/icon.text，返回精简列表。
+// SearchApps 按正则匹配 title/description/url/backup_url/icon.text，返回精简列表。
 // caseSensitive=false 时正则不区分大小写；limit 归一化到 [1,100]，缺省 20。
 func (s *Service) SearchApps(_ context.Context, pattern string, caseSensitive bool, limit int) ([]AppSummary, error) {
 	if err := validateSearchPattern(pattern); err != nil {
@@ -490,6 +514,9 @@ func matchesApp(re *regexp.Regexp, it data.Item) bool {
 	if it.Description != "" && re.MatchString(it.Description) {
 		return true
 	}
+	if re.MatchString(it.URL) {
+		return true
+	}
 	if it.BackupURL != "" && re.MatchString(it.BackupURL) {
 		return true
 	}
@@ -528,6 +555,7 @@ func toAppSummary(it data.Item) AppSummary {
 		ID:          it.ID,
 		GroupID:     it.GroupID,
 		Title:       it.Title,
+		URL:         it.URL,
 		Description: it.Description,
 		Sort:        it.Sort,
 	}

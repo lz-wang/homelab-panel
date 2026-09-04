@@ -51,6 +51,20 @@ func TestListGroups(t *testing.T) {
 	}
 }
 
+func TestGetPanel(t *testing.T) {
+	svc := NewService(seedStore(t))
+	snapshot, err := svc.GetPanel(context.Background())
+	if err != nil {
+		t.Fatalf("GetPanel: %v", err)
+	}
+	if len(snapshot.Groups) != 2 || len(snapshot.Apps) != 3 {
+		t.Errorf("snapshot = %+v", snapshot)
+	}
+	if snapshot.Apps[0].URL == "" {
+		t.Error("snapshot must include complete app details")
+	}
+}
+
 func TestListAppsByGroup(t *testing.T) {
 	svc := NewService(seedStore(t))
 
@@ -101,6 +115,12 @@ func TestSearchApps(t *testing.T) {
 	items, _ = svc.SearchApps(ctx, "mirror", false, 0)
 	if len(items) != 1 || items[0].Title != "Proxmox" {
 		t.Fatalf("search backup_url = %v", items)
+	}
+
+	// 匹配主 URL。
+	items, _ = svc.SearchApps(ctx, "https://pve", false, 0)
+	if len(items) != 1 || items[0].Title != "Proxmox" || items[0].URL != "https://pve" {
+		t.Fatalf("search url = %v", items)
 	}
 
 	// limit 截断。
