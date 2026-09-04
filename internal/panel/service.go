@@ -20,6 +20,83 @@ func NewService(store *data.Store) *Service {
 	return &Service{store: store}
 }
 
+// ReplacePanel validates and atomically replaces the complete Web panel payload.
+// It keeps stable IDs and creation timestamps for existing records and allocates
+// new IDs while holding the store lock.
+func (s *Service) ReplacePanel(_ context.Context, replacement data.Panel) (*data.Panel, error) {
+	config, err := DecodePanelConfig(replacement.Config)
+	if err != nil {
+		return nil, err
+	}
+	replacement.Config, err = EncodePanelConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	var result *data.Panel
+	err = s.store.Save(func(d *data.StoreData) error {
+		now := time.Now()
+		oldGroups := make(map[int]data.Group, len(d.Panel.Groups))
+		for _, g := range d.Panel.Groups {
+			oldGroups[g.ID] = g
+		}
+		oldItems := make(map[int]data.Item, len(d.Panel.Items))
+		for _, item := range d.Panel.Items {
+			oldItems[item.ID] = item
+		}
+		groups := make([]data.Group, 0, len(replacement.Groups))
+		groupIDs := make(map[int]bool, len(replacement.Groups))
+		for index, input := range replacement.Groups {
+			if err := validateGroupInput(GroupInput{Name: input.Name, Icon: input.Icon, Sort: input.Sort}); err != nil {
+				return err
+			}
+			id, created := input.ID, now
+			if previous, ok := oldGroups[id]; ok && id != 0 {
+				created = previous.CreatedAt
+			} else {
+				id = d.NextID.Group
+				d.NextID.Group++
+			}
+			sort := input.Sort
+			if sort == 0 {
+				sort = index + 1
+			}
+			groupIDs[id] = true
+			groups = append(groups, data.Group{ID: id, Name: input.Name, Icon: input.Icon, Sort: sort, CreatedAt: created, UpdatedAt: now})
+		}
+		items := make([]data.Item, 0, len(replacement.Items))
+		for index, input := range replacement.Items {
+			if !groupIDs[input.GroupID] {
+				return ErrAppGroupDangling
+			}
+			icon := fromDataIcon(input.Icon)
+			if err := validateAppInput(AppInput{GroupID: input.GroupID, Title: input.Title, URL: input.URL, BackupURL: input.BackupURL, Description: input.Description, Icon: icon, Sort: input.Sort}); err != nil {
+				return err
+			}
+			id, created := input.ID, now
+			if previous, ok := oldItems[id]; ok && id != 0 {
+				created = previous.CreatedAt
+			} else {
+				id = d.NextID.Item
+				d.NextID.Item++
+			}
+			sort := input.Sort
+			if sort == 0 {
+				sort = index + 1
+			}
+			items = append(items, data.Item{ID: id, GroupID: input.GroupID, Title: input.Title, URL: input.URL, BackupURL: input.BackupURL, Description: input.Description, Icon: input.Icon, Sort: sort, CreatedAt: created, UpdatedAt: now})
+		}
+		replacement.Groups, replacement.Items = groups, items
+		d.Panel = replacement
+		copy := replacement
+		result = &copy
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // ListGroups 返回所有分组（不含应用），按 sort、id 升序。
 func (s *Service) ListGroups(_ context.Context) ([]GroupSummary, error) {
 	snap := s.store.Snapshot()

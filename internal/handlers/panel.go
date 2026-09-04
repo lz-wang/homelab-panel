@@ -57,20 +57,9 @@ func (h *Handler) UpdatePanel(c *gin.Context) {
 		writeError(c, http.StatusBadRequest, "invalid request body")
 		return
 	}
-	if len(req.Config) == 0 {
-		req.Config = json.RawMessage("{}")
-	}
-	if len(req.SearchEngine) == 0 {
-		req.SearchEngine = json.RawMessage("{}")
-	}
-
-	snap := h.Store.Snapshot()
-	// 注意：新 id 基于 snap.NextID 在锁外分配，随后在 Store.Save 闭包内推进 NextID。
-	// 本服务为单管理员模型（无并发 PUT /panel），该窗口可接受；若未来支持并发写入，
-	// 需将 id 分配移入 Store.Save 闭包（基于 d.NextID 实时分配）。
-	normalized, err := normalizePanel(req, snap, snap.NextID)
+	normalized, err := panel.NewService(h.Store).ReplacePanel(c.Request.Context(), requestPanel(req))
 	if err != nil {
-		if errors.Is(err, errItemGroupDangling) {
+		if errors.Is(err, panel.ErrAppGroupDangling) {
 			writeError(c, http.StatusConflict, err.Error())
 			return
 		}
@@ -78,25 +67,28 @@ func (h *Handler) UpdatePanel(c *gin.Context) {
 		return
 	}
 
-	maxGroup, maxItem := maxExistingIDs(normalized)
-	err = h.Store.Save(func(d *data.StoreData) error {
-		d.Panel = normalized
-		if maxGroup >= d.NextID.Group {
-			d.NextID.Group = maxGroup + 1
-		}
-		if maxItem >= d.NextID.Item {
-			d.NextID.Item = maxItem + 1
-		}
-		return nil
-	})
-	if err != nil {
-		logging.Errorf("save panel failed: %v", err)
-		writeError(c, http.StatusInternalServerError, "save panel failed")
-		return
-	}
 	logging.Infof("panel updated: %d groups, %d items from %s",
 		len(normalized.Groups), len(normalized.Items), c.ClientIP())
-	writeJSON(c, http.StatusOK, panelView(normalized))
+	writeJSON(c, http.StatusOK, panelView(*normalized))
+}
+
+func requestPanel(req panelRequest) data.Panel {
+	config, search := req.Config, req.SearchEngine
+	if len(config) == 0 {
+		config = json.RawMessage("{}")
+	}
+	if len(search) == 0 {
+		search = json.RawMessage("{}")
+	}
+	groups := make([]data.Group, len(req.Groups))
+	for i, group := range req.Groups {
+		groups[i] = data.Group{ID: group.ID, Name: group.Name, Icon: group.Icon, Sort: group.Sort}
+	}
+	items := make([]data.Item, len(req.Items))
+	for i, item := range req.Items {
+		items[i] = data.Item{ID: item.ID, GroupID: item.GroupID, Title: item.Title, URL: item.URL, BackupURL: item.BackupURL, Description: item.Description, Icon: item.Icon, Sort: item.Sort}
+	}
+	return data.Panel{SiteName: req.SiteName, Config: config, SearchEngine: search, Groups: groups, Items: items}
 }
 
 func normalizePanel(req panelRequest, snap data.StoreData, nextID data.NextID) (data.Panel, error) {

@@ -106,7 +106,8 @@ type GroupPatch struct {
 
 // 业务错误。MCP 工具把这些作为 tool error 返回给客户端。
 var (
-	ErrGroupNotFound = errors.New("group not found")
-	ErrGroupNotEmpty = errors.New("group is not empty")
-	ErrAppNotFound   = errors.New("app not found")
+	ErrGroupNotFound    = errors.New("group not found")
+	ErrGroupNotEmpty    = errors.New("group is not empty")
+	ErrAppNotFound      = errors.New("app not found")
+	ErrAppGroupDangling = errors.New("item references unknown group")
 )
