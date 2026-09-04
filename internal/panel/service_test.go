@@ -244,6 +244,20 @@ func TestPatchApp(t *testing.T) {
 		t.Errorf("backup_url should be cleared: %q", patched.BackupURL)
 	}
 
+	// clear_icon 是公开 patch 语义，必须移除已有图标。
+	clearIcon := true
+	patched, err = svc.PatchApp(ctx, 10, AppPatch{ClearIcon: &clearIcon})
+	if err != nil {
+		t.Fatalf("PatchApp clear icon: %v", err)
+	}
+	if patched.Icon != (AppIcon{}) {
+		t.Errorf("icon should be cleared: %+v", patched.Icon)
+	}
+	icon := AppIcon{Text: "mdi:home"}
+	if _, err := svc.PatchApp(ctx, 10, AppPatch{Icon: &icon, ClearIcon: &clearIcon}); err == nil {
+		t.Error("icon and clear_icon together should fail")
+	}
+
 	// 不存在的 app 报错。
 	if _, err := svc.PatchApp(ctx, 999, AppPatch{Title: &title}); !errors.Is(err, ErrAppNotFound) {
 		t.Errorf("missing app err = %v, want ErrAppNotFound", err)
