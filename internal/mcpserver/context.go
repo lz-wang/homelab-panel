@@ -4,6 +4,14 @@ import "context"
 
 type contextKey string
 
+// Scope 是经鉴权后允许暴露的 MCP 工具权限。
+type Scope string
+
+const (
+	ScopeRead  Scope = "read"
+	ScopeWrite Scope = "write"
+)
+
 const (
 	remoteAddrContextKey contextKey = "mcp_remote_addr"
 	scopeContextKey      contextKey = "mcp_scope"
@@ -20,15 +28,12 @@ func RemoteAddrFromContext(ctx context.Context) string {
 	return addr
 }
 
-func WithScope(ctx context.Context, scope string) context.Context {
+func WithScope(ctx context.Context, scope Scope) context.Context {
 	return context.WithValue(ctx, scopeContextKey, scope)
 }
 
-// ScopeFromContext 返回 token scope；旧 token 的空 scope 兼容为 write。
-func ScopeFromContext(ctx context.Context) string {
-	scope, _ := ctx.Value(scopeContextKey).(string)
-	if scope == "" {
-		return "write"
-	}
+// ScopeFromContext 返回经鉴权后写入的 scope。缺失或无效值不授予写权限。
+func ScopeFromContext(ctx context.Context) Scope {
+	scope, _ := ctx.Value(scopeContextKey).(Scope)
 	return scope
 }

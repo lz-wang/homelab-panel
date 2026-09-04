@@ -42,12 +42,31 @@ func AuthMiddleware(store *data.Store, next http.Handler) http.Handler {
 			http.Error(w, "invalid bearer token", http.StatusUnauthorized)
 			return
 		}
+		scope, ok := normalizeStoredScope(matchedScope)
+		if !ok {
+			http.Error(w, "invalid token scope", http.StatusForbidden)
+			return
+		}
 
 		TouchTokenLastUsedAt(store, matchedPrefix, time.Minute)
 
-		ctx := WithScope(WithRemoteAddr(r.Context(), r.RemoteAddr), matchedScope)
+		ctx := WithScope(WithRemoteAddr(r.Context(), r.RemoteAddr), scope)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// normalizeStoredScope 仅在鉴权边界兼容旧 token 的空 scope。未知值绝不升级为 write。
+func normalizeStoredScope(scope string) (Scope, bool) {
+	switch scope {
+	case "":
+		return ScopeWrite, true
+	case string(ScopeRead):
+		return ScopeRead, true
+	case string(ScopeWrite):
+		return ScopeWrite, true
+	default:
+		return "", false
+	}
 }
 
 func bearerFromHeader(header string) string {

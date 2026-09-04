@@ -20,7 +20,7 @@ func newTestStore(t *testing.T) *data.Store {
 }
 
 // newMCPStore 构造一个带 token 的测试 store，返回 store 与明文 token。
-func newMCPStore(t *testing.T, enabled bool) (*data.Store, string) {
+func newMCPStore(t *testing.T, enabled bool, scope string) (*data.Store, string) {
 	t.Helper()
 	store := newTestStore(t)
 	plain, prefix, hash, err := GenerateToken()
@@ -29,7 +29,7 @@ func newMCPStore(t *testing.T, enabled bool) (*data.Store, string) {
 	}
 	if err := store.Save(func(d *data.StoreData) error {
 		d.MCP.Enabled = enabled
-		d.MCP.Tokens = []data.MCPToken{{Prefix: prefix, Hash: hash}}
+		d.MCP.Tokens = []data.MCPToken{{Prefix: prefix, Hash: hash, Scope: scope}}
 		return nil
 	}); err != nil {
 		t.Fatalf("seed mcp config: %v", err)
@@ -38,8 +38,9 @@ func newMCPStore(t *testing.T, enabled bool) (*data.Store, string) {
 }
 
 func TestAuthMiddleware(t *testing.T) {
-	enabledStore, validToken := newMCPStore(t, true)
-	disabledStore, _ := newMCPStore(t, false)
+	enabledStore, validToken := newMCPStore(t, true, "")
+	disabledStore, _ := newMCPStore(t, false, "")
+	unknownScopeStore, unknownScopeToken := newMCPStore(t, true, "admin")
 	wrongToken := "hlpmcp_deadbeef.thisisnottherealsecret"
 
 	cases := []struct {
@@ -53,6 +54,7 @@ func TestAuthMiddleware(t *testing.T) {
 		{"invalid token", enabledStore, "Bearer " + wrongToken, http.StatusUnauthorized},
 		{"valid token", enabledStore, "Bearer " + validToken, http.StatusOK},
 		{"mcp disabled", disabledStore, "Bearer " + validToken, http.StatusForbidden},
+		{"unknown scope", unknownScopeStore, "Bearer " + unknownScopeToken, http.StatusForbidden},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -81,5 +83,29 @@ func TestAuthMiddleware(t *testing.T) {
 				t.Errorf("status = %d, want %d", resp.StatusCode, c.want)
 			}
 		})
+	}
+}
+
+func TestScopeHandling(t *testing.T) {
+	if got := ScopeFromContext(WithScope(t.Context(), ScopeRead)); got != ScopeRead {
+		t.Errorf("read scope = %q, want %q", got, ScopeRead)
+	}
+	if got := ScopeFromContext(t.Context()); got != "" {
+		t.Errorf("missing scope = %q, want empty", got)
+	}
+	for _, tc := range []struct {
+		stored string
+		want   Scope
+		ok     bool
+	}{
+		{stored: "", want: ScopeWrite, ok: true},
+		{stored: string(ScopeRead), want: ScopeRead, ok: true},
+		{stored: string(ScopeWrite), want: ScopeWrite, ok: true},
+		{stored: "admin", ok: false},
+	} {
+		got, ok := normalizeStoredScope(tc.stored)
+		if got != tc.want || ok != tc.ok {
+			t.Errorf("normalizeStoredScope(%q) = (%q, %t), want (%q, %t)", tc.stored, got, ok, tc.want, tc.ok)
+		}
 	}
 }

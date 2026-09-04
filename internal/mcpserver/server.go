@@ -58,10 +58,12 @@ func NewHTTPHandler(panelSvc *panel.Service, opts ServerOptions) http.Handler {
 
 	return mcp.NewStreamableHTTPHandler(
 		func(r *http.Request) *mcp.Server {
-			if ScopeFromContext(r.Context()) == "read" {
+			switch ScopeFromContext(r.Context()) {
+			case ScopeWrite:
+				return writeServer
+			default:
 				return readServer
 			}
-			return writeServer
 		},
 		&mcp.StreamableHTTPOptions{
 			Stateless:      true,
