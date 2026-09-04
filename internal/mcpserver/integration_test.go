@@ -259,6 +259,40 @@ func TestMCPWriteFlow(t *testing.T) {
 		t.Errorf("append sort = %v, want 2", group["sort"])
 	}
 
+	// reorder_groups：完整集合原子排序。
+	res = callTool(t, sess, "homelab_panel_reorder_groups", map[string]any{"group_ids": []any{newGroupID, float64(1)}})
+	if groups := structuredMap(t, res)["groups"].([]any); groups[0].(map[string]any)["id"] != newGroupID {
+		t.Errorf("reordered groups=%v", groups)
+	}
+
+	// create + move + reorder_apps。
+	res = callTool(t, sess, "homelab_panel_create_app", map[string]any{"group_id": newGroupID, "title": "Netdata", "url": "https://netdata.local"})
+	movedID := structuredMap(t, res)["item"].(map[string]any)["id"].(float64)
+	res = callTool(t, sess, "homelab_panel_patch_app", map[string]any{"id": newID, "group_id": newGroupID})
+	if structuredMap(t, res)["item"].(map[string]any)["group_id"] != newGroupID {
+		t.Error("app should move groups")
+	}
+	res = callTool(t, sess, "homelab_panel_reorder_apps", map[string]any{"group_id": newGroupID, "app_ids": []any{movedID, newID}})
+	if items := structuredMap(t, res)["items"].([]any); items[0].(map[string]any)["id"] != movedID {
+		t.Errorf("reordered apps=%v", items)
+	}
+
+	// patch_settings：可从 list_files 返回的 URL 设置背景，并持久化。
+	res = callTool(t, sess, "homelab_panel_patch_settings", map[string]any{"site_name": "Lab", "clock_show": false, "background_image_src": "/uploads/wallpaper.jpg", "app_card_radius": 24})
+	settings := structuredMap(t, res)["settings"].(map[string]any)
+	if settings["site_name"] != "Lab" || settings["config"].(map[string]any)["clock_show"] != false {
+		t.Errorf("settings=%v", settings)
+	}
+	res = callTool(t, sess, "homelab_panel_get_panel", nil)
+	if structuredMap(t, res)["panel"].(map[string]any)["site_name"] != "Lab" {
+		t.Error("settings did not persist")
+	}
+
+	// non-cascade group deletion fails while apps exist.
+	if res = callTool(t, sess, "homelab_panel_delete_group", map[string]any{"group_id": newGroupID}); !res.IsError {
+		t.Error("non-empty group delete should fail")
+	}
+
 	// create_app 非法背景色 → tool error（禁止非预设色）。
 	res = callTool(t, sess, "homelab_panel_create_app", map[string]any{
 		"group_id": 1, "title": "Bad", "url": "https://x",
@@ -276,6 +310,36 @@ func TestMCPWriteFlow(t *testing.T) {
 	if appTitleByID(store.Snapshot(), 10) != "" {
 		t.Error("app should be deleted")
 	}
+	// Cleanup moved apps, then empty group deletion succeeds.
+	for _, id := range []float64{newID, movedID} {
+		if res = callTool(t, sess, "homelab_panel_delete_app", map[string]any{"id": id}); res.IsError {
+			t.Errorf("delete app %v: %s", id, contentText(res))
+		}
+	}
+	if res = callTool(t, sess, "homelab_panel_delete_group", map[string]any{"group_id": newGroupID}); res.IsError {
+		t.Errorf("delete empty group: %s", contentText(res))
+	}
+}
+
+func TestMCPInvalidAndDisabled(t *testing.T) {
+	store, srv, token := newMCPTestServer(t)
+	request, _ := http.NewRequest(http.MethodPost, srv.URL, strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}`))
+	request.Header.Set("Authorization", "Bearer invalid")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil || response.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("invalid token status=%v err=%v", response, err)
+	}
+	_ = response.Body.Close()
+	if err := store.Save(func(d *data.StoreData) error { d.MCP.Enabled = false; return nil }); err != nil {
+		t.Fatal(err)
+	}
+	request, _ = http.NewRequest(http.MethodPost, srv.URL, strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}`))
+	request.Header.Set("Authorization", "Bearer "+token)
+	response, err = http.DefaultClient.Do(request)
+	if err != nil || response.StatusCode != http.StatusForbidden {
+		t.Fatalf("disabled MCP status=%v err=%v", response, err)
+	}
+	_ = response.Body.Close()
 }
 
 func appTitleByID(snap data.StoreData, id int) string {
