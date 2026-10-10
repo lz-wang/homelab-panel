@@ -1,5 +1,9 @@
 name: Release
 
+# Release = 发布"一个已经明确版本号的不可变 Git tag"。
+# 只由 tag push 或手动指定已有 tag 触发；普通 main push 永远不会走到这里。
+# 打包是 Makefile 的唯一实现（make dist），workflow 只负责调用与预检；
+# Release Notes 唯一来源是 CHANGELOG.md 对应版本段，绝不自动生成。
 on:
   push:
     tags:
@@ -18,37 +22,76 @@ concurrency:
 permissions:
   contents: write
 
+# 双保险：与 Makefile GOENV 的全工程约束一致。
+env:
+  CGO_ENABLED: "0"
+
 jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
+      tag: ${{ steps.version.outputs.tag }}
       version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref }}
+          # make version 依赖 git describe --exact-match，浅克隆拿不到 tag refs。
           fetch-depth: 0
 
-      - name: Resolve release version
+      - name: Validate tag and version
         id: version
+        shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            tag="${{ inputs.version }}"
           else
-            VERSION="${{ github.ref_name }}"
+            tag="${{ github.ref_name }}"
           fi
 
-          if ! printf '%s' "${VERSION}" | grep -Eq '^v[0-9A-Za-z][0-9A-Za-z._-]*$'; then
-            echo "Invalid release version: ${VERSION}" >&2
-            exit 1
+          # 只接受稳定版本 vX.Y.Z；预发布需要时再扩展。
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: release tag must match vX.Y.Z: ${tag}" >&2
+            exit 2
           fi
 
-          if ! git rev-parse --verify --quiet "refs/tags/${VERSION}^{}" >/dev/null; then
-            echo "Release tag does not exist: ${VERSION}" >&2
-            exit 1
+          if ! git rev-parse --verify --quiet "refs/tags/${tag}^{}" >/dev/null; then
+            echo "Release tag does not exist: ${tag}" >&2
+            exit 2
           fi
 
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
 
+      # 验证 Makefile 版本推导与 tag 一致，防止 checkout 的并不是
+      # tag commit 或版本逻辑出错。
+      - name: Validate Makefile version matches tag
+        shell: bash
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          actual="$(make version)"
+          expected="${TAG#v}"
+          if [[ "${actual}" != "${expected}" ]]; then
+            echo "Error: make version = ${actual}, expected ${expected} (tag commit mismatch?)" >&2
+            exit 2
+          fi
+
+      # 验证 CHANGELOG 存在对应版本段且非空，失败立即阻断，
+      # 而不是进入 publish 后才发现。
+      - name: Validate CHANGELOG section
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          notes="$(bash scripts/release-notes.sh "${VERSION}")"
+          if [[ -z "${notes//[$' \t\r\n']/}" ]]; then
+            echo "Error: CHANGELOG.md section [${VERSION}] is empty" >&2
+            exit 2
+          fi
+
+      # Homebrew 发布是该 workflow 的一部分：凭证缺失应在 prepare 阶段
+      # 失败，而不是等 publish 全部完成后 homebrew 才发现无法推送 tap。
       - name: Validate Homebrew publishing credential
         env:
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
@@ -64,7 +107,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.prepare.outputs.version }}
+          ref: ${{ needs.prepare.outputs.tag }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -87,67 +130,16 @@ jobs:
           make check
           make test
 
-  create-release:
+  # 单 runner 一次性 cross-build 六平台并发布：打包唯一入口是 make dist，
+  # Release Notes 从 CHANGELOG 提取，GitHub Release 幂等
+  # create-or-update（支持 workflow_dispatch 重跑补救失败的发布）。
+  publish:
     runs-on: ubuntu-latest
     needs: [prepare, verify]
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.prepare.outputs.version }}
-          fetch-depth: 0
-
-      - name: Create draft release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.prepare.outputs.version }}
-        run: |
-          if gh release view "${VERSION}" >/dev/null 2>&1; then
-            echo "Release ${VERSION} already exists; assets will be updated."
-            exit 0
-          fi
-
-          gh release create "${VERSION}" \
-            --draft \
-            --generate-notes \
-            --verify-tag \
-            --title "${VERSION}"
-
-  build:
-    runs-on: ubuntu-latest
-    needs: [prepare, create-release]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - goos: linux
-            goarch: amd64
-            suffix: ""
-            archive: tar.gz
-          - goos: linux
-            goarch: arm64
-            suffix: ""
-            archive: tar.gz
-          - goos: darwin
-            goarch: amd64
-            suffix: ""
-            archive: tar.gz
-          - goos: darwin
-            goarch: arm64
-            suffix: ""
-            archive: tar.gz
-          - goos: windows
-            goarch: amd64
-            suffix: ".exe"
-            archive: zip
-          - goos: windows
-            goarch: arm64
-            suffix: ".exe"
-            archive: zip
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.prepare.outputs.version }}
+          ref: ${{ needs.prepare.outputs.tag }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -156,46 +148,51 @@ jobs:
           cache: "npm"
           cache-dependency-path: web/package-lock.json
 
-      - name: Build frontend
+      - name: Install frontend dependencies
         working-directory: web
-        run: |
-          npm ci --prefer-offline --no-audit
-          npm run build
+        run: npm ci --prefer-offline --no-audit
 
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
 
-      - name: Build release binary
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          VERSION: ${{ needs.prepare.outputs.version }}
-        run: |
-          output="homelab-panel-${VERSION}-${GOOS}-${GOARCH}${{ matrix.suffix }}"
-          CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o "${output}" .
-          sha256sum "${output}" > "${output}.sha256"
+      - name: Build and package six platforms
+        run: make dist VERSION=${{ needs.prepare.outputs.version }}
 
-      - name: Package WebDAV archive
+      # 已 checkout 当前 tag，直接从 CHANGELOG 提取发布说明。
+      - name: Extract release notes
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: bash scripts/release-notes.sh "${VERSION}" > release-notes.md
+
+      # 幂等发布：Release 已存在时 upload --clobber + 覆盖 notes，
+      # 否则创建；支持 workflow_dispatch 重跑补救失败的发布。
+      # GitHub Release 含 6 archives + 逐文件 .sha256（Homebrew tap
+      # 与下游校验直接引用）+ checksums.txt（整目录一次性校验）。
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
         shell: bash
         run: |
-          set -euo pipefail
-          version="${{ needs.prepare.outputs.version }}"
-          name="homelab-panel_${version}_${{ matrix.goos }}_${{ matrix.goarch }}"
-          package_dir="release/${name}"
-          mkdir -p "${package_dir}"
-          cp "homelab-panel-${version}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}" "${package_dir}/homelab-panel${{ matrix.suffix }}"
-          if [[ "${{ matrix.archive }}" == 'zip' ]]; then
-            archive="release/${name}.zip"
-            (cd "${package_dir}" && zip -qr "${GITHUB_WORKSPACE}/${archive}" .)
+          assets=(dist/*.tar.gz dist/*.zip dist/*.sha256 dist/checksums.txt)
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" "${assets[@]}" --clobber
+            gh release edit "${TAG}" --title "${TAG}" --notes-file release-notes.md
           else
-            archive="release/${name}.tar.gz"
-            tar -C "${package_dir}" -czf "${archive}" .
+            gh release create "${TAG}" "${assets[@]}" \
+              --verify-tag \
+              --title "${TAG}" \
+              --notes-file release-notes.md
           fi
-          sha256sum "${archive}" > "${archive}.sha256"
 
-      - name: Upload release archive and checksum to WebDAV
+      # WebDAV 只在 GitHub Release 成功后镜像完整正式版本，避免
+      # build 中途失败留下"半发行版本"目录；镜像失败不阻断发布
+      # （GitHub Release 始终是权威分发渠道）。
+      - name: Mirror release to WebDAV
+        continue-on-error: true
         uses: bxb100/action-upload-webdav@v1
         with:
           webdav_address: ${{ secrets.WEBDAV_SERVER }}
@@ -203,28 +200,24 @@ jobs:
           webdav_password: ${{ secrets.WEBDAV_PASSWORD }}
           webdav_upload_path: "/Shares/github/${{ github.repository }}/${{ needs.prepare.outputs.version }}"
           files: |
-            release/homelab-panel_${{ needs.prepare.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.${{ matrix.archive }}
-            release/homelab-panel_${{ needs.prepare.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}.${{ matrix.archive }}.sha256
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_linux_amd64.tar.gz
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_linux_amd64.tar.gz.sha256
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_linux_arm64.tar.gz
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_linux_arm64.tar.gz.sha256
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_darwin_amd64.tar.gz
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_darwin_amd64.tar.gz.sha256
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_darwin_arm64.tar.gz
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_darwin_arm64.tar.gz.sha256
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_windows_amd64.zip
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_windows_amd64.zip.sha256
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_windows_arm64.zip
+            dist/homelab-panel_${{ needs.prepare.outputs.version }}_windows_arm64.zip.sha256
+            dist/checksums.txt
 
-      - name: Upload release assets
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.prepare.outputs.version }}
-        run: |
-          asset="homelab-panel-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}"
-          archive="release/homelab-panel_${VERSION}_${{ matrix.goos }}_${{ matrix.goarch }}.${{ matrix.archive }}"
-          gh release upload "${VERSION}" "${asset}" "${asset}.sha256" "${archive}" "${archive}.sha256" --clobber
-
-  publish:
-    runs-on: ubuntu-latest
-    needs: [prepare, build]
-    steps:
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.prepare.outputs.version }}
-        run: gh release edit "${VERSION}" --draft=false --repo "${GITHUB_REPOSITORY}"
-
+  # Homebrew tap 发布：Formula 的 sha256 直接读 GitHub Release 上的
+  # 逐文件 .sha256，因此必须排在 publish 之后。仅在当前 tag 仍是仓库
+  # latest release 时推送，防止旧 tag 补跑把 tap 回滚到旧版本；本地
+  # tap 路径先 audit / install / test，全部通过才 push。
   homebrew:
     name: Publish Homebrew Formula
     runs-on: macos-latest
@@ -237,7 +230,7 @@ jobs:
         id: release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ needs.prepare.outputs.version }}
+          TAG: ${{ needs.prepare.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
@@ -260,11 +253,14 @@ jobs:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: homebrew-tap
 
+      # darwin / linux 四个安装目标进 Formula；windows 发行档不进
+      # Homebrew（brew 不分发 Windows 包）。文件名用不带 v 的 version，
+      # 下载 URL 用 tag。
       - name: Read release archive checksums
         if: steps.release.outputs.publish == 'true'
         id: sha
         env:
-          TAG: ${{ needs.prepare.outputs.version }}
+          TAG: ${{ needs.prepare.outputs.tag }}
           VERSION: ${{ needs.prepare.outputs.version }}
         shell: bash
         run: |
@@ -286,6 +282,7 @@ jobs:
       - name: Generate Formula
         if: steps.release.outputs.publish == 'true'
         env:
+          TAG: ${{ needs.prepare.outputs.tag }}
           VERSION: ${{ needs.prepare.outputs.version }}
           DARWIN_AMD64_SHA: ${{ steps.sha.outputs.darwin_amd64 }}
           DARWIN_ARM64_SHA: ${{ steps.sha.outputs.darwin_arm64 }}
@@ -303,24 +300,24 @@ jobs:
 
             on_macos do
               on_arm do
-                url "https://github.com/lz-wang/homelab-panel/releases/download/${VERSION}/homelab-panel_${VERSION}_darwin_arm64.tar.gz"
+                url "https://github.com/lz-wang/homelab-panel/releases/download/${TAG}/homelab-panel_${VERSION}_darwin_arm64.tar.gz"
                 sha256 "${DARWIN_ARM64_SHA}"
               end
 
               on_intel do
-                url "https://github.com/lz-wang/homelab-panel/releases/download/${VERSION}/homelab-panel_${VERSION}_darwin_amd64.tar.gz"
+                url "https://github.com/lz-wang/homelab-panel/releases/download/${TAG}/homelab-panel_${VERSION}_darwin_amd64.tar.gz"
                 sha256 "${DARWIN_AMD64_SHA}"
               end
             end
 
             on_linux do
               on_arm do
-                url "https://github.com/lz-wang/homelab-panel/releases/download/${VERSION}/homelab-panel_${VERSION}_linux_arm64.tar.gz"
+                url "https://github.com/lz-wang/homelab-panel/releases/download/${TAG}/homelab-panel_${VERSION}_linux_arm64.tar.gz"
                 sha256 "${LINUX_ARM64_SHA}"
               end
 
               on_intel do
-                url "https://github.com/lz-wang/homelab-panel/releases/download/${VERSION}/homelab-panel_${VERSION}_linux_amd64.tar.gz"
+                url "https://github.com/lz-wang/homelab-panel/releases/download/${TAG}/homelab-panel_${VERSION}_linux_amd64.tar.gz"
                 sha256 "${LINUX_AMD64_SHA}"
               end
             end
@@ -369,3 +366,50 @@ jobs:
         if: steps.release.outputs.publish == 'true' && steps.formula.outputs.changed == 'true'
         shell: bash
         run: git -C homebrew-tap push origin HEAD:main
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [prepare, verify, publish, homebrew]
+    if: always()
+    steps:
+      - name: Notify via Pushover
+        env:
+          PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
+          PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag || github.ref_name }}
+        run: |
+          if [ -z "${PUSHOVER_TOKEN}" ] || [ -z "${PUSHOVER_USER}" ]; then
+            echo "Pushover secrets are not configured; skipping notification."
+            exit 0
+          fi
+
+          VERIFY_RESULT="${{ needs.verify.result }}"
+          PUBLISH_RESULT="${{ needs.publish.result }}"
+          HOMEBREW_RESULT="${{ needs.homebrew.result }}"
+          if [ "${VERIFY_RESULT}" = "success" ] && [ "${PUBLISH_RESULT}" = "success" ] && [ "${HOMEBREW_RESULT}" = "success" ]; then
+            PRIORITY="0"
+            TITLE="Homelab Panel 发布成功"
+          else
+            PRIORITY="1"
+            TITLE="Homelab Panel 发布失败"
+          fi
+
+          MESSAGE=$(cat <<EOF
+          <b>Homelab Panel 发布通知</b>
+          <u>验证结果</u>: ${VERIFY_RESULT}
+          <u>GitHub Release</u>: ${PUBLISH_RESULT}
+          <u>Homebrew</u>: ${HOMEBREW_RESULT}
+          <u>版本</u>: <font color="#0000ff">${RELEASE_TAG}</font>
+          <u>触发人</u>: <i>${{ github.actor }}</i>
+          <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看运行详情</a>
+          <a href="${{ github.server_url }}/${{ github.repository }}/releases/tag/${RELEASE_TAG}">查看 GitHub Release</a>
+          EOF
+          )
+
+          curl -fsS https://api.pushover.net/1/messages.json \
+            --data-urlencode "token=${PUSHOVER_TOKEN}" \
+            --data-urlencode "user=${PUSHOVER_USER}" \
+            --data-urlencode "title=${TITLE}" \
+            --data-urlencode "priority=${PRIORITY}" \
+            --data-urlencode "html=1" \
+            --data-urlencode "message=${MESSAGE}"
