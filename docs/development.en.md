@@ -37,6 +37,8 @@ Start a local service:
 | `make web` | Build the React frontend |
 | `make build` | Build the frontend and Go binary |
 | `make all` | Full build |
+| `make version` | Print the resolved version |
+| `make dist` | Cross-build six platforms and package release archives |
 | `make fmt` | Format frontend and backend code |
 | `make check` | Run static checks |
 | `make test` | Run frontend and backend tests with coverage |
@@ -141,6 +143,41 @@ Windows amd64:
 GOOS=windows GOARCH=amd64 CGO_ENABLED=0 \
   go build -o homelab-panel-windows-amd64.exe -ldflags "-s -w" .
 ```
+
+Release packaging always goes through `make dist`; do not assemble release archives by hand.
+
+## Versioning and Release
+
+The version string comes from Git only:
+
+- When HEAD sits exactly on a `vX.Y.Z` tag, `make version` prints `X.Y.Z` (without the `v`).
+- On a normal development commit it prints `dev-<commitdate YYYYMMDD>-<sha7>`.
+- `make dist VERSION=x.y.z` overrides the version explicitly (the release CI passes the tag value).
+
+`make dist` builds the frontend first, then cross-compiles six platforms and
+produces `homelab-panel_<version>_<os>_<arch>.tar.gz` (Linux/macOS) or `.zip`
+(Windows), per-file `.sha256` files and a combined `checksums.txt` under `dist/`.
+Local verification:
+
+```bash
+make dist VERSION=0.0.0-dev
+cd dist && shasum -a 256 -c *.sha256
+tar -tzf homelab-panel_0.0.0-dev_darwin_arm64.tar.gz   # top level: homelab-panel only
+```
+
+The official release flow:
+
+1. Run the full gate: `make fmt`, `make check`, `make test`, `git diff --check`.
+2. Finalize the `CHANGELOG.md` `[Unreleased]` section as `[x.y.z] - yyyy-mm-dd`,
+   and preview the notes with `bash scripts/release-notes.sh x.y.z`.
+3. Commit the finalized CHANGELOG as `chore(release): release vX.Y.Z`.
+4. Create an annotated tag and push: `git tag -a vX.Y.Z` → `git push origin main vX.Y.Z`.
+5. Verify: green Actions run, 13 GitHub Release assets whose notes match the
+   CHANGELOG, the WebDAV mirror directory, and the Formula commit in
+   `lz-wang/homebrew-tap`.
+
+Pushing the tag triggers a real release and publishes it immediately; confirm
+with the user before pushing.
 
 ## Pre-Commit Checks
 

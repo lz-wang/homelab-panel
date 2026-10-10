@@ -18,15 +18,15 @@
 
 ## Download
 
-Download the matching binary from [Releases](https://github.com/lz-wang/homelab-panel/releases):
+Download the matching release archive from [Releases](https://github.com/lz-wang/homelab-panel/releases) (0.5.0 shown as an example):
 
 | OS | Arch | Example file |
 | --- | --- | --- |
-| Linux | amd64 / arm64 | `homelab-panel-v0.1-linux-amd64` |
-| macOS | amd64 / arm64 | `homelab-panel-v0.1-darwin-arm64` |
-| Windows | amd64 / arm64 | `homelab-panel-v0.1-windows-amd64.exe` |
+| Linux | amd64 / arm64 | `homelab-panel_0.5.0_linux_amd64.tar.gz` |
+| macOS | amd64 / arm64 | `homelab-panel_0.5.0_darwin_arm64.tar.gz` |
+| Windows | amd64 / arm64 | `homelab-panel_0.5.0_windows_amd64.zip` |
 
-You can also download the matching `.sha256` file to verify integrity.
+Extracting yields a single executable, `homelab-panel` (`homelab-panel.exe` on Windows). You can also download the matching `.sha256` file or the combined `checksums.txt` to verify integrity.
 
 On macOS or Linux, install and upgrade with Homebrew:
 
@@ -40,14 +40,15 @@ brew upgrade homelab-panel
 Linux/macOS:
 
 ```bash
-chmod +x homelab-panel-v0.1-linux-amd64
-./homelab-panel-v0.1-linux-amd64 serve --port 9090 --dir ./data
+tar -xzf homelab-panel_0.5.0_linux_amd64.tar.gz
+./homelab-panel serve --port 9090 --dir ./data
 ```
 
 Windows PowerShell:
 
 ```powershell
-.\homelab-panel-v0.1-windows-amd64.exe serve --port 9090 --dir .\data
+Expand-Archive homelab-panel_0.5.0_windows_amd64.zip
+.\homelab-panel.exe serve --port 9090 --dir .\data
 ```
 
 On first run, if `homelab-panel.json` does not exist in the data directory, the app initializes the data file and prints the admin password once to stdout. Save it immediately, then open:
@@ -80,7 +81,8 @@ Assume the binary and data directory live under `/root/app/`:
 
 ```bash
 mkdir -p /root/app
-cp homelab-panel-v0.1-linux-amd64 /root/app/homelab-panel
+cp homelab-panel_0.5.0_linux_amd64.tar.gz /root/app/
+tar -xzf /root/app/homelab-panel_0.5.0_linux_amd64.tar.gz -C /root/app
 chmod +x /root/app/homelab-panel
 ```
 

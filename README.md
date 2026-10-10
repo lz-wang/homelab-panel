@@ -18,15 +18,15 @@
 
 ## 下载
 
-从 [Releases](https://github.com/lz-wang/homelab-panel/releases) 下载与你的系统匹配的文件：
+从 [Releases](https://github.com/lz-wang/homelab-panel/releases) 下载与你的系统匹配的发行档（以 0.5.0 为例）：
 
 | 系统 | 架构 | 示例文件 |
 | --- | --- | --- |
-| Linux | amd64 / arm64 | `homelab-panel-v0.1-linux-amd64` |
-| macOS | amd64 / arm64 | `homelab-panel-v0.1-darwin-arm64` |
-| Windows | amd64 / arm64 | `homelab-panel-v0.1-windows-amd64.exe` |
+| Linux | amd64 / arm64 | `homelab-panel_0.5.0_linux_amd64.tar.gz` |
+| macOS | amd64 / arm64 | `homelab-panel_0.5.0_darwin_arm64.tar.gz` |
+| Windows | amd64 / arm64 | `homelab-panel_0.5.0_windows_amd64.zip` |
 
-可同时下载对应 `.sha256` 文件校验完整性。
+解压后得到单一可执行文件 `homelab-panel`（Windows 为 `homelab-panel.exe`）。可同时下载对应 `.sha256` 文件或整份 `checksums.txt` 校验完整性。
 
 macOS 或 Linux 也可以使用 Homebrew 安装和升级：
 
@@ -40,14 +40,15 @@ brew upgrade homelab-panel
 Linux/macOS：
 
 ```bash
-chmod +x homelab-panel-v0.1-linux-amd64
-./homelab-panel-v0.1-linux-amd64 serve --port 9090 --dir ./data
+tar -xzf homelab-panel_0.5.0_linux_amd64.tar.gz
+./homelab-panel serve --port 9090 --dir ./data
 ```
 
 Windows PowerShell：
 
 ```powershell
-.\homelab-panel-v0.1-windows-amd64.exe serve --port 9090 --dir .\data
+Expand-Archive homelab-panel_0.5.0_windows_amd64.zip
+.\homelab-panel.exe serve --port 9090 --dir .\data
 ```
 
 首次启动时，如果数据目录中没有 `homelab-panel.json`，程序会初始化数据并在 stdout 打印一次管理员密码。请立即保存该密码，然后访问：
@@ -80,7 +81,8 @@ data/
 
 ```bash
 mkdir -p /root/app
-cp homelab-panel-v0.1-linux-amd64 /root/app/homelab-panel
+cp homelab-panel_0.5.0_linux_amd64.tar.gz /root/app/
+tar -xzf /root/app/homelab-panel_0.5.0_linux_amd64.tar.gz -C /root/app
 chmod +x /root/app/homelab-panel
 ```
 

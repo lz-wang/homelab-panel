@@ -41,6 +41,8 @@ make help
 make web
 make build
 make all
+make version
+make dist
 make fmt
 make check
 make test
@@ -112,11 +114,13 @@ Do not proactively run full browser/E2E validation unless the user asks for it o
 
 ## Release and Homebrew publishing
 
-- Release automation is defined in `.github/workflows/release.yml`. It starts when an existing `v*` tag is pushed, or when `workflow_dispatch` receives an existing tag in its `version` input. The workflow verifies the tag before building, so never use a branch name or an unpushed tag as the input.
-- Before creating a release, inspect the current branch and worktree, run the complete gate (`make fmt`, `make check`, `make test`, `git diff --check`), then create an annotated tag such as `v0.1.1` and push the branch plus tag. Do not move or recreate a public release tag; publish a new patch tag to correct a released build.
-- A release builds six binaries and publishes both raw binaries and archives with SHA-256 files. The four Darwin/Linux archives use Homebrew-friendly names such as `homelab-panel_0.1.1_darwin_arm64.tar.gz` and contain a top-level `homelab-panel` executable.
-- The workflow requires the repository secret `HOMEBREW_TAP_TOKEN` before releasing. It must be able to check out and push `lz-wang/homebrew-tap`; do not expose or store its value in repository files, logs, or documentation.
-- After the GitHub Release is public, the `homebrew` job reads the four public archive checksums, generates `Formula/homelab-panel.rb`, runs `brew audit --strict`, `brew install`, and `brew test`, then pushes the Formula only if all checks succeed. It skips a release that is no longer the latest to prevent Formula rollback.
+- Versions come from Git: `make version` prints `x.y.z` when HEAD sits exactly on a `vX.Y.Z` tag (match requires three numeric segments, so legacy two-segment tags never apply), otherwise `dev-<commitdate>-<sha7>`. The resolved version is injected via `-X main.version=`; `make dist VERSION=x.y.z` overrides it explicitly and is the single packaging entry point.
+- Maintain `CHANGELOG.md` (Chinese, Keep a Changelog format) alongside user-visible changes: write to its `[Unreleased]` section using only the `新增` / `修复` / `移除` categories. Pure internal refactors, tests, build and doc maintenance stay out of the changelog. Release notes are extracted from the matching CHANGELOG section by `scripts/release-notes.sh`; they are never generated from commit messages.
+- To release: run the complete gate (`make fmt`, `make check`, `make test`, `git diff --check`), finalize the CHANGELOG section (`[Unreleased]` → `[x.y.z] - yyyy-mm-dd`, verify locally with `bash scripts/release-notes.sh x.y.z`), commit it as `chore(release): release vX.Y.Z`, then create an annotated tag `vX.Y.Z` and push the branch plus tag. Do not move or recreate a public release tag; publish a new patch tag to correct a released build.
+- Release automation is defined in `.github/workflows/release.yml`. It starts when an existing `vX.Y.Z` tag is pushed, or when `workflow_dispatch` receives an existing tag in its `version` input. The `prepare` job validates the tag format, `make version` against the tag, a non-empty CHANGELOG section, and the `HOMEBREW_TAP_TOKEN` secret before anything builds. Never use a branch name or an unpushed tag as the input.
+- The `publish` job cross-builds six platforms in a single runner via `make dist` and publishes a GitHub Release idempotently (create or update with `--clobber`): six archives (`homelab-panel_<x.y.z>_<os>_<arch>.tar.gz` for Linux/macOS, `.zip` for Windows, each with a top-level `homelab-panel` executable) plus per-file `.sha256` files and `checksums.txt` — no raw binaries. It then mirrors the same 13 files to WebDAV under the version without the `v` prefix (`/Shares/github/<repo>/<x.y.z>/`); a mirror failure does not fail the release because GitHub Release stays the authoritative channel.
+- The `homebrew` job runs after publish: it reads the four public archive checksums, generates `Formula/homelab-panel.rb`, runs `brew audit --strict`, `brew install`, and `brew test`, then pushes the Formula only if all checks succeed. It skips a release that is no longer the latest to prevent Formula rollback. The workflow requires the repository secret `HOMEBREW_TAP_TOKEN`; it must be able to check out and push `lz-wang/homebrew-tap`; do not expose or store its value in repository files, logs, or documentation.
+- A Pushover notification (`notify` job) reports the overall release result and is skipped when its secrets are absent.
 - For a release investigation, verify the GitHub Release assets and the resulting commit in `lz-wang/homebrew-tap`. A green main Release job alone is not proof that the Formula was published.
 
 ## Frontend conventions

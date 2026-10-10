@@ -37,6 +37,8 @@ make build
 | `make web` | 构建 React 前端 |
 | `make build` | 构建前端并生成 Go 二进制 |
 | `make all` | 完整构建 |
+| `make version` | 打印解析后的版本号 |
+| `make dist` | 六平台交叉编译并打包发布档 |
 | `make fmt` | 格式化前后端代码 |
 | `make check` | 静态检查 |
 | `make test` | 运行前后端测试并生成覆盖率 |
@@ -136,6 +138,38 @@ Windows amd64 示例：
 GOOS=windows GOARCH=amd64 CGO_ENABLED=0 \
   go build -o homelab-panel-windows-amd64.exe -ldflags "-s -w" .
 ```
+
+发布打包统一走 `make dist`，不要手工拼接发布档。
+
+## 版本与发布
+
+版本号唯一来源是 Git：
+
+- HEAD 正好位于 `vX.Y.Z` tag 时，`make version` 输出 `X.Y.Z`（不带 `v`）。
+- 普通开发 commit 输出 `dev-<commit日期YYYYMMDD>-<commit7>`。
+- `make dist VERSION=x.y.z` 可显式指定版本（发布 CI 传入 tag 对应值）。
+
+`make dist` 先构建前端，然后交叉编译六个平台，在 `dist/` 生成
+`homelab-panel_<版本>_<os>_<arch>.tar.gz`（Linux/macOS）或 `.zip`（Windows）、
+逐文件 `.sha256` 与汇总的 `checksums.txt`。本地校验：
+
+```bash
+make dist VERSION=0.0.0-dev
+cd dist && shasum -a 256 -c *.sha256
+tar -tzf homelab-panel_0.0.0-dev_darwin_arm64.tar.gz   # 顶层只有 homelab-panel
+```
+
+正式发布流程：
+
+1. 跑完整门禁：`make fmt`、`make check`、`make test`、`git diff --check`。
+2. 把 `CHANGELOG.md` 的 `[Unreleased]` 定稿为 `[x.y.z] - yyyy-mm-dd`，
+   用 `bash scripts/release-notes.sh x.y.z` 本地预检发布说明。
+3. 以 `chore(release): release vX.Y.Z` 提交 CHANGELOG 定稿。
+4. 创建 annotated tag 并推送：`git tag -a vX.Y.Z` → `git push origin main vX.Y.Z`。
+5. 验收：Actions 全绿、GitHub Release 13 个资产且说明与 CHANGELOG 一致、
+   WebDAV 镜像目录、`lz-wang/homebrew-tap` 出现对应 Formula 提交。
+
+推送 tag 会触发真实发布且 Release 直接公开，执行前应向使用者确认。
 
 ## 提交前检查
 
