@@ -1,6 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-
-import { useAuthStore } from '@/store/auth'
+import { useCallback, useRef, useState } from 'react'
 
 // 浏览模式（已登录管理员临时切到只读）是否开启，持久化以在刷新后保持。
 const BROWSING_AS_GUEST_KEY = 'homelab-panel:browsing-as-guest'
@@ -23,13 +21,11 @@ function persistFlag(enabled: boolean) {
 }
 
 /**
- * 浏览模式状态机：读取、切换、持久化、guest 清理集中于此。
- * 认证状态机只在明确验证为 guest 后才能清掉浏览模式；
- * checking（刷新后验证中）与 admin 都不允许改动，
- * 否则刷新瞬间会把刚从 localStorage 恢复的浏览模式清掉。
+ * 浏览模式是用户选择，独立于认证状态持久化。
+ * 会话校验失败或重新登录不能重置该选择；退出登录时由调用方显式清除。
+ * 编辑权限仍由 Home 根据认证状态单独判断。
  */
 export function useBrowseMode() {
-    const authStatus = useAuthStore((state) => state.status)
     const [browsingAsGuest, setBrowsingAsGuest] = useState(readStoredFlag)
 
     // 显式 setter：状态与 localStorage 同步更新，
@@ -46,13 +42,6 @@ export function useBrowseMode() {
     const toggleBrowseMode = useCallback(() => {
         updateBrowsingAsGuest(!browsingRef.current)
     }, [updateBrowsingAsGuest])
-
-    useEffect(() => {
-        if (authStatus !== 'guest') return
-
-        setBrowsingAsGuest(false)
-        persistFlag(false)
-    }, [authStatus])
 
     return { browsingAsGuest, updateBrowsingAsGuest, toggleBrowseMode }
 }

@@ -77,7 +77,7 @@ export default function Home() {
     })
 
     // 仅明确验证为 guest 后才复位管理 UI；checking/admin 都不动。
-    // 浏览模式本身（含 localStorage）由 useBrowseMode 在同一时机清理。
+    // 浏览模式选择独立保留，只有主动切换或退出登录时才更新。
     useEffect(() => {
         if (authStore.status !== 'guest') return
 
