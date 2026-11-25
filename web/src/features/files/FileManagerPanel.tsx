@@ -194,8 +194,8 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
         }
     }
 
-    async function copyUrl(url: string) {
-        const ok = await copyToClipboard(url)
+    async function copyUrl(url: string, source: HTMLElement) {
+        const ok = await copyToClipboard(url, source)
         if (ok) notify.success(t('files.urlCopied'))
         else notify.error(t('common.copyFail'))
     }
@@ -370,7 +370,10 @@ export function FileManagerPanel({ selectable = false, onSelect }: Props) {
                                 )}
                                 <Box sx={{ flex: 1 }} />
                                 <Tooltip title={t('common.copyUrl')}>
-                                    <IconButton size="small" onClick={() => copyUrl(file.src)}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={(event) => copyUrl(file.src, event.currentTarget)}
+                                    >
                                         <ContentCopyIcon fontSize="small" />
                                     </IconButton>
                                 </Tooltip>

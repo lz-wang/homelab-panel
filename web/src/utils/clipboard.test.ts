@@ -16,6 +16,7 @@ function setExecCommand(value: (() => boolean) | undefined) {
 
 describe('copyToClipboard', () => {
     afterEach(() => {
+        document.body.replaceChildren()
         setClipboard(undefined)
         setExecCommand(undefined)
         vi.restoreAllMocks()
@@ -53,6 +54,42 @@ describe('copyToClipboard', () => {
 
         expect(execCommand).toHaveBeenCalledWith('copy')
         expect(ok).toBe(true)
+    })
+
+    it('copies the complete text inside the source dialog and restores focus', async () => {
+        const dialog = document.createElement('div')
+        dialog.setAttribute('role', 'dialog')
+        const button = document.createElement('button')
+        dialog.append(button)
+        const previousFocus = document.createElement('button')
+        document.body.append(previousFocus, dialog)
+        previousFocus.focus()
+
+        const text = 'first line\nsecond line'
+        const execCommand = vi.fn(() => {
+            const input = dialog.querySelector('textarea')
+            expect(input).toBe(document.activeElement)
+            expect(input?.value.slice(input.selectionStart, input.selectionEnd)).toBe(text)
+            return true
+        })
+        setClipboard(undefined)
+        setExecCommand(execCommand)
+
+        expect(await copyToClipboard(text, button)).toBe(true)
+        expect(execCommand).toHaveBeenCalledWith('copy')
+        expect(document.querySelector('textarea')).toBeNull()
+        expect(document.activeElement).toBe(previousFocus)
+    })
+
+    it('returns false when the temporary input cannot take focus', async () => {
+        vi.spyOn(HTMLTextAreaElement.prototype, 'focus').mockImplementation(() => {})
+        const execCommand = vi.fn().mockReturnValue(true)
+        setClipboard(undefined)
+        setExecCommand(execCommand)
+
+        expect(await copyToClipboard('hello')).toBe(false)
+        expect(execCommand).not.toHaveBeenCalled()
+        expect(document.querySelector('textarea')).toBeNull()
     })
 
     it('returns false when both methods fail', async () => {

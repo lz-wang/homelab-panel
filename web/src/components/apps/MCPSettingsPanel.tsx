@@ -173,8 +173,8 @@ export function MCPSettingsPanel() {
         void refresh()
     }, [refresh])
 
-    async function copyText(text: string, hint = t('mcp.copied')) {
-        const ok = await copyToClipboard(text)
+    async function copyText(text: string, source: HTMLElement, hint = t('mcp.copied')) {
+        const ok = await copyToClipboard(text, source)
         if (ok) notify.success(hint)
         else notify.error(t('mcp.copyFail'))
     }
@@ -253,7 +253,13 @@ export function MCPSettingsPanel() {
                                 <IconButton
                                     aria-label={t('mcp.copyEndpointAria')}
                                     edge="end"
-                                    onClick={() => copyText(endpoint, t('mcp.endpointCopied'))}
+                                    onClick={(event) =>
+                                        copyText(
+                                            endpoint,
+                                            event.currentTarget,
+                                            t('mcp.endpointCopied'),
+                                        )
+                                    }
                                 >
                                     <ContentCopyIcon />
                                 </IconButton>
@@ -320,7 +326,7 @@ export function MCPSettingsPanel() {
             <TokenRevealDialog
                 open={tokenDialog !== null}
                 token={tokenDialog ?? ''}
-                onCopy={(text) => copyText(text, t('mcp.tokenCopied'))}
+                onCopy={(text, source) => copyText(text, source, t('mcp.tokenCopied'))}
                 onClose={() => setTokenDialog(null)}
             />
         </Stack>
@@ -335,7 +341,7 @@ function TokenRevealDialog({
 }: {
     open: boolean
     token: string
-    onCopy: (text: string) => void
+    onCopy: (text: string, source: HTMLElement) => void
     onClose: () => void
 }) {
     const { t } = useTranslation()
@@ -357,7 +363,7 @@ function TokenRevealDialog({
                                 endAdornment: (
                                     <IconButton
                                         aria-label={t('mcp.copyTokenAria')}
-                                        onClick={() => onCopy(token)}
+                                        onClick={(event) => onCopy(token, event.currentTarget)}
                                     >
                                         <ContentCopyIcon />
                                     </IconButton>
@@ -381,7 +387,7 @@ function ClientConfigs({
     onCopy,
 }: {
     endpoint: string
-    onCopy: (text: string, hint?: string) => void
+    onCopy: (text: string, source: HTMLElement, hint?: string) => void
 }) {
     const { t } = useTranslation()
     const envHint = t('mcp.envHint')
@@ -410,7 +416,9 @@ function ClientConfigs({
                             <IconButton
                                 aria-label={t('mcp.copyEnvAria')}
                                 edge="end"
-                                onClick={() => onCopy(envHint, t('mcp.envCopied'))}
+                                onClick={(event) =>
+                                    onCopy(envHint, event.currentTarget, t('mcp.envCopied'))
+                                }
                             >
                                 <ContentCopyIcon />
                             </IconButton>
@@ -436,7 +444,7 @@ function ClientConfigs({
             <Button
                 size="small"
                 startIcon={<ContentCopyIcon />}
-                onClick={() => onCopy(current.value)}
+                onClick={(event) => onCopy(current.value, event.currentTarget)}
             >
                 {t('mcp.copyConfig')}
             </Button>
